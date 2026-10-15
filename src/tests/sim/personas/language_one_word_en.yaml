@@ -1,0 +1,46 @@
+id: language_one_word_en
+description: >
+  Mexico, writes everything in English, but answers the start date with the single Spanish word
+  "Mañana". One word in another language is not a switch (Phase 1 section 4.3): the agent keeps
+  replying in English, passes no language on that turn, and the Application language stays en to
+  the end, so the Qualified close (built by the backend from the stored language) is English too.
+  The real Haiku demo ended in Spanish on an English Application (language-switch P2).
+quirks: [foreign_word]
+identity:
+  name: Ramiro Salcedo
+  phone: "+525500000014"
+  country: MX
+  locale: en
+opening:
+  text: "Hello, I'm looking for a delivery job"
+answers:
+  full_name: [{text: Ramiro Salcedo, value: Ramiro Salcedo}]
+  zone: [{text: "Puebla, Centro", query: "Centro, Puebla"}]
+  driver_license: [{text: "Yes, I have a driver's license", value: "yes"}]
+  availability: [{text: "Full time, please", value: [full_time]}]
+  preferred_schedule: [{text: Afternoons, value: [afternoon]}]
+  experience_years: [{text: "2", value: 2}]
+  experience_platforms: [{text: Rappi, value: [rappi]}]
+  start_date: [{text: Mañana, lang: es, value: "+1d"}]
+expect:
+  stage: qualified
+  status: open
+  final_language: en
+  reply_language: en
+  fields:
+    full_name: {value: Ramiro Salcedo}
+    zone: {non_null: true}
+    driver_license: {value: true}
+    availability: {value: [full_time]}
+    preferred_schedule: {value: [afternoon]}
+    experience_years: {value: 2}
+    experience_platforms: {value: [rappi]}
+    start_date: {non_null: true}
+  field_order:
+    [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+  events: [application_started, answer_recorded, screening_finished]
+  forbidden_events: [knockout, escalation_raised, reopened, nudge_sent]
+  tools: [record_answer, finish_screening]
+  forbidden_agent_text: [Criba]
+seed_assumptions:
+  - "\"Centro, Puebla\" names exactly one MX Zone (name and city), inside a Service Area."

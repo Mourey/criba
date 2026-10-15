@@ -1,0 +1,38 @@
+id: zone_outside_es
+description: >
+  Spain, Zone outside every Service Area: Knockout on the Zone check, before the license is
+  asked. Ten days later the Candidate writes again from a covered Zone, which Reopens the
+  Application at the failed check (within 30 days) and screening resumes at the license.
+quirks: [reopens]
+identity:
+  name: Marta Ruiz
+  phone: "+34600000003"
+  country: ES
+  locale: es-ES
+opening:
+  text: "Buenas, me gustaría trabajar de repartidora"
+answers:
+  full_name: [{text: Marta Ruiz, value: Marta Ruiz}]
+  zone:
+    [{text: "Vivo en Toledo", query: Toledo}, {text: "Sí", pick_option: 0, query: null}]
+interrupts:
+  - at: after_knockout
+    advance: [10d]
+    say: {text: "Hola, ya me mudé a Madrid, Chamberí", field: zone, query: "Madrid, Chamberí"}
+    then: stop
+expect:
+  stage: driver_license
+  status: open
+  knockout_template: es-ES
+  fields:
+    full_name: {value: Marta Ruiz}
+    zone: {non_null: true}
+  fields_unanswered: [driver_license, availability, preferred_schedule, experience_years, start_date]
+  field_order: [full_name, zone]
+  events: [application_started, knockout, reopened, answer_recorded]
+  event_counts: [{kind: knockout, count: 1}, {kind: reopened, count: 1}]
+  forbidden_events: [abandoned, screening_finished, nudge_sent]
+  forbidden_agent_text: [Criba, colonia]
+seed_assumptions:
+  - "Toledo is a seeded Zone outside every ES Service Area (seed UNCOVERED_TOWNS)."
+  - "Madrid, Chamberí is inside at least one ES Service Area."

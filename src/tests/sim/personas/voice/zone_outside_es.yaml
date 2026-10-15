@@ -1,0 +1,10 @@
+# Voice persona (voice-agent sim-personas SM4): zone_outside_es on a voice call, Spain. Toledo is
+# outside every Service Area; the Candidate says "Sí" to the Toledo confirmation and the Zone
+# check knocks out. No Reopen: the voice persona stops at the Knockout, compared with the typed
+# persona played to the same point (plan risk 2).
+id: zone_outside_es
+description: >
+  Spain, a Zone outside every Service Area: the Toledo confirmation is said, not tapped, and the
+  Application closes as a Zone Knockout before the licence is asked.
+typed: zone_outside_es
+phone: "+34600001004"

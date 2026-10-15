@@ -1,0 +1,815 @@
+/* operator surface styles: token-only (DESIGN.md). Imported only by this surface's components:
+   Overview.tsx, Economics.tsx and the charts they draw (charts/BarCards.tsx, charts/StatTile.tsx), and
+   the Operator panel on the Application page (components/OperatorPanel.tsx). */
+
+/* StatTile: a figure, its label and a hint, at a fixed minimum height so a refresh never moves it. */
+
+.stat.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  min-height: calc(var(--space-9) + var(--space-7));
+  padding: var(--space-4);
+  border: 1px solid var(--seam);
+  border-radius: var(--radius-3);
+  background: var(--panel);
+}
+
+.stat-tile__value {
+  color: var(--ink-strong);
+  font: var(--weight-medium) var(--text-lg) / var(--leading-tight) var(--mono);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.stat-tile__label {
+  color: var(--ink);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+.stat-tile__hint {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+/* Chart cards (BarCard, GroupedBarCard). The plot is hidden from assistive technology; the table
+   view carries the same numbers. */
+
+.chart-card__caption {
+  margin: 0 0 var(--space-3);
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.chart-card__empty {
+  margin: 0;
+  padding: var(--space-6) 0;
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.chart-card__plot {
+  width: 100%;
+  min-width: 0;
+  height: 16rem;
+}
+
+.chart-card__details {
+  margin-top: var(--space-3);
+}
+
+.chart-card__details > summary {
+  width: fit-content;
+  border-radius: var(--radius-1);
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.chart-card__details > summary:hover {
+  color: var(--ink-strong);
+}
+
+.chart-card__details > summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.chart-card__details[open] > summary {
+  margin-bottom: var(--space-2);
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  list-style: none;
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.chart-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chart-legend__swatch {
+  display: inline-block;
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: var(--radius-1);
+}
+
+.chart-legend__swatch--0 {
+  background: var(--series-1);
+}
+
+.chart-legend__swatch--1 {
+  background: var(--series-2);
+}
+
+.chart-legend__swatch--2 {
+  background: var(--series-3);
+}
+
+/* Overview and Economics layout. One column below 48rem (768px), two tile columns from 48rem, charts side by
+   side from 64rem. Tables scroll inside their own wrapper (ui-table__wrap), never the page. */
+
+.op-overview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.op-overview > .page-head {
+  margin-bottom: 0;
+}
+
+.op-period {
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.op-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.op-stack > .op-filters {
+  margin-bottom: 0;
+}
+
+.op-tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.op-tiles .ui-skeleton {
+  height: calc(var(--space-9) + var(--space-7));
+}
+
+@media (min-width: 48rem) {
+  .op-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .op-tiles.op-tiles--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .op-tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .op-tiles.op-tiles--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Figures grouped in one card (Signals, Live economics): one row split by seams, not separate boxes. */
+
+.op-tiles--joined {
+  gap: 0;
+}
+
+.op-tiles--joined > * + * {
+  border-top: 1px solid var(--seam);
+}
+
+.op-tiles--joined .stat.stat-tile {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+@media (min-width: 48rem) {
+  .op-tiles--joined > * + * {
+    border-top: 0;
+    border-inline-start: 1px solid var(--seam);
+  }
+}
+
+/* Four figures: a 2 x 2 grid from 48rem (the base .op-tiles columns), one row from 64rem. */
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+  .op-tiles--joined.op-tiles--4 > :nth-child(odd) {
+    border-inline-start: 0;
+  }
+
+  .op-tiles--joined.op-tiles--4 > :nth-child(n + 3) {
+    border-top: 1px solid var(--seam);
+  }
+}
+
+/* A figure that links to the list behind it. */
+.op-figure {
+  display: block;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--motion-fast) var(--ease-out);
+}
+
+/* Visibly a link without hover: an underlined label and an arrow (spoken as nothing). */
+.op-figure .stat-tile__label {
+  text-decoration: underline;
+  text-decoration-color: var(--ink-muted);
+  text-underline-offset: var(--space-1);
+}
+
+.op-figure .stat-tile__label::after {
+  content: "\2192" / "";
+  margin-inline-start: var(--space-1);
+  font-family: var(--mono);
+}
+
+.op-figure:hover {
+  background: color-mix(in srgb, var(--ink) 4%, var(--panel));
+}
+
+.op-figure:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: calc(var(--space-1) * -1);
+}
+
+.op-card-pad {
+  padding: var(--space-4);
+}
+
+.op-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-4);
+}
+
+@media (min-width: 64rem) {
+  .op-charts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.op-skeleton .ui-skeleton {
+  height: 16rem;
+}
+
+.op-empty,
+.op-notice,
+.op-guard {
+  margin: 0;
+  border: 1px solid var(--seam);
+  border-radius: var(--radius-3);
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.op-empty {
+  padding: var(--space-7) var(--space-4);
+  text-align: center;
+}
+
+.op-notice {
+  padding: var(--space-3) var(--space-4);
+}
+
+.op-guard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.op-guard p {
+  margin: 0;
+}
+
+/* A refresh that failed: the figures on screen are the last good ones. */
+.op-refresh {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--status-warn-edge);
+  border-inline-start: var(--space-1) solid var(--status-warn);
+  border-radius: var(--radius-2);
+  background: var(--status-warn-soft);
+  color: var(--ink-strong);
+  font-size: var(--text-sm);
+}
+
+.op-sub {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+/* Model comparison: inside its card. Eight columns can be wider than the card at 768px: the panel below is the one
+   scroll container (and the one keyboard stop), so the table's own wrapper does not scroll inside it. */
+.op-card-text {
+  margin: 0;
+  color: var(--ink);
+}
+
+.op-card-pad.op-sub {
+  padding-bottom: var(--space-2);
+}
+
+.op-table-card {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.op-table-card .ui-table__wrap {
+  overflow: visible;
+}
+
+.op-table-card:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: calc(var(--space-1) * -1);
+}
+
+/* Filters: a wrapping row of controls. The native selects carry the look of .ui-field__input. */
+.op-filters {
+  margin-bottom: var(--space-4);
+}
+
+.op-filters__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.op-filters__row > * {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.op-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--ink-strong);
+  font: var(--weight-semibold) var(--text-sm) / var(--leading-snug) var(--font);
+}
+
+.op-select {
+  min-height: var(--space-7);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--seam-strong);
+  border-radius: var(--radius-2);
+  background: var(--panel);
+  color: var(--ink-strong);
+  font: var(--weight-regular) var(--text-base) / var(--leading-snug) var(--font);
+  transition: border-color var(--motion-fast) var(--ease-out);
+}
+
+.op-select:hover {
+  border-color: var(--ink-muted);
+}
+
+.op-select:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .op-select {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .op-select,
+  .op-figure {
+    transition: none;
+  }
+}
+
+/* Operator panel (components/OperatorPanel.tsx): the Application page's fourth column. Its column box
+   (scrolling, gap) is .detail-col in today.css; these rules draw what is inside it. */
+
+.op-panel {
+  padding: var(--space-4);
+  border: 1px solid var(--seam);
+  border-radius: var(--radius-3);
+  background: var(--panel);
+}
+
+.op-panel:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.op-panel__title {
+  margin: 0;
+  color: var(--ink-strong);
+  font: var(--weight-medium) var(--text-xs) / var(--leading-snug) var(--mono);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.op-panel__lede,
+.op-panel__muted {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+.op-panel__block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.op-panel__heading {
+  margin: 0;
+  color: var(--ink-strong);
+  font: var(--weight-medium) var(--text-sm) / var(--leading-snug) var(--font);
+}
+
+/* The two strips, counts and peaks, as one grid: signal | count | peak. The peaks list holds the third column only
+   (its signal names are for screen readers); both lists have five equal rows while readings show (four in the flag-row fallback), so the rows line up. */
+.op-panel__strips {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2.5rem 3rem;
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+}
+
+.op-panel__strips > .op-panel__counts {
+  grid-row: 2;
+  grid-column: 1 / 3;
+}
+
+.op-panel__strips > .op-panel__counts--peaks {
+  grid-column: 3;
+}
+
+.op-panel__counts--peaks li {
+  justify-content: flex-end;
+}
+
+.op-panel__caption {
+  grid-row: 1;
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  text-align: end;
+}
+
+.op-panel__caption--count {
+  grid-column: 2;
+}
+
+.op-panel__caption--peak {
+  grid-column: 3;
+}
+
+.op-panel__counts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+}
+
+.op-panel__counts li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.op-panel__counts b {
+  color: var(--ink-strong);
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.op-panel__rows,
+.op-panel__errors {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.op-panel__errors li {
+  color: var(--ink);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+}
+
+.op-panel__mono {
+  font-family: var(--mono);
+}
+
+.op-signal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--seam-soft);
+}
+
+.op-signal:last-child {
+  border-bottom: 0;
+}
+
+.op-signal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+/* Time, Stage and Tags wrap among themselves, so Show in Transcript stays at the end of the first line. */
+.op-signal__meta {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+}
+
+.op-signal__time {
+  color: var(--ink-strong);
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Show in Transcript is a text link at the end of the head line; the 44px touch target stays on coarse pointers. */
+.op-signal__jump.ui-btn {
+  flex: none;
+  min-height: auto;
+  margin-inline-start: auto;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+}
+
+@media (pointer: coarse) {
+  .op-signal__jump.ui-btn {
+    min-height: 44px;
+  }
+}
+
+.op-panel__retry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.op-signal__line {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+}
+
+/* Jev's scores of one message (OperatorPanel ScoreBar): one line each, name | track | value. The value reaches the
+   CSS as a number from 0 to 1 in --v (fill) and --at (marker); each bar also carries it as text, so the drawing is
+   never the only carrier. A fired bar (the stored flag, not a score against a threshold) fills in the warn colour. */
+.op-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.op-bar {
+  display: grid;
+  grid-template-columns: 5.75rem minmax(0, 1fr) 2.25rem;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+.op-bar__name {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.op-bar__value {
+  color: var(--ink-strong);
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.op-bar__track {
+  position: relative;
+  display: block;
+  block-size: 0.625rem;
+  border: 1px solid var(--ink-muted);
+  border-radius: var(--radius-pill);
+  background: var(--seam);
+}
+
+.op-bar__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: calc(var(--v) * 100%);
+  border-radius: inherit;
+  background: var(--ink-muted);
+}
+
+.op-bar--fired .op-bar__fill {
+  background: var(--status-warn);
+}
+
+/* The display-only Manipulation bar: no threshold, so no marker and never fired; this draws a hairline above it. */
+.op-bar--plain {
+  margin-block-start: var(--space-1);
+  padding-block-start: var(--space-1);
+  border-block-start: 1px solid var(--seam-soft);
+}
+
+/* The Escalation tick is the tall one, overhanging the track; the hint tick (wants a person) is short, inside it. */
+.op-bar__marker {
+  position: absolute;
+  inset-block: -0.1875rem;
+  inset-inline-start: calc(var(--at) * 100%);
+  inline-size: 0.125rem;
+  margin-inline-start: -0.0625rem;
+  background: var(--ink-strong);
+}
+
+.op-bar__marker--hint {
+  inset-block: 0.125rem;
+}
+
+/* The agent trace (OperatorPanel AgentTrace): one item per run. The run id is the heading on its own line, then a line
+   with the status Tag and the jump (the same text link as Show in Transcript), the run's numbers, and one entry per tool
+   call: the tool name and the outcome Tag on one line, a muted line of time, duration and error code, then the stored
+   arguments as name and value pairs. Mono is for the run id, tool names and argument values only. The outcome is
+   always a Tag with text. */
+.op-runs,
+.op-calls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.op-run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--seam-soft);
+}
+
+.op-run:last-child {
+  border-bottom: 0;
+}
+
+.op-run__title {
+  margin: 0;
+  color: var(--ink-strong);
+  font: var(--weight-semibold) var(--text-base) / var(--leading-snug) var(--font);
+}
+
+.op-run__prefix {
+  color: var(--ink-muted);
+  font-weight: var(--weight-medium);
+}
+
+/* The id is a long hex: it continues on the line "Run" starts. */
+.op-run__idtext {
+  font-family: var(--mono);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.op-run__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-2);
+}
+
+.op-run__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.op-calls {
+  gap: var(--space-2);
+  padding-inline-start: var(--space-2);
+  border-inline-start: 1px solid var(--seam);
+}
+
+.op-call {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--seam-soft);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+.op-call:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.op-call__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+.op-call__tool {
+  flex: 1 1 0;
+  min-width: 0;
+  color: var(--ink-strong);
+  font-family: var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.op-call__head > .ui-tag {
+  flex: none;
+  margin-inline-start: auto;
+}
+
+.op-call__meta {
+  display: flex;
+  flex: 1 0 100%;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.op-call__meta > * + *::before {
+  content: "\00b7" / "";
+  margin-inline-end: var(--space-2);
+}
+
+.op-call__args {
+  display: grid;
+  grid-template-columns: fit-content(40%) minmax(0, 1fr);
+  gap: 0 var(--space-2);
+  margin: 0;
+}
+
+.op-call__arg {
+  display: contents;
+}
+
+.op-call__arg dt,
+.op-call__arg dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.op-call__arg dt {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.op-call__arg dd {
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+}

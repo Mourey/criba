@@ -1,0 +1,39 @@
+id: stalled_abandoned_es
+description: >
+  Spain, goes silent before the license question. The sim clock starts at 14:00 local so the
+  nudges at 1h (15:00), 20h (10:00) and 48h (14:00, the Meta template) all fall outside quiet
+  hours. After 7 days of silence the Application ends as Abandoned with no message. Three nudges
+  exactly, then nothing.
+quirks: [silence]
+identity:
+  name: Pedro Gil
+  phone: "+34600000006"
+  country: ES
+  locale: es-ES
+timing:
+  start_local_time: "14:00"
+opening:
+  text: "Hola"
+answers:
+  full_name: [{text: Pedro Gil, value: Pedro Gil}]
+  zone: [{text: "Madrid, Chamberí"}]
+interrupts:
+  - at: driver_license
+    advance: [1h, 19h, 28h, 5d, 1h]   # reaches 1h, 20h, 48h, 7d, then just past 7d
+    then: stop
+expect:
+  stage: driver_license
+  status: closed
+  outcome: abandoned
+  fields:
+    full_name: {value: Pedro Gil}
+    zone: {non_null: true}
+  fields_unanswered: [driver_license, availability, preferred_schedule, experience_years, start_date]
+  field_order: [full_name, zone]
+  events: [application_started, stalled, nudge_sent, nudge_sent, nudge_sent, abandoned]
+  event_counts: [{kind: nudge_sent, count: 3}, {kind: abandoned, count: 1}]
+  forbidden_events: [knockout, withdrawn, screening_finished, escalation_raised]
+  nudges: 3
+  forbidden_agent_text: [Criba, colonia]
+seed_assumptions:
+  - "Madrid, Chamberí is inside at least one ES Service Area, in the Europe/Madrid time zone."

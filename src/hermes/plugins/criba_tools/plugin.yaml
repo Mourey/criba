@@ -1,0 +1,7 @@
+name: criba-tools
+version: "0.1.0"
+description: >-
+  Screening Agent tools for Criba. Registers every tool in contracts/tools.json and forwards
+  each call, with the dispatcher's session_id, to the backend's POST /internal/tools/{name}.
+  No tool schema carries an application_id: identity comes from the run (ADR 0026).
+author: Criba

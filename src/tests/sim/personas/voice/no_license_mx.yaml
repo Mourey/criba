@@ -1,0 +1,9 @@
+# Voice persona (voice-agent sim-personas SM4): no_license_mx on a voice call, Mexico. "Puebla"
+# names three Zones, the Candidate says the one it means, and "no" to the licence is the
+# Knockout. No dispute: a voice persona plays no typed interrupt and stops at the Knockout.
+id: no_license_mx
+description: >
+  Mexico, no driver's licence: the Zone list is answered by saying the option, and the licence
+  answer ends the Application as a driver_license Knockout.
+typed: no_license_mx
+phone: "+525500001003"

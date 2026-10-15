@@ -1,0 +1,39 @@
+{
+  "_note": "Answer key for the listening sheet. Panel members must not open this file before rating. Voices come from the ElevenLabs shared voice library (GET /v1/shared-voices?language=es&accent=...), read 2026-10-10.",
+  "agent_model": "eleven_v4_turbo",
+  "candidate_model": "eleven_v4_turbo",
+  "agent_voices": {
+    "ES": {
+      "A": {"voice_id": "UOIqAnmS11Reiei1Ytkc", "name": "Carolina - Natural, Neutral and Clear", "accent": "peninsular", "gender": "female", "age": "middle_aged"},
+      "B": {"voice_id": "CdAqYBLnsNjmTqYgD5Ha", "name": "Dani - Confident, Natural and Expressive", "accent": "peninsular", "gender": "male", "age": "middle_aged"},
+      "C": {"voice_id": "dNjJKg63Fr5AXwIdkATa", "name": "Cristina - Empathetic Customer support", "accent": "peninsular", "gender": "female", "age": "young"}
+    },
+    "MX": {
+      "A": {"voice_id": "htFfPSZGJwjBv1CL0aMD", "name": "Antonio - Confident, Gentle and Clear", "accent": "mexican", "gender": "male", "age": "young"},
+      "B": {"voice_id": "9Godp7dNohUvXk6qp0gS", "name": "Regina - Contact Center", "accent": "mexican", "gender": "female", "age": "young"},
+      "C": {"voice_id": "m7yTemJqdIqrcNleANfX", "name": "Ana María - Calm, Natural and Clear", "accent": "mexican", "gender": "female", "age": "young"}
+    }
+  },
+  "candidate_voices": {
+    "es_c01": {"voice_id": "gD1IexrzCvsXPHUuT0s3", "name": "Sara Martin - Young and Reflective", "accent": "peninsular", "gender": "female", "age": "young"},
+    "es_c02": {"voice_id": "7QQzpAyzlKTVrRzQJmTE", "name": "Dani - Hurried, Dynamic and Engaging", "accent": "peninsular", "gender": "male", "age": "young"},
+    "es_c03": {"voice_id": "2VUqK4PEdMj16L6xTN4J", "name": "Cristina - Warm, Natural and Smooth", "accent": "andalusian", "gender": "female", "age": "young"},
+    "es_c04": {"voice_id": "5IDdqnXnlsZ1FCxoOFYg", "name": "Jesus - Firm, Deep and Reassuring", "accent": "castilian", "gender": "male", "age": "middle_aged"},
+    "es_c05": {"voice_id": "851ejYcv2BoNPjrkw93G", "name": "Tony - Expressive, Fast and Spontaneous", "accent": "peninsular", "gender": "male", "age": "middle_aged"},
+    "es_c06": {"voice_id": "1eHrpOW5l98cxiSRjbzJ", "name": "Raquel - Young, Bright and Cheerful", "accent": "peninsular", "gender": "female", "age": "young"},
+    "es_c07": {"voice_id": "syjZiIvIUSwKREBfMpKZ", "name": "Jacobo Montoro - Full and Gentle", "accent": "andalusian", "gender": "male", "age": "middle_aged"},
+    "es_c08": {"voice_id": "h2cd3gvcqTp3m65Dysk7", "name": "Carolina Ruiz - Nasal, Natural and Clear", "accent": "peninsular", "gender": "female", "age": "middle_aged"},
+    "es_c09": {"voice_id": "orF2qy9215xjwqqxqsWW", "name": "Rafael - Expressive and Theatrical", "accent": "peninsular", "gender": "male", "age": "old"},
+    "es_c10": {"voice_id": "yiWEefwu5z3DQCM79clN", "name": "Laura López - Bright, Clear and Dynamic", "accent": "peninsular", "gender": "female", "age": "young"},
+    "mx_c01": {"voice_id": "hHjbwzYZW17oh0p05AKv", "name": "Gabriela - Warm, Rich and Balanced", "accent": "mexican", "gender": "female", "age": "middle_aged"},
+    "mx_c02": {"voice_id": "qRUgOhnxGASxirG4fKjv", "name": "David - Energetic, Deep and Pleasant", "accent": "mexican", "gender": "male", "age": "young"},
+    "mx_c03": {"voice_id": "5kz7Te3c1BvAWyFfkfkW", "name": "Juan Pablo - Credible and Rhythmic (norteño)", "accent": "mexican", "gender": "male", "age": "young"},
+    "mx_c04": {"voice_id": "r3SDVYUIvcC4EweQtSj0", "name": "Erika - Raspy and Genuine (Sinaloa)", "accent": "mexican", "gender": "female", "age": "middle_aged"},
+    "mx_c05": {"voice_id": "wL6Hwp3E71wGlj2GZKGK", "name": "Freddy - Brisk, Expressive and Urgent (Monterrey)", "accent": "mexican", "gender": "male", "age": "middle_aged"},
+    "mx_c06": {"voice_id": "cAvMBIZ0VNTU8XdsUpEq", "name": "Susana Elizabeth - Warm, Soft and Clear", "accent": "mexican", "gender": "female", "age": "young"},
+    "mx_c07": {"voice_id": "gbTn1bmCvNgk0QEAVyfM", "name": "Enrique M. Nieto - Credible and Rich", "accent": "mexican", "gender": "male", "age": "middle_aged"},
+    "mx_c08": {"voice_id": "1vvbVDm3EpGMyY1WVZ3r", "name": "Yessenia Mazón - Nasal, Light and Cute (Sonora)", "accent": "mexican", "gender": "female", "age": "middle_aged"},
+    "mx_c09": {"voice_id": "D3ws14YxTqcjPaXEOehR", "name": "Azu - Calm, Soft and Melodic", "accent": "mexican", "gender": "female", "age": "old"},
+    "mx_c10": {"voice_id": "qXvyMc4erc4RzqXLpiiR", "name": "Alejandro - Articulated, Clear and Smart", "accent": "mexican", "gender": "male", "age": "young"}
+  }
+}

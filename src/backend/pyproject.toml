@@ -1,0 +1,63 @@
+[project]
+name = "criba"
+version = "0.1.0"
+description = "Criba screening backend: channel, router, agent tools and REST API"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "argon2-cffi==25.1.0",
+    "fastapi==0.143.0",
+    "httpx==0.28.1",
+    "pydantic==2.14.0",
+    "pyyaml==6.0.3",
+    "tzdata==2026.5",
+    "uvicorn[standard]==0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "diff-cover==10.6.0",
+    "httpx2==2.13.1",
+    "jsonschema==4.26.0",
+    "mypy==2.3.1",
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
+    "pyyaml==6.0.3",
+    "ruff==0.16.10",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.6,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "criba"
+module-root = ""
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --import-mode=importlib"
+markers = [
+    "hermes: needs the hermes container running (docker compose up -d hermes)",
+    "e2e: needs a running sim stack (CRIBA_E2E_BASE_URL); skipped otherwise",
+]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["criba"]
+
+# Read by pytest-cov via --cov-config (src/scripts/check.sh runs pytest from the repo root),
+# so relative_files paths match `git diff` paths for diff-cover.
+[tool.coverage.run]
+source = ["src/backend/criba"]
+relative_files = true
+data_file = ".coverage-reports/.coverage"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["criba"]

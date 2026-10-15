@@ -1,0 +1,195 @@
+# Criba: web (nginx + static React build), backend (FastAPI), hermes (agent runtime).
+#
+# Only `web` publishes a host port. `backend` and `hermes` are reachable only on the
+# Compose networks. Secrets come from files in ./secrets/ (gitignored; copy the
+# *.example templates). No service uses env_file or forwards the host shell
+# environment: every variable a container sees is listed here explicitly, so host
+# tokens (for example TELEGRAM_BOT_TOKEN) never reach Hermes and no messaging
+# platform starts.
+
+name: criba
+
+services:
+  web:
+    build:
+      context: ./src/web
+      dockerfile: ../docker/web/Dockerfile
+      additional_contexts:
+        nginx_conf: ./src/docker/web
+    ports:
+      - "${CRIBA_WEB_PORT:-8080}:80"
+    networks: [edge]
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: ../docker/backend/Dockerfile
+    environment:
+      CRIBA_DB_PATH: /data/criba.db
+      CRIBA_HERMES_URL: http://hermes:8642
+      CRIBA_HERMES_PROFILE: criba-recruiter
+      # Spoken turns run on the voice flow's own profile (ADR 0059).
+      CRIBA_HERMES_VOICE_PROFILE: criba-recruiter-voice
+      CRIBA_HERMES_API_KEY_FILE: /run/secrets/hermes_api_server_key
+      CRIBA_TOOLS_SECRET_FILE: /run/secrets/criba_tools_secret
+      # One key signs booking links: the agent's offer_interview_slots and the public
+      # booking page (criba.tools.booking_secret).
+      CRIBA_BOOKING_SECRET_FILE: /run/secrets/criba_booking_secret
+      CRIBA_PUBLIC_BASE_URL: ${CRIBA_PUBLIC_BASE_URL:-http://localhost:${CRIBA_WEB_PORT:-8080}}
+      # The summary's prose (Sonnet through OpenRouter, ADR 0025). Sim mode never calls it.
+      CRIBA_OPENROUTER_API_KEY_FILE: /run/secrets/openrouter_api_key
+      CRIBA_OPENROUTER_KEY_FLOOR_USD: ${CRIBA_OPENROUTER_KEY_FLOOR_USD:-5}
+      # The Jev router (ADR 0051) reads each typed Candidate message for language and tone
+      # before the agent runs, through the same OpenRouter key. `auto` is on when the key file
+      # holds a key; `off` turns it off (the agent reports the language itself, no tone hint).
+      CRIBA_JEV: ${CRIBA_JEV:-auto}
+      # Message signals are deleted after this many days (ADR 0051).
+      CRIBA_SIGNALS_RETENTION_DAYS: ${CRIBA_SIGNALS_RETENTION_DAYS:-180}
+      # Migrations always run at startup; CRIBA_SEED=1 adds the SYNTHETIC Client, Zones,
+      # Locations and slots, and the synthetic users with the seed password.
+      CRIBA_SEED: "1"
+      CRIBA_SEED_PASSWORD_FILE: /run/secrets/criba_seed_password
+      # Voice (criba.channel.voice_config). Off by default; voice is available only when
+      # CRIBA_VOICE=on, both agent ids are set and the API key and voice secret files are
+      # non-empty. A malformed cap or price keeps voice unavailable.
+      CRIBA_VOICE: ${CRIBA_VOICE:-off}
+      CRIBA_VOICE_AGENT_ES: ${CRIBA_VOICE_AGENT_ES:-}
+      CRIBA_VOICE_AGENT_MX: ${CRIBA_VOICE_AGENT_MX:-}
+      CRIBA_VOICE_PUBLIC_BASE_URL: ${CRIBA_VOICE_PUBLIC_BASE_URL:-}
+      CRIBA_VOICE_MAX_CONCURRENT: ${CRIBA_VOICE_MAX_CONCURRENT:-5}
+      CRIBA_VOICE_DAILY_MINUTES: ${CRIBA_VOICE_DAILY_MINUTES:-120}
+      CRIBA_VOICE_COST_PER_MIN: ${CRIBA_VOICE_COST_PER_MIN:-0.08}
+      CRIBA_ELEVENLABS_API_KEY_FILE: /run/secrets/elevenlabs_api_key
+      CRIBA_VOICE_SECRET_FILE: /run/secrets/criba_voice_secret
+      CRIBA_VOICE_LLM_SECRET_FILE: /run/secrets/criba_voice_llm_secret
+      CRIBA_ELEVENLABS_WEBHOOK_SECRET_FILE: /run/secrets/elevenlabs_webhook_secret
+    secrets:
+      - hermes_api_server_key
+      - criba_tools_secret
+      - criba_booking_secret
+      - openrouter_api_key
+      - criba_seed_password
+      - elevenlabs_api_key
+      - criba_voice_secret
+      - criba_voice_llm_secret
+      - elevenlabs_webhook_secret
+    volumes:
+      - sqlite:/data
+    networks: [edge, core]
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  hermes:
+    build:
+      context: ./src/docker/hermes
+      # Profiles and the criba-tools plugin, the Screener skill, and the tool contract
+      # are baked into the image (see the Dockerfile).
+      additional_contexts:
+        hermes_src: ./src/hermes
+        skills_src: ./src/skills
+        contracts: ./contracts
+    command: ["gateway", "run"]
+    environment:
+      # The image's mutable home is /opt/data; /opt/hermes is its read-only install
+      # tree. See src/docker/hermes/entrypoint.sh and the README.
+      HERMES_HOME: /opt/data
+      # Where the criba-tools plugin forwards tool calls (POST /internal/tools/{name}).
+      CRIBA_BACKEND_URL: http://backend:8000
+      # Simulator profile (criba-recruiter-sim): the stub model server's OpenAI-compatible
+      # base URL and model name. The stub itself is the simulator's (spec 004).
+      CRIBA_SIM_LLM_BASE_URL: ${CRIBA_SIM_LLM_BASE_URL:-http://stub-llm:8000/v1}
+      CRIBA_SIM_LLM_MODEL: ${CRIBA_SIM_LLM_MODEL:-stub-model}
+    secrets:
+      - hermes_api_server_key
+      - openrouter_api_key
+      - criba_tools_secret
+    volumes:
+      - hermes-home:/opt/data
+    networks: [core]
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8642/health', timeout=2)"
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 90s
+    restart: unless-stopped
+
+  # Dev container for the checks in CONSTRAINTS.md (src/scripts/check.sh). Profile `dev`,
+  # so `docker compose up` never starts it: `docker compose --profile dev up -d dev`.
+  # The repository is bind-mounted; the Linux venv and node_modules live in volumes so
+  # they never collide with a host checkout's. No secrets (./secrets is masked by an empty
+  # tmpfs), no service networks.
+  dev:
+    profiles: [dev]
+    build:
+      context: ./src/docker/dev
+    volumes:
+      - .:/workspace
+      - dev-venv:/opt/venv
+      - dev-node-modules:/workspace/src/web/node_modules
+      - type: tmpfs
+        target: /workspace/secrets
+    networks: [dev]
+    init: true
+
+networks:
+  # web <-> backend only. nginx never reaches Hermes.
+  edge: {}
+  # backend <-> hermes. Not `internal: true`, because Hermes needs egress to OpenRouter.
+  core: {}
+  # Dev container only: egress for uv, npm and scanner databases, no route to services.
+  dev: {}
+
+volumes:
+  sqlite: {}
+  hermes-home: {}
+  dev-venv: {}
+  # The default is the name Compose derives anyway (<project>_dev-node-modules; `criba` for the
+  # main checkout, `-p <name>` for another project), so existing volumes keep working. check.sh
+  # sets CRIBA_NODE_MODULES_VOLUME in a worktree, so concurrent `npm ci` runs in different
+  # worktrees never share one node_modules.
+  dev-node-modules:
+    name: ${CRIBA_NODE_MODULES_VOLUME:-${COMPOSE_PROJECT_NAME:-criba}_dev-node-modules}
+
+secrets:
+  hermes_api_server_key:
+    file: ./secrets/hermes_api_server_key.txt
+  openrouter_api_key:
+    file: ./secrets/openrouter_api_key.txt
+  criba_tools_secret:
+    file: ./secrets/criba_tools_secret.txt
+  criba_booking_secret:
+    file: ./secrets/criba_booking_secret.txt
+  criba_seed_password:
+    file: ./secrets/criba_seed_password.txt
+  elevenlabs_api_key:
+    file: ./secrets/elevenlabs_api_key.txt
+  criba_voice_secret:
+    file: ./secrets/criba_voice_secret.txt
+  criba_voice_llm_secret:
+    file: ./secrets/criba_voice_llm_secret.txt
+  elevenlabs_webhook_secret:
+    file: ./secrets/elevenlabs_webhook_secret.txt

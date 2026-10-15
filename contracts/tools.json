@@ -1,0 +1,770 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://criba.local/contracts/tools.json",
+  "title": "Criba Screening Agent tools",
+  "description": "Owner after wave 0: lane A (agent tools). Frozen by spec 005; change only through lane A, in a separate commit listed in the wave merge notes.\n\nThe Hermes plugin `criba-tools` registers each tool below with the model, using `$defs/<tool>_input` as the parameter schema and the tool's description. On every call it forwards `{tool, args, session_id}` to `POST /internal/tools/{name}` on the Compose network with `Authorization: Bearer <CRIBA_TOOLS_SECRET>`. `session_id` is the dispatcher's session id, which equals the Application id (ADRs 0018, 0026); the backend resolves the Application from it. No tool input ever contains `application_id` or `candidate_id`: identity comes from the run, never from the model. The backend answers with `$defs/tool_response`: `{ok: true, value}` or `{ok: false, error, hint}`. The root schema validates a request envelope.",
+  "$ref": "#/$defs/tool_request",
+  "x-tools": {
+    "get_application": {
+      "input": "#/$defs/get_application_input",
+      "output": "#/$defs/get_application_output"
+    },
+    "search_zones": {
+      "input": "#/$defs/search_zones_input",
+      "output": "#/$defs/search_zones_output"
+    },
+    "record_answer": {
+      "input": "#/$defs/record_answer_input",
+      "output": "#/$defs/record_answer_output"
+    },
+    "request_review": {
+      "input": "#/$defs/request_review_input",
+      "output": "#/$defs/request_review_output"
+    },
+    "raise_escalation": {
+      "input": "#/$defs/raise_escalation_input",
+      "output": "#/$defs/raise_escalation_output"
+    },
+    "finish_screening": {
+      "input": "#/$defs/finish_screening_input",
+      "output": "#/$defs/finish_screening_output"
+    },
+    "record_backout": {
+      "input": "#/$defs/record_backout_input",
+      "output": "#/$defs/record_backout_output"
+    },
+    "offer_interview_slots": {
+      "input": "#/$defs/offer_interview_slots_input",
+      "output": "#/$defs/offer_interview_slots_output"
+    },
+    "book_interview": {
+      "input": "#/$defs/book_interview_input",
+      "output": "#/$defs/book_interview_output"
+    }
+  },
+  "x-answer-values": {
+    "full_name": "#/$defs/answer_value_full_name",
+    "zone": "#/$defs/answer_value_zone",
+    "driver_license": "#/$defs/answer_value_driver_license",
+    "availability": "#/$defs/answer_value_availability",
+    "preferred_schedule": "#/$defs/answer_value_preferred_schedule",
+    "experience_years": "#/$defs/answer_value_experience_years",
+    "experience_platforms": "#/$defs/answer_value_experience_platforms",
+    "start_date": "#/$defs/answer_value_start_date"
+  },
+  "$defs": {
+    "tool_name": {
+      "type": "string",
+      "enum": [
+        "get_application",
+        "search_zones",
+        "record_answer",
+        "request_review",
+        "raise_escalation",
+        "finish_screening",
+        "record_backout",
+        "offer_interview_slots",
+        "book_interview"
+      ]
+    },
+
+    "tool_request": {
+      "title": "POST /internal/tools/{name} request body",
+      "description": "`tool` must equal the `{name}` path segment. `args` is exactly what the model passed, validated against the tool's input schema.",
+      "type": "object",
+      "required": ["tool", "args", "session_id"],
+      "additionalProperties": false,
+      "properties": {
+        "tool": { "$ref": "#/$defs/tool_name" },
+        "args": { "type": "object" },
+        "session_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Hermes dispatcher session id; equals the Application id."
+        }
+      },
+      "oneOf": [
+        { "properties": { "tool": { "const": "get_application" }, "args": { "$ref": "#/$defs/get_application_input" } } },
+        { "properties": { "tool": { "const": "search_zones" }, "args": { "$ref": "#/$defs/search_zones_input" } } },
+        { "properties": { "tool": { "const": "record_answer" }, "args": { "$ref": "#/$defs/record_answer_input" } } },
+        { "properties": { "tool": { "const": "request_review" }, "args": { "$ref": "#/$defs/request_review_input" } } },
+        { "properties": { "tool": { "const": "raise_escalation" }, "args": { "$ref": "#/$defs/raise_escalation_input" } } },
+        { "properties": { "tool": { "const": "finish_screening" }, "args": { "$ref": "#/$defs/finish_screening_input" } } },
+        { "properties": { "tool": { "const": "record_backout" }, "args": { "$ref": "#/$defs/record_backout_input" } } },
+        { "properties": { "tool": { "const": "offer_interview_slots" }, "args": { "$ref": "#/$defs/offer_interview_slots_input" } } },
+        { "properties": { "tool": { "const": "book_interview" }, "args": { "$ref": "#/$defs/book_interview_input" } } }
+      ],
+      "examples": [
+        {
+          "tool": "record_answer",
+          "args": { "field": "driver_license", "value": "yes" },
+          "session_id": "app_01JA2B3C4D5E6F7G8H9J0K"
+        }
+      ]
+    },
+
+    "tool_response": {
+      "title": "POST /internal/tools/{name} response body",
+      "description": "Always HTTP 200 for a tool-level result, including `ok: false`. HTTP 401 means a bad shared secret; HTTP 404 means an unknown tool name; HTTP 422 means `args` failed the input schema (the body is still a `tool_error`, with error `invalid_args`).",
+      "oneOf": [
+        { "$ref": "#/$defs/tool_ok" },
+        { "$ref": "#/$defs/tool_error" }
+      ]
+    },
+
+    "tool_ok": {
+      "type": "object",
+      "required": ["ok", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "ok": { "const": true },
+        "value": { "type": "object", "description": "The tool's output schema, `$defs/<tool>_output`." }
+      }
+    },
+
+    "tool_error": {
+      "type": "object",
+      "required": ["ok", "error", "hint"],
+      "additionalProperties": false,
+      "properties": {
+        "ok": { "const": false },
+        "error": { "$ref": "#/$defs/error_code" },
+        "hint": {
+          "type": "string",
+          "description": "Instruction for the Screening Agent (English), which it turns into a friendly re-ask in the Candidate's language. Never shown to the Candidate verbatim."
+        },
+        "reason": {
+          "type": "string",
+          "description": "For invalid_value from record_answer: why the value failed (ADR 0042). Counted as a miss: unresolved (value null), invalid_name, past_start_date, out_of_range, ambiguous_zone (Zones across several cities). Not counted, so no attempt: zone_not_confirmed (No tapped on a Zone confirmation), unknown_zone_id, invalid_date (not a real calendar date), today_in_date_choice (a two-date start_date holding today; added by ADR 0058), invalid_option, ambiguous_zone with options (a city's Zones offered as a list), zone_funnel (the place matches no Zone: the backend asks once which of our cities they can work in; added by ADR 0068, with `message`), and already_answered (value null for a field already recorded, outside Confirm and outside an open Zone choice: keep the recorded value and move on; added by fix/confirm-correction-stall)."
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "For invalid_value: how many misses on this question so far (Phase 1 section 4.2: 2 means switch to buttons, 3 raises an Escalation automatically). Absent when the error counts no miss."
+        },
+        "options": {
+          "type": "array",
+          "maxItems": 10,
+          "items": { "$ref": "#/$defs/option" },
+          "description": "For invalid_value: the options to offer as buttons or a list. A fixed-option field gets them from the second miss; a Zone answer naming a known city gets that city's Zones at once, with no attempt (reason ambiguous_zone, a narrowing step)."
+        },
+        "message": {
+          "type": "string",
+          "description": "With reason zone_funnel (ADR 0068): the fixed question naming the cities that have a Service Area in the Application's country. Send it exactly as your whole reply; the cities arrive as a list with it."
+        }
+      },
+      "examples": [
+        {
+          "ok": false,
+          "error": "invalid_value",
+          "hint": "The name needs at least a first name and a surname. Ask again, with an example.",
+          "reason": "invalid_name",
+          "attempt": 1
+        }
+      ]
+    },
+
+    "error_code": {
+      "type": "string",
+      "enum": [
+        "invalid_args",
+        "invalid_value",
+        "wrong_stage",
+        "incomplete",
+        "application_closed",
+        "human_in_control",
+        "not_approved",
+        "no_slots",
+        "slot_unavailable",
+        "slot_not_offered",
+        "already_requested",
+        "unknown_session",
+        "internal"
+      ],
+      "description": "invalid_args: args failed the input schema. invalid_value: the answer failed validation. wrong_stage: the action does not fit the Application's stage (for example booking before Approval or a review without a Knockout). incomplete: finish_screening with fields missing. application_closed: the Application has an Outcome (after a Knockout within 30 days, record_answer on the failed criterion is the exception: see record_answer; a still-failing answer there is application_closed and the Application stays closed). human_in_control: a Takeover is active. not_approved: slots before Approval. no_slots: no open slots at any covering Location. slot_unavailable: someone else booked it. slot_not_offered: slot_ref was not offered to this Application or has expired. already_requested: a Review or Escalation of this kind is already open. unknown_session: session_id resolves to no Application. internal: unexpected backend error."
+    },
+
+    "field": {
+      "type": "string",
+      "enum": [
+        "full_name",
+        "zone",
+        "driver_license",
+        "availability",
+        "preferred_schedule",
+        "experience_years",
+        "experience_platforms",
+        "start_date"
+      ],
+      "$comment": "Phase 1 detailed spec section 3. Collected in this order after the greeting."
+    },
+
+    "stage": {
+      "type": "string",
+      "enum": [
+        "greeting",
+        "name",
+        "zone",
+        "driver_license",
+        "availability",
+        "preferred_schedule",
+        "experience",
+        "start_date",
+        "confirm",
+        "qualified",
+        "approved",
+        "interview_booked"
+      ]
+    },
+
+    "outcome": {
+      "type": ["string", "null"],
+      "enum": ["knockout", "rejection", "abandoned", "withdrawn", null]
+    },
+
+    "language": { "type": "string", "enum": ["es-ES", "es-MX", "en"] },
+    "country": { "type": "string", "enum": ["ES", "MX"] },
+    "availability_value": { "type": "string", "enum": ["full_time", "part_time", "weekends"] },
+    "schedule_value": { "type": "string", "enum": ["morning", "afternoon", "evening", "flexible"] },
+    "platform_value": { "type": "string", "enum": ["glovo", "uber_eats", "just_eat", "rappi", "didi_food", "other"] },
+    "weekday": { "type": "string", "enum": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+
+    "answer_value_full_name": {
+      "$comment": "The cleaned full name (greetings and 'me llamo' removed). Code checks 2 to 8 words of letters and joiners, at least 4 letters, and title-cases all-lower or all-upper input.",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 80
+    },
+    "answer_value_zone": {
+      "$comment": "Zone ids from search_zones. Code checks they exist: 1 covered is accepted; 1 uncovered is confirmed with Si/No buttons first (needs_choice with confirm), unless the Candidate tapped it, which is the Knockout; 2-3 are needs_choice; 4-10 in one city are offered as a list; 4 or more across cities are an ambiguous_zone miss.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^zone_" }
+    },
+    "answer_value_driver_license": {
+      "$comment": "yes accepts (stored true). no, expired, suspended and pending are Knockouts, each with its own template variant (stored false).",
+      "enum": ["yes", "no", "expired", "suspended", "pending"]
+    },
+    "answer_value_availability": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/availability_value" }
+    },
+    "answer_value_preferred_schedule": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/schedule_value" }
+    },
+    "answer_value_experience_years": {
+      "$comment": "Years of delivery experience (months divided by 12). Code checks at most 60 (out_of_range); 0 skips the platform question.",
+      "type": "number",
+      "minimum": 0
+    },
+    "answer_value_experience_platforms": {
+      "$comment": "Platforms worked for; an unlisted app is other; none is an empty list.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/platform_value" }
+    },
+    "answer_value_start_date": {
+      "$comment": "ISO date in the Candidate's local calendar (get_application returns today and weekday). Code checks it is a real date, today or later (past_start_date); more than 60 days out is flagged start_date_far. Two dates (added by ADR 0054) when the Candidate's words fit both, as 'el próximo domingo' said within the week does (the coming Sunday and the one after): code drops a past one and offers two as buttons (needs_choice); the tapped date is recorded. A list holding today is today_in_date_choice, not counted (ADR 0058).",
+      "anyOf": [
+        { "$ref": "#/$defs/iso_date" },
+        { "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/iso_date" } }
+      ]
+    },
+    "iso_date": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+
+    "option": {
+      "type": "object",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Canonical value or opaque reference to pass back as the answer." },
+        "label": { "type": "string", "maxLength": 24, "description": "Button text in the Candidate's language (WhatsApp limits reply buttons to 20 characters, list rows to 24)." }
+      }
+    },
+
+    "answers": {
+      "title": "Canonical answers so far",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "full_name": { "type": ["string", "null"] },
+        "zone": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": ["name", "city", "country"],
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string" },
+                "city": { "type": "string" },
+                "country": { "$ref": "#/$defs/country" }
+              }
+            }
+          ]
+        },
+        "driver_license": { "type": ["boolean", "null"] },
+        "availability": {
+          "type": ["array", "null"],
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/availability_value" }
+        },
+        "preferred_schedule": {
+          "type": ["array", "null"],
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/schedule_value" }
+        },
+        "experience_years": { "type": ["number", "null"], "minimum": 0 },
+        "experience_platforms": {
+          "type": ["array", "null"],
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/platform_value" }
+        },
+        "start_date": { "type": ["string", "null"], "format": "date" }
+      }
+    },
+
+    "interview": {
+      "type": "object",
+      "required": ["starts_at", "ends_at", "location_name", "local_label"],
+      "additionalProperties": false,
+      "properties": {
+        "starts_at": { "type": "string", "format": "date-time" },
+        "ends_at": { "type": "string", "format": "date-time" },
+        "location_name": { "type": "string" },
+        "address": { "type": ["string", "null"] },
+        "local_label": { "type": "string", "description": "Start time in the Location's local time, in the Candidate's language, e.g. 'mié 14 · 10:00'." }
+      }
+    },
+
+    "get_application_input": {
+      "title": "get_application",
+      "description": "Read the Application: stage, answers, next field, who holds the chat. Call it first on every turn.",
+      "$comment": "Full text of the description sent to the model (shortened to save input tokens on every call, docs/evidence/turn-size.md): Read the current Application: stage, answers so far, the next field to ask, and whether a human holds the chat. Call it at the start of every turn before asking anything.",
+      "type": "object",
+      "properties": {
+        "language": {
+          "$ref": "#/$defs/language",
+          "description": "Only for a clear switch (full sentence or request); omit after a button tap or a one-word answer."
+        }
+      },
+      "additionalProperties": false
+    },
+    "get_application_output": {
+      "$comment": "Turn size (docs/evidence/turn-size.md): every result stays in the model's history for the rest of the session, so a key that is null, false or 0 is omitted: outcome, knockout_criterion, first_name, invalid_attempts, reopened, takeover_summary, tone_hint, approved and interview. next_field stays, because null means all answered. answers is sent only when next_field is null (the confirm step needs the summary; while screening, next_field is all the model needs and what it recorded is already in its history), and lists the answered fields only.",
+      "type": "object",
+      "required": ["stage", "status", "control", "language", "country", "next_field", "today", "weekday"],
+      "additionalProperties": false,
+      "properties": {
+        "stage": { "$ref": "#/$defs/stage" },
+        "status": { "type": "string", "enum": ["open", "closed"] },
+        "outcome": { "$ref": "#/$defs/outcome" },
+        "knockout_criterion": { "type": ["string", "null"], "enum": ["driver_license", "zone", null] },
+        "control": { "type": "string", "enum": ["agent", "human"] },
+        "language": { "$ref": "#/$defs/language" },
+        "country": { "anyOf": [{ "$ref": "#/$defs/country" }, { "type": "null" }] },
+        "first_name": { "type": ["string", "null"] },
+        "answers": { "$ref": "#/$defs/answers", "description": "Only when next_field is null." },
+        "next_field": {
+          "anyOf": [{ "$ref": "#/$defs/field" }, { "type": "null" }],
+          "description": "The next unanswered field, or null when all are answered (then confirm and call finish_screening)."
+        },
+        "invalid_attempts": { "type": "integer", "minimum": 0 },
+        "reopened": { "type": "boolean", "description": "True on the first turn after a Reopen or an Overturned Review." },
+        "takeover_summary": { "type": ["string", "null"], "description": "What was said during a Takeover that just ended, for the agent to continue from." },
+        "tone_hint": { "type": ["string", "null"], "description": "ADR 0029 tone hint for this turn only, e.g. 'use simpler wording'." },
+        "approved": { "type": "boolean" },
+        "interview": { "anyOf": [{ "$ref": "#/$defs/interview" }, { "type": "null" }] },
+        "today": { "type": "string", "format": "date", "description": "Today in the Candidate's local calendar (the Zone's time zone, else the country's), to resolve start dates." },
+        "weekday": { "$ref": "#/$defs/weekday", "description": "The weekday of today." }
+      },
+      "examples": [
+        {
+          "stage": "driver_license",
+          "status": "open",
+          "control": "agent",
+          "language": "es-MX",
+          "country": "MX",
+          "first_name": "Luis",
+          "next_field": "driver_license",
+          "today": "2026-10-09",
+          "weekday": "friday"
+        }
+      ]
+    },
+
+    "search_zones_input": {
+      "title": "search_zones",
+      "description": "Find Zones by place name (neighbourhood, town or city). Pass the ids to record_answer(zone).",
+      "type": "object",
+      "required": ["query"],
+      "additionalProperties": false,
+      "properties": {
+        "query": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "country": { "$ref": "#/$defs/country" }
+      },
+      "examples": [{ "query": "Chamberí", "country": "ES" }, { "query": "Ciudad de México" }]
+    },
+    "search_zones_output": {
+      "type": "object",
+      "required": ["zones", "more"],
+      "additionalProperties": false,
+      "properties": {
+        "zones": {
+          "type": "array",
+          "maxItems": 10,
+          "description": "The best-matching Zones only (one match tier), the Application's country first when country is omitted. Empty when nothing matched.",
+          "items": {
+            "type": "object",
+            "$comment": "Turn size (docs/evidence/turn-size.md): the result stays in the model's history and a city lists up to ten rows, so country is sent only when it is not the Application's own country and covered only when it is false.",
+            "required": ["zone_id", "label", "city"],
+            "additionalProperties": false,
+            "properties": {
+              "zone_id": { "type": "string" },
+              "label": { "type": "string", "maxLength": 24 },
+              "city": { "type": "string" },
+              "country": { "$ref": "#/$defs/country", "description": "Only when it differs from the Application's country." },
+              "covered": { "const": false, "description": "Only sent when no active Location's Service Area contains the Zone; a missing key means covered." }
+            }
+          }
+        },
+        "more": { "type": "boolean", "description": "True when more than 10 Zones matched equally well: ask for a more precise place." },
+        "options_attached": { "const": true, "description": "Only sent when the query matched a city but no Zone in it, while the Zone is being asked (ADR 0062): the backend wrote these Zones as the pending choice, so they go to the Candidate as buttons or a list with the agent's next message. Recording the same ids then offers nothing new. Also sent, with `message`, when the query matched nothing at all and the Zone funnel was offered (ADR 0068)." },
+        "message": { "type": "string", "description": "With options_attached when nothing matched (ADR 0068): the fixed question naming our cities; the cities and \"none of these\" are the pending choice. Send it exactly as your whole reply." },
+        "service_cities": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "When nothing matched and the funnel was not offered (already asked, or not now): the cities that have a Service Area in the Application's country. The only areas the agent may name; never a Location's address before booking (ADR 0068)." }
+      },
+      "examples": [
+        {
+          "zones": [
+            { "zone_id": "zone_es_madrid_chamberi", "label": "Chamberí (Madrid)", "city": "Madrid" }
+          ],
+          "more": false
+        }
+      ]
+    },
+
+    "record_answer_input": {
+      "title": "record_answer",
+      "description": "Record one answer as its structured value (a tapped option id as is; a list for list fields and zone), or null if nothing fits. One call per field, also for corrections. The backend verifies it and decides Knockouts; after a Knockout only the failed field is accepted, and a valid new answer reopens the Application.",
+      "type": "object",
+      "required": ["field", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "field": { "$ref": "#/$defs/field" },
+        "value": {
+          "anyOf": [
+            { "$ref": "#/$defs/answer_value_full_name" },
+            { "$ref": "#/$defs/answer_value_zone" },
+            { "$ref": "#/$defs/answer_value_driver_license" },
+            { "$ref": "#/$defs/answer_value_availability" },
+            { "$ref": "#/$defs/answer_value_preferred_schedule" },
+            { "$ref": "#/$defs/answer_value_experience_years" },
+            { "$ref": "#/$defs/answer_value_experience_platforms" },
+            { "$ref": "#/$defs/answer_value_start_date" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "$comment": "One anyOf for every field keeps the tool small; the backend then checks the value against its field's x-answer-values schema, and a value of the wrong shape (the Candidate's words, for example) is invalid_args, counted as no miss and storing nothing (ADR 0042). Full description sent to the model before it was shortened (turn-size.md): Record one answer: the field's value (a tapped option id as is, in a list for list fields and zone), or null if the answer maps to no value. The backend verifies it, stores it and decides Knockouts. Call once per field when the Candidate answers several things at once; also for corrections at the confirm step. After a Knockout (status closed, outcome knockout) it accepts only the failed criterion's field: a valid new answer within 30 days reopens the Application and records it (ADR 0033); an invalid or still-failing answer leaves it closed. The value property used to say: full_name: cleaned. zone: ids from search_zones. start_date: YYYY-MM-DD (see today).",
+      "examples": [
+        { "field": "zone", "value": ["zone_mx_puebla_centro"] },
+        { "field": "availability", "value": ["full_time", "weekends"] },
+        { "field": "experience_years", "value": 0.5 },
+        { "field": "start_date", "value": "2026-10-12" },
+        { "field": "start_date", "value": ["2026-10-11", "2026-10-18"] },
+        { "field": "driver_license", "value": "expired" },
+        { "field": "start_date", "value": null }
+      ]
+    },
+    "record_answer_output": {
+      "oneOf": [
+        {
+          "title": "accepted",
+          "type": "object",
+          "$comment": "Turn size (docs/evidence/turn-size.md): the result stays in the model's history, so it carries answers only when next_field is null (everything answered: the model confirms with the whole summary). Before that the answers are in the last get_application result.",
+          "required": ["status", "field", "next_field", "stage"],
+          "additionalProperties": false,
+          "properties": {
+            "status": { "const": "accepted" },
+            "field": { "$ref": "#/$defs/field" },
+            "answers": { "$ref": "#/$defs/answers", "description": "Only when next_field is null." },
+            "next_field": { "anyOf": [{ "$ref": "#/$defs/field" }, { "type": "null" }] },
+            "stage": { "$ref": "#/$defs/stage" },
+            "country": { "$ref": "#/$defs/country", "description": "Only when the recorded Zone is in another country than the Application was: the Application now has that country, and Spanish follows it (ADR 0057)." },
+            "flags": {
+              "type": "array",
+              "items": { "type": "string", "enum": ["start_date_far", "experience_platforms_skipped"] },
+              "description": "start_date_far: more than 60 days out, accepted and flagged for Recruiters. experience_platforms_skipped: years is 0, so the platform question is skipped."
+            }
+          }
+        },
+        {
+          "title": "needs_choice",
+          "description": "The answer matched several values (for example a Zone name like 'Centro', or two start dates, ADR 0054). Offer the options as buttons and record the tapped option id. With confirm, the one Zone found is outside every Service Area: ask once whether they live there (for example '¿Vives en Toluca?'); the buttons are that Zone's id (Sí) and no. A Sí tap passes the id, which is the Knockout; a No tap passes null and you ask for the Zone again.",
+          "type": "object",
+          "required": ["status", "field", "options"],
+          "additionalProperties": false,
+          "properties": {
+            "status": { "const": "needs_choice" },
+            "field": { "$ref": "#/$defs/field" },
+            "options": { "type": "array", "minItems": 2, "maxItems": 3, "items": { "$ref": "#/$defs/option" } },
+            "confirm": { "type": "string", "description": "The uncovered Zone id to confirm (spec 006, decision 3)." }
+          }
+        },
+        {
+          "title": "knockout",
+          "description": "A Knock-out Criterion failed. The Application is closed with Outcome knockout. Send `message` exactly as given, in one message, and nothing else.",
+          "type": "object",
+          "required": ["status", "field", "criterion", "message", "outcome"],
+          "additionalProperties": false,
+          "properties": {
+            "status": { "const": "knockout" },
+            "field": { "type": "string", "enum": ["zone", "driver_license"] },
+            "criterion": { "type": "string", "enum": ["zone", "driver_license"] },
+            "outcome": { "const": "knockout" },
+            "template": { "type": "string", "description": "Template name, e.g. 'knockout_driver_license.es-MX'." },
+            "message": { "type": "string", "description": "Approved Knockout template text in the Candidate's language." }
+          }
+        }
+      ],
+      "examples": [
+        {
+          "status": "accepted",
+          "field": "driver_license",
+          "next_field": "availability",
+          "stage": "availability",
+          "flags": []
+        },
+        {
+          "status": "accepted",
+          "field": "start_date",
+          "answers": {
+            "full_name": "Luis Hernández",
+            "zone": { "name": "Centro", "city": "Puebla", "country": "MX" },
+            "driver_license": true,
+            "availability": ["full_time"],
+            "preferred_schedule": ["flexible"],
+            "experience_years": 1.5,
+            "experience_platforms": ["glovo"],
+            "start_date": "2026-10-12"
+          },
+          "next_field": null,
+          "stage": "confirm",
+          "flags": []
+        },
+        {
+          "status": "needs_choice",
+          "field": "zone",
+          "options": [
+            { "id": "zone_mx_puebla_centro", "label": "Centro (Puebla)" },
+            { "id": "zone_mx_cdmx_centro", "label": "Centro (CDMX)" },
+            { "id": "zone_mx_qro_centro", "label": "Centro (Querétaro)" }
+          ]
+        },
+        {
+          "status": "knockout",
+          "field": "driver_license",
+          "criterion": "driver_license",
+          "outcome": "knockout",
+          "template": "knockout_driver_license.es-MX",
+          "message": "Gracias, Luis. Por ahora necesitamos licencia de manejo vigente: es un requisito legal y del seguro para repartir. Aquí están los requisitos: https://empleo.gruposazon.example/requisitos. Cuando la tengas, escríbenos y seguimos donde lo dejamos. Si crees que hay un error, responde \"revisión\" y una persona lo verá."
+        }
+      ]
+    },
+
+    "request_review_input": {
+      "title": "request_review",
+      "description": "The Candidate disputes a Knockout (for example replies \"revisión\") or asks for a person about it. Creates a Review for the Recruiters. Only valid after a Knockout.",
+      "$comment": "Full text of the description sent to the model (shortened to save input tokens on every call, docs/evidence/turn-size.md): The Candidate disputes a Knockout (for example replies \"revisión\") or asks for a person about it. Creates a Review in the Recruiters' queue. Only valid when the Application ended in a Knockout; a message after a Knockout does not reopen it (ADR 0033).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "note": { "type": "string", "maxLength": 1000, "description": "The Candidate's reason, in their words, if they gave one." }
+      }
+    },
+    "request_review_output": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "const": "review_requested" }
+      },
+      "examples": [{ "status": "review_requested" }]
+    },
+
+    "raise_escalation_input": {
+      "title": "raise_escalation",
+      "description": "Ask for human attention: abuse after one redirect, a question with no approved FAQ answer, or the Candidate asking for a person. Keep the conversation friendly.",
+      "$comment": "Full text of the description sent to the model (shortened to save input tokens on every call, docs/evidence/turn-size.md): Ask for human attention: a third invalid answer, abuse after one redirect, a question with no approved FAQ answer, or the Candidate asking for a person. Keep the conversation friendly while waiting.",
+      "type": "object",
+      "required": ["reason"],
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "type": "string",
+          "enum": ["repeated_invalid_answers", "abuse", "unanswered_question", "wants_human", "other"]
+        },
+        "note": { "type": "string", "maxLength": 1000, "description": "Short context for the Recruiter, e.g. the unanswered question." }
+      },
+      "examples": [{ "reason": "unanswered_question", "note": "Asks whether the motorbike is provided." }]
+    },
+    "raise_escalation_output": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "const": "escalation_raised" }
+      },
+      "examples": [{ "status": "escalation_raised" }]
+    },
+
+    "finish_screening_input": {
+      "title": "finish_screening",
+      "description": "Call after the Candidate confirms the summary. Marks the Application Qualified. Fails with `incomplete` if a field is missing.",
+      "$comment": "Full text of the description sent to the model (shortened to save input tokens on every call, docs/evidence/turn-size.md): Call after the Candidate confirms the summary. Marks the Application Qualified and puts it in the Approval queue. Fails with `incomplete` if a field is missing.",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "finish_screening_output": {
+      "type": "object",
+      "required": ["stage", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "stage": { "const": "qualified" },
+        "message": { "type": "string", "description": "Approved Qualified close in the Application's stored language. Send it exactly as given." }
+      },
+      "examples": [{ "stage": "qualified", "message": "¡Listo, Luis! Un reclutador de Grupo Sazón revisará tu solicitud y te escribirá por aquí." }]
+    },
+
+    "record_backout_input": {
+      "title": "record_backout",
+      "description": "The Candidate backs out. withdrawn: no longer interested (ends the Application). opted_out: stop messaging me. erasure_request: delete my data (handled outside the chat). Confirm once before withdrawn.",
+      "$comment": "Full text of the description sent to the model (shortened to save input tokens on every call, docs/evidence/turn-size.md): The Candidate backs out. withdrawn: no longer interested (ends the Application). opted_out: stop messaging me (blocks follow-ups on every Application; the Application stays as it is). erasure_request: delete my data (logged for the team, handled outside the chat). Confirm once with the Candidate before calling withdrawn.",
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "enum": ["withdrawn", "opted_out", "erasure_request"] },
+        "note": { "type": "string", "maxLength": 1000 }
+      },
+      "examples": [{ "kind": "withdrawn", "note": "Encontró otro trabajo." }]
+    },
+    "record_backout_output": {
+      "type": "object",
+      "required": ["kind", "status", "outcome"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "enum": ["withdrawn", "opted_out", "erasure_request"] },
+        "status": { "type": "string", "enum": ["open", "closed"] },
+        "outcome": { "$ref": "#/$defs/outcome" }
+      },
+      "examples": [{ "kind": "withdrawn", "status": "closed", "outcome": "withdrawn" }]
+    },
+
+    "offer_interview_slots_input": {
+      "title": "offer_interview_slots",
+      "description": "After Approval: get 3 open Interview slots as buttons, plus a booking-page link. With reschedule=true the current booking is kept until a new slot is booked.",
+      "$comment": "Full text of the description sent to the model (shortened to save input tokens on every call, docs/evidence/turn-size.md): After Approval: get 3 open Interview slots from the covering Locations to offer as buttons, plus a booking-page link for 'Otro horario'. With reschedule=true, the current booking is kept until a new slot is booked.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reschedule": { "type": "boolean", "default": false }
+      }
+    },
+    "offer_interview_slots_output": {
+      "type": "object",
+      "required": ["slots", "booking_url", "other_label"],
+      "additionalProperties": false,
+      "properties": {
+        "slots": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["slot_ref", "label", "interview"],
+            "additionalProperties": false,
+            "properties": {
+              "slot_ref": { "type": "string", "description": "Opaque reference to pass to book_interview. Valid only for this Application, until it expires." },
+              "label": { "type": "string", "maxLength": 20, "description": "Button text, e.g. 'mié 14 · 10:00'." },
+              "interview": { "$ref": "#/$defs/interview" }
+            }
+          }
+        },
+        "booking_url": { "type": "string", "format": "uri", "description": "Signed, expiring link to the public booking page with every open slot." },
+        "other_label": { "type": "string", "description": "Label for the 'none of these' button, e.g. 'Otro horario'." }
+      },
+      "examples": [
+        {
+          "slots": [
+            {
+              "slot_ref": "so_7f3k2",
+              "label": "mié 14 · 10:00",
+              "interview": {
+                "starts_at": "2026-10-14T16:00:00Z",
+                "ends_at": "2026-10-14T16:30:00Z",
+                "location_name": "Sazón Puebla Centro",
+                "address": "Av. Reforma 123, Centro, Puebla",
+                "local_label": "mié 14 · 10:00"
+              }
+            }
+          ],
+          "booking_url": "https://empleo.gruposazon.example/book/eyJhcHAiOiJ...",
+          "other_label": "Otro horario"
+        }
+      ]
+    },
+
+    "book_interview_input": {
+      "title": "book_interview",
+      "description": "Book the slot the Candidate tapped; it replaces any previous booking. ics_sent is true only if an invite was attached to your confirmation; when false, do not mention one.",
+      "$comment": "Full text of the description sent to the model (shortened to save input tokens on every call, docs/evidence/turn-size.md): Book the slot the Candidate tapped. Locks the slot, releases any previous booking and records the event. ics_sent is true when the channel attaches the .ics invite to your confirmation message (web chat today); when false, no invite was sent, so do not mention one.",
+      "type": "object",
+      "required": ["slot_ref"],
+      "additionalProperties": false,
+      "properties": {
+        "slot_ref": { "type": "string", "minLength": 1, "maxLength": 64 }
+      },
+      "examples": [{ "slot_ref": "so_7f3k2" }]
+    },
+    "book_interview_output": {
+      "type": "object",
+      "required": ["stage", "interview", "ics_sent", "released_previous"],
+      "additionalProperties": false,
+      "properties": {
+        "stage": { "const": "interview_booked" },
+        "interview": { "$ref": "#/$defs/interview" },
+        "ics_sent": { "type": "boolean" },
+        "released_previous": { "type": "boolean" }
+      },
+      "examples": [
+        {
+          "stage": "interview_booked",
+          "interview": {
+            "starts_at": "2026-10-14T16:00:00Z",
+            "ends_at": "2026-10-14T16:30:00Z",
+            "location_name": "Sazón Puebla Centro",
+            "address": "Av. Reforma 123, Centro, Puebla",
+            "local_label": "mié 14 · 10:00"
+          },
+          "ics_sent": true,
+          "released_previous": false
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,60 @@
+id: confirm_correction_pick_mx
+description: >
+  Mexico, corrects the Zone at the confirm step naming only the city ("no, mi zona es otra de
+  Puebla"), the path real Haiku took for confirm_correction_mx. The agent searches the city and
+  records its three Zones; the backend offers them as buttons although the Zone is already
+  answered (ADR 0048), the Candidate taps La Paz, the backend records the tap (ADR 0043), the
+  summary question comes back and the Candidate confirms. Reaches Qualified with the corrected
+  Zone, no miss counted.
+quirks: [corrections]
+identity:
+  name: Lucía Ramírez
+  phone: "+525500000015"
+  country: MX
+  locale: es-MX
+opening:
+  text: "Hola, quiero trabajar de repartidora"
+answers:
+  full_name: [{text: Lucía Ramírez, value: Lucía Ramírez}]
+  zone: [{text: "Centro, Puebla"}]
+  driver_license: [{text: "Sí, tengo licencia de manejo", value: "yes"}]
+  availability: [{text: tiempo completo, value: [full_time]}]
+  preferred_schedule: [{text: flexible, value: [flexible]}]
+  experience_years: [{text: 2 años, value: 2}]
+  experience_platforms: [{text: DiDi Food, value: [didi_food]}]
+  start_date: [{text: el lunes, value: "next:mon"}]
+confirm:
+  # Sent as text to the summary; when the agent re-asks the Zone with buttons, the persona
+  # taps La Paz (the driver answers a corrected field with its correction).
+  - text: "no, mi zona es otra de Puebla"
+    field: zone
+    query: Puebla
+    pick_option: La Paz
+  - text: "sí, así está bien"
+expect:
+  stage: qualified
+  status: open
+  fields:
+    full_name: {value: Lucía Ramírez}
+    zone: {value: La Paz}
+    driver_license: {value: true}
+    availability: {value: [full_time]}
+    preferred_schedule: {value: [flexible]}
+    experience_years: {value: 2}
+    experience_platforms: {value: [didi_food]}
+    start_date: {non_null: true}
+  field_order:
+    [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+  events: [application_started, answer_recorded, answer_ambiguous, answer_recorded, screening_finished]
+  # One answer_ambiguous: the city's three Zones at the correction. The tap counts no miss.
+  event_counts:
+    - {kind: screening_finished, count: 1}
+    - {kind: answer_ambiguous, count: 1}
+    - {kind: answer_invalid, count: 0}
+  forbidden_events: [knockout, escalation_raised, nudge_sent]
+  tools: [search_zones, record_answer, finish_screening]
+  nudges: 0
+  forbidden_agent_text: [Criba]
+seed_assumptions:
+  - "\"Centro, Puebla\" names exactly one MX Zone (name and city), inside a Service Area."
+  - "\"Puebla\" alone ranks three MX Zones (Angelópolis, Centro, La Paz), all covered, which the backend offers as buttons."

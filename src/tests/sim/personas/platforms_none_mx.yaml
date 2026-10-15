@@ -1,0 +1,48 @@
+id: platforms_none_mx
+description: >
+  Mexico, ten years of delivery on their own and never with an app: the demo chat of 2026-10-10,
+  where "Por mi cuenta" was asked three times. The agent records the platforms as the empty list
+  on the first answer (ADR 0053); the platforms question carries the backend's list, which ends
+  with "Ninguna app". Reaches Qualified with no miss counted.
+quirks: []
+identity:
+  name: Ramiro Rodríguez
+  phone: "+525500000016"
+  country: MX
+  locale: es-MX
+opening:
+  text: "Hola, busco trabajo de repartidor"
+answers:
+  full_name: [{text: Ramiro Rodríguez, value: Ramiro Rodríguez}]
+  zone: [{text: "Centro, Puebla"}]
+  driver_license: [{text: "Sí, tengo licencia", value: "yes"}]
+  availability: [{text: medio tiempo, value: [part_time]}]
+  preferred_schedule: [{text: tarde, value: [afternoon]}]
+  experience_years: [{text: "tengo 10 años repartiendo como independiente", value: 10}]
+  experience_platforms: [{text: Por mi cuenta, value: []}]
+  start_date: [{text: el lunes, value: "next:mon"}]
+expect:
+  stage: qualified
+  status: open
+  fields:
+    full_name: {value: Ramiro Rodríguez}
+    zone: {value: Centro}
+    driver_license: {value: true}
+    availability: {value: [part_time]}
+    preferred_schedule: {value: [afternoon]}
+    experience_years: {value: 10}
+    experience_platforms: {value: []}
+    start_date: {non_null: true}
+  field_order:
+    [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+  events: [application_started, answer_recorded, screening_finished]
+  event_counts:
+    - {kind: screening_finished, count: 1}
+    - {kind: answer_invalid, count: 0}
+  forbidden_events: [knockout, escalation_raised, nudge_sent, withdrawn, abandoned]
+  tools: [search_zones, record_answer, finish_screening]
+  forbidden_tools: [raise_escalation, record_backout]
+  nudges: 0
+  forbidden_agent_text: [Criba]
+seed_assumptions:
+  - "\"Centro, Puebla\" names exactly one MX Zone (name and city), inside a Service Area."

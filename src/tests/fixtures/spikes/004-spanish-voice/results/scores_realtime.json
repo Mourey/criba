@@ -1,0 +1,468 @@
+{
+ "engine": "realtime",
+ "summary": {
+  "ES|clean": {
+   "checks": 66,
+   "captured": 65,
+   "turns": 50,
+   "turns_all_ok": 49,
+   "errs": 17,
+   "ref_words": 316,
+   "rt_errors": 0,
+   "capture_rate": 0.9848,
+   "wer": 0.0538
+  },
+  "ES|loud": {
+   "checks": 66,
+   "captured": 63,
+   "turns": 50,
+   "turns_all_ok": 47,
+   "errs": 22,
+   "ref_words": 316,
+   "rt_errors": 0,
+   "capture_rate": 0.9545,
+   "wer": 0.0696
+  },
+  "ES|moderate": {
+   "checks": 66,
+   "captured": 65,
+   "turns": 50,
+   "turns_all_ok": 49,
+   "errs": 18,
+   "ref_words": 316,
+   "rt_errors": 0,
+   "capture_rate": 0.9848,
+   "wer": 0.057
+  },
+  "MX|clean": {
+   "checks": 60,
+   "captured": 59,
+   "turns": 48,
+   "turns_all_ok": 47,
+   "errs": 11,
+   "ref_words": 253,
+   "rt_errors": 0,
+   "capture_rate": 0.9833,
+   "wer": 0.0435
+  },
+  "MX|loud": {
+   "checks": 60,
+   "captured": 55,
+   "turns": 48,
+   "turns_all_ok": 44,
+   "errs": 26,
+   "ref_words": 253,
+   "rt_errors": 0,
+   "capture_rate": 0.9167,
+   "wer": 0.1028
+  },
+  "MX|moderate": {
+   "checks": 60,
+   "captured": 58,
+   "turns": 48,
+   "turns_all_ok": 46,
+   "errs": 14,
+   "ref_words": 253,
+   "rt_errors": 0,
+   "capture_rate": 0.9667,
+   "wer": 0.0553
+  }
+ },
+ "failures": [
+  {
+   "call": "es01",
+   "turn": 0,
+   "condition": "loud",
+   "field": "full_name",
+   "kind": "name",
+   "expect": "Lucía Fernández Gil",
+   "said": "Hola, sí, soy Lucía Fernández Gil.",
+   "transcript": "Hola, sí, soy Lucía Fernández.",
+   "read_as": "hola si soy lucia fernandez"
+  },
+  {
+   "call": "es03",
+   "turn": 0,
+   "condition": "loud",
+   "field": "full_name",
+   "kind": "name",
+   "expect": "Rocío Jiménez Vega",
+   "said": "Hola, soy Rocío Jiménez Vega.",
+   "transcript": "Hola, soy Rocío Jiménez.",
+   "read_as": "hola soy rocio jimenez"
+  },
+  {
+   "call": "es06",
+   "turn": 0,
+   "condition": "moderate",
+   "field": "full_name",
+   "kind": "name",
+   "expect": "Kevin Smith López",
+   "said": "Eh, pues... me llamo Kevin, bueno, Kevin Smith López.",
+   "transcript": "Eh, pues me llamo Kevin. Bueno, Kevin Smith Loco.",
+   "read_as": "eh pues me llamo kevin bueno kevin smith loco"
+  },
+  {
+   "call": "es07",
+   "turn": 2,
+   "condition": "loud",
+   "field": "zone",
+   "kind": "tokens",
+   "expect": [
+    "valencia",
+    "ruzafa|russafa"
+   ],
+   "said": "Pero me mudo a Valencia, a Ruzafa, cuarenta y seis cero cero seis.",
+   "transcript": "Pero me mudo a Valencia, a Roçà, 46006.",
+   "read_as": "pero me mudo a valencia a roca 46006"
+  },
+  {
+   "call": "es09",
+   "turn": 4,
+   "condition": "clean",
+   "field": "vehicle",
+   "kind": "choice",
+   "expect": [
+    "e_scooter"
+   ],
+   "said": "Con un patinete eléctrico.",
+   "transcript": "Con un patimete eléctrico.",
+   "read_as": ""
+  },
+  {
+   "call": "mx01",
+   "turn": 6,
+   "condition": "loud",
+   "field": "experience_years",
+   "kind": "number",
+   "expect": 2,
+   "said": "Dos años con Rappi y DiDi Food.",
+   "transcript": "Tú sabes que trato y te difundo.",
+   "read_as": ""
+  },
+  {
+   "call": "mx01",
+   "turn": 6,
+   "condition": "loud",
+   "field": "experience_platforms",
+   "kind": "choice",
+   "expect": [
+    "rappi",
+    "didi"
+   ],
+   "said": "Dos años con Rappi y DiDi Food.",
+   "transcript": "Tú sabes que trato y te difundo.",
+   "read_as": ""
+  },
+  {
+   "call": "mx01",
+   "turn": 8,
+   "condition": "loud",
+   "field": "confirm",
+   "kind": "yesno",
+   "expect": "yes",
+   "said": "Sí, está todo bien.",
+   "transcript": "Sí, está todo bien. ¡No, no!",
+   "read_as": "no"
+  },
+  {
+   "call": "mx01",
+   "turn": 8,
+   "condition": "moderate",
+   "field": "confirm",
+   "kind": "yesno",
+   "expect": "yes",
+   "said": "Sí, está todo bien.",
+   "transcript": "Sí, está todo bien. ¡No, no!",
+   "read_as": "no"
+  },
+  {
+   "call": "mx02",
+   "turn": 1,
+   "condition": "loud",
+   "field": "zone",
+   "kind": "tokens",
+   "expect": [
+    "iztapalapa"
+   ],
+   "said": "En Iztapalapa.",
+   "transcript": "En Ixtapaluapa.",
+   "read_as": "en ixtapaluapa"
+  },
+  {
+   "call": "mx08",
+   "turn": 0,
+   "condition": "clean",
+   "field": "full_name",
+   "kind": "name",
+   "expect": "Ximena Ochoa",
+   "said": "Soy Ximena Ochoa. Tengo diecisiete años.",
+   "transcript": "Soy Jimena Ochoa. Tengo 17 años.",
+   "read_as": "soy jimena ochoa tengo 17 anos"
+  },
+  {
+   "call": "mx08",
+   "turn": 0,
+   "condition": "loud",
+   "field": "full_name",
+   "kind": "name",
+   "expect": "Ximena Ochoa",
+   "said": "Soy Ximena Ochoa. Tengo diecisiete años.",
+   "transcript": "Soy Jimena Ochoa. Tengo 17 años.",
+   "read_as": "soy jimena ochoa tengo 17 anos"
+  },
+  {
+   "call": "mx08",
+   "turn": 0,
+   "condition": "moderate",
+   "field": "full_name",
+   "kind": "name",
+   "expect": "Ximena Ochoa",
+   "said": "Soy Ximena Ochoa. Tengo diecisiete años.",
+   "transcript": "Soy Jimena Ochoa. Tengo 17 años.",
+   "read_as": "soy jimena ochoa tengo 17 anos"
+  }
+ ],
+ "optout": [
+  {
+   "call": "es05",
+   "turn": 1,
+   "condition": "clean",
+   "said": "Baja.",
+   "transcript": "Baja.",
+   "cue": true,
+   "rule_on_said": true,
+   "rule_on_transcript": true
+  },
+  {
+   "call": "es05",
+   "turn": 1,
+   "condition": "loud",
+   "said": "Baja.",
+   "transcript": "Baja.",
+   "cue": true,
+   "rule_on_said": true,
+   "rule_on_transcript": true
+  },
+  {
+   "call": "es05",
+   "turn": 1,
+   "condition": "moderate",
+   "said": "Baja.",
+   "transcript": "Baja.",
+   "cue": true,
+   "rule_on_said": true,
+   "rule_on_transcript": true
+  },
+  {
+   "call": "es05",
+   "turn": 2,
+   "condition": "clean",
+   "said": "Que no me llaméis más, por favor.",
+   "transcript": "Que no me llaméis más, por favor.",
+   "cue": true,
+   "rule_on_said": false,
+   "rule_on_transcript": false
+  },
+  {
+   "call": "es05",
+   "turn": 2,
+   "condition": "loud",
+   "said": "Que no me llaméis más, por favor.",
+   "transcript": "Que no me llaméis más, por favor.",
+   "cue": true,
+   "rule_on_said": false,
+   "rule_on_transcript": false
+  },
+  {
+   "call": "es05",
+   "turn": 2,
+   "condition": "moderate",
+   "said": "Que no me llaméis más, por favor.",
+   "transcript": "Que no me llaméis más, por favor.",
+   "cue": true,
+   "rule_on_said": false,
+   "rule_on_transcript": false
+  },
+  {
+   "call": "es05",
+   "turn": 3,
+   "condition": "clean",
+   "said": "Stop.",
+   "transcript": "\"Stop\".",
+   "cue": true,
+   "rule_on_said": true,
+   "rule_on_transcript": true
+  },
+  {
+   "call": "es05",
+   "turn": 3,
+   "condition": "loud",
+   "said": "Stop.",
+   "transcript": "Stop.",
+   "cue": true,
+   "rule_on_said": true,
+   "rule_on_transcript": true
+  },
+  {
+   "call": "es05",
+   "turn": 3,
+   "condition": "moderate",
+   "said": "Stop.",
+   "transcript": "Stop.",
+   "cue": true,
+   "rule_on_said": true,
+   "rule_on_transcript": true
+  },
+  {
+   "call": "es10",
+   "turn": 2,
+   "condition": "clean",
+   "said": "Dadme de baja, porfa.",
+   "transcript": "Dadme de baja, porfa.",
+   "cue": true,
+   "rule_on_said": false,
+   "rule_on_transcript": false
+  },
+  {
+   "call": "es10",
+   "turn": 2,
+   "condition": "loud",
+   "said": "Dadme de baja, porfa.",
+   "transcript": "Dadme de baja, porfa.",
+   "cue": true,
+   "rule_on_said": false,
+   "rule_on_transcript": false
+  },
+  {
+   "call": "es10",
+   "turn": 2,
+   "condition": "moderate",
+   "said": "Dadme de baja, porfa.",
+   "transcript": "Dadme de baja, porfa.",
+   "cue": true,
+   "rule_on_said": false,
+   "rule_on_transcript": false
+  },
+  {
+   "call": "mx05",
+   "turn": 1,
+   "condition": "clean",
+   "said": "Ya no me llamen, por favor.",
+   "transcript": "Ya no me llamen, por favor.",
+   "cue": true,
+   "rule_on_said": false,
+   "rule_on_transcript": false
+  },
+  {
+   "call": "mx05",
+   "turn": 1,
+   "condition": "loud",
+   "said": "Ya no me llamen, por favor.",
+   "transcript": "Ya no me llamen, por favor.",
+   "cue": true,
+   "rule_on_said": false,
+   "rule_on_transcript": false
+  },
+  {
+   "call": "mx05",
+   "turn": 1,
+   "condition": "moderate",
+   "said": "Ya no me llamen, por favor.",
+   "transcript": "Ya no me llamen, por favor.",
+   "cue": true,
+   "rule_on_said": false,
+   "rule_on_transcript": false
+  },
+  {
+   "call": "mx05",
+   "turn": 2,
+   "condition": "clean",
+   "said": "Baja.",
+   "transcript": "Baja.",
+   "cue": true,
+   "rule_on_said": true,
+   "rule_on_transcript": true
+  },
+  {
+   "call": "mx05",
+   "turn": 2,
+   "condition": "loud",
+   "said": "Baja.",
+   "transcript": "Baja.",
+   "cue": true,
+   "rule_on_said": true,
+   "rule_on_transcript": true
+  },
+  {
+   "call": "mx05",
+   "turn": 2,
+   "condition": "moderate",
+   "said": "Baja.",
+   "transcript": "Baja.",
+   "cue": true,
+   "rule_on_said": true,
+   "rule_on_transcript": true
+  },
+  {
+   "call": "mx05",
+   "turn": 3,
+   "condition": "clean",
+   "said": "Stop.",
+   "transcript": "\"Stop\".",
+   "cue": true,
+   "rule_on_said": true,
+   "rule_on_transcript": true
+  },
+  {
+   "call": "mx05",
+   "turn": 3,
+   "condition": "loud",
+   "said": "Stop.",
+   "transcript": "Stop.",
+   "cue": true,
+   "rule_on_said": true,
+   "rule_on_transcript": true
+  },
+  {
+   "call": "mx05",
+   "turn": 3,
+   "condition": "moderate",
+   "said": "Stop.",
+   "transcript": "\"Stop\".",
+   "cue": true,
+   "rule_on_said": true,
+   "rule_on_transcript": true
+  },
+  {
+   "call": "mx10",
+   "turn": 2,
+   "condition": "clean",
+   "said": "Bórrenme de su lista, ya no me marquen.",
+   "transcript": "Bórrenme de su lista. Ya no me marquen.",
+   "cue": true,
+   "rule_on_said": false,
+   "rule_on_transcript": false
+  },
+  {
+   "call": "mx10",
+   "turn": 2,
+   "condition": "loud",
+   "said": "Bórrenme de su lista, ya no me marquen.",
+   "transcript": "Bórrenme de su lista. Ya no me marquen.",
+   "cue": true,
+   "rule_on_said": false,
+   "rule_on_transcript": false
+  },
+  {
+   "call": "mx10",
+   "turn": 2,
+   "condition": "moderate",
+   "said": "Bórrenme de su lista, ya no me marquen.",
+   "transcript": "Bórrenme de su lista. Ya no me marquen.",
+   "cue": true,
+   "rule_on_said": false,
+   "rule_on_transcript": false
+  }
+ ]
+}

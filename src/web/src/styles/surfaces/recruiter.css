@@ -1,0 +1,835 @@
+/* recruiter surface styles: token-only (DESIGN.md). Imported only by this surface's components. */
+
+/* Shared bits: native controls the Field primitive cannot wrap (it renders only an input), so selects
+   and textareas carry the same look as .ui-field__input. */
+
+.rp-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  color: var(--ink-strong);
+  font: var(--weight-semibold) var(--text-sm) / var(--leading-snug) var(--font);
+}
+
+.rp-select,
+.rp-textarea {
+  min-height: var(--space-7);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--seam-strong);
+  border-radius: var(--radius-2);
+  background: var(--panel);
+  color: var(--ink-strong);
+  font: var(--weight-regular) var(--text-base) / var(--leading-snug) var(--font);
+  transition: border-color var(--motion-fast) var(--ease-out);
+}
+
+.rp-select:hover,
+.rp-textarea:hover {
+  border-color: var(--ink-muted);
+}
+
+.rp-select:focus-visible,
+.rp-textarea:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.rp-textarea {
+  resize: vertical;
+}
+
+.rp-textarea::placeholder {
+  color: var(--ink-muted);
+}
+
+.rp-muted,
+.rp-takeover .rp-muted {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.rp-note {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--seam);
+  border-radius: var(--radius-2);
+  background: var(--ground);
+  color: var(--ink-strong);
+}
+
+.rp-alert {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--status-warn-edge);
+  border-radius: var(--radius-2);
+  background: var(--status-warn-soft);
+  color: var(--ink-strong);
+}
+
+.rp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+@media (pointer: coarse) {
+  .rp-select,
+  .rp-textarea {
+    min-height: 44px;
+  }
+}
+
+/* Takeover panel: the Card carries the look, the wrapper carries no margin (ApplicationDetail spaces it). */
+
+.rp-takeover {
+  min-width: 0;
+}
+
+/* The heading is the card title's look (mono small caps) on a plain Card, so the section keeps its
+   takeover-heading id (RP7). */
+.rp-takeover__title {
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--seam);
+  color: var(--ink-strong);
+  font: var(--weight-medium) var(--text-xs) / var(--leading-snug) var(--mono);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.rp-takeover__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.rp-composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.rp-composer .rp-textarea {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Transcript: bubble styles live here, under the wrapper, so /test-chat's .bubble rules in app.css stay
+   as they are. The sender line, the time and the system line use --ink, which holds 4.5:1 on every
+   bubble in both themes (light 9.3 to 11.1, dark 8.2 to 13.6); --ink-muted does not on the agent and
+   Team bubbles. */
+
+.rp-transcript {
+  border: 1px solid var(--seam);
+  border-radius: var(--radius-3);
+  padding: var(--space-3);
+  gap: var(--space-2);
+}
+
+.rp-transcript:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.rp-transcript .bubble {
+  border-radius: var(--radius-3);
+  color: var(--ink-strong);
+}
+
+.rp-transcript .bubble.out {
+  background: var(--bubble-out);
+}
+
+.rp-transcript .bubble.human {
+  background: var(--bubble-human);
+}
+
+.rp-transcript .bubble.system {
+  background: transparent;
+  color: var(--ink);
+}
+
+.rp-transcript .bubble .who-line,
+.rp-transcript .bubble time {
+  color: var(--ink);
+}
+
+.rp-transcript .bubble .opts {
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.rp-transcript-empty {
+  margin: 0;
+  padding: var(--space-6) var(--space-4);
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+/* Page header: the count or range beside the h1 sits on the ground, so it takes --ink (10.0:1 light,
+   14.4:1 dark) where the legacy .muted alpha colour gives 3.5:1 on the cream ground. */
+
+.rp-page-head .muted {
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+/* Links and sub-lines in table cells and cards. */
+
+.rp-link {
+  color: var(--ink-strong);
+  font-weight: var(--weight-semibold);
+}
+
+.rp-sub {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+/* In a table cell or a slot row a sub-line shares the row's single line, after what it qualifies. */
+.ui-table__cell .rp-sub,
+.rp-slot .rp-sub {
+  display: inline;
+}
+
+.ui-table__cell .rp-sub {
+  margin-inline-start: var(--space-2);
+}
+
+/* A sub-line that opens its cell (Unclaimed) is flush with the cells above it. */
+.ui-table__cell .rp-sub--lead {
+  margin-inline-start: 0;
+}
+
+/* Filter bar: a wrapping row of controls, then the chip groups. */
+
+.rp-filters {
+  margin-bottom: var(--space-4);
+}
+
+.rp-filters__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.rp-filters__row > * {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.rp-filters__row > .rp-filters__actions {
+  flex: 0 0 auto;
+}
+
+/* Two tiers. The first row holds Search Candidate, Location, Status, Claim, Sort and the "More filters"
+   button (Clear filters, once shown, follows it); the disclosure below holds Country, the two dates and
+   the three chip groups. Widths by position are the narrowest that show each control's longest option. */
+.rp-filters--applications .rp-filters__row {
+  gap: var(--space-2);
+}
+
+.rp-filters--applications .rp-filters__row--main > .rp-filters__search {
+  flex: 1 1 14rem;
+}
+
+.rp-filters--applications .rp-filters__row--main > :nth-child(2) {
+  flex: 1 1 11rem;
+}
+
+.rp-filters--applications .rp-filters__row--main > :nth-child(3) {
+  flex: 1 1 10rem;
+}
+
+.rp-filters--applications .rp-filters__row--main > :nth-child(4) {
+  flex: 1 1 9rem;
+}
+
+.rp-filters--applications .rp-filters__row--main > :nth-child(5) {
+  flex: 1 1 11rem;
+}
+
+.rp-filters__row > .rp-filters__toggle {
+  flex: 0 0 auto;
+}
+
+/* The disclosure's own region. It sets no display, so the hidden attribute closes it. */
+.rp-filters__more {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--seam);
+}
+
+.rp-filters--applications .rp-filters__row--more > * {
+  flex: 0 1 11rem;
+}
+
+.rp-filters__more .rp-filters__chips {
+  margin-top: var(--space-3);
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* The count of active hidden filters, beside the button's label. */
+.rp-more-count {
+  display: inline-block;
+  min-width: var(--space-5);
+  margin-left: var(--space-2);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--ink-strong);
+  color: var(--panel);
+  font: var(--weight-semibold) var(--text-xs) / var(--leading-snug) var(--font);
+  text-align: center;
+}
+
+.rp-filters__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--seam);
+}
+
+.rp-chips {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* The legend sits inline, in front of its chips, to keep the bar short. */
+.rp-legend {
+  float: left;
+  padding: var(--space-1) 0;
+  margin-right: var(--space-2);
+  color: var(--ink-strong);
+  font: var(--weight-semibold) var(--text-sm) / var(--leading-snug) var(--font);
+}
+
+.rp-chip {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 var(--space-1) var(--space-1) 0;
+  min-height: var(--space-6);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--seam-strong);
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  color: var(--ink-strong);
+  font: var(--weight-regular) var(--text-sm) / var(--leading-snug) var(--font);
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease-out);
+}
+
+.rp-chip:hover {
+  background: var(--live-soft);
+}
+
+.rp-chip:has(input:checked) {
+  border-color: var(--ink-strong);
+  background: var(--live-soft);
+  font-weight: var(--weight-semibold);
+}
+
+/* The checkbox is visually hidden; the chip shows the ring when it has the focus. */
+.rp-chip input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+}
+
+.rp-chip:has(input:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .rp-chip {
+    min-height: 44px;
+  }
+}
+
+/* Applications table. Table always wraps itself in .ui-table__wrap { overflow: auto }, so the header would
+   stick to that wrapper and not to the page. The page's own region (.rp-scroll) is the one scroller below
+   90rem (1440px), where it scrolls sideways under a focusable name; from 90rem the nine columns fit, the
+   region only clips its corners, and the header sticks to the viewport. */
+
+.rp-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--seam);
+  border-radius: var(--radius-3);
+  background: var(--panel);
+}
+
+.rp-scroll:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.rp-scroll .ui-table__wrap {
+  overflow: visible;
+}
+
+.rp-scroll .ui-table {
+  min-width: 64rem;
+}
+
+/* One line per row: the cells clip with an ellipsis (the full text is in each truncated element's title).
+   The fixed layout is what makes the clip work and keeps the nine columns inside the region from 90rem. */
+.rp-scroll .ui-table {
+  table-layout: fixed;
+}
+
+.rp-scroll .ui-table__th,
+.rp-scroll .ui-table__cell {
+  padding-inline: var(--space-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rp-scroll .ui-table__cell {
+  vertical-align: middle;
+}
+
+.rp-scroll .tag-row {
+  flex-wrap: nowrap;
+}
+
+.rp-scroll .steps {
+  min-width: 0;
+}
+
+/* Column widths: Applications has nine columns, the Rejections table five. */
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(9)) .ui-table__th:nth-child(1) { width: 15%; }
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(9)) .ui-table__th:nth-child(2) { width: 9%; }
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(9)) .ui-table__th:nth-child(3) { width: 21%; }
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(9)) .ui-table__th:nth-child(4) { width: 7%; }
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(9)) .ui-table__th:nth-child(5) { width: 7%; }
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(9)) .ui-table__th:nth-child(6) { width: 7%; }
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(9)) .ui-table__th:nth-child(7) { width: 9%; }
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(9)) .ui-table__th:nth-child(8) { width: 11%; }
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(9)) .ui-table__th:nth-child(9) { width: 14%; }
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(5):last-child) .ui-table__th:nth-child(1) { width: 20%; }
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(5):last-child) .ui-table__th:nth-child(2) { width: 16%; }
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(5):last-child) .ui-table__th:nth-child(3) { width: 40%; }
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(5):last-child) .ui-table__th:nth-child(4) { width: 14%; }
+.rp-scroll .ui-table:has(.ui-table__th:nth-child(5):last-child) .ui-table__th:nth-child(5) { width: 10%; }
+
+.rp-truncate {
+  display: block;
+  max-width: 11rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 90rem) {
+  .rp-scroll {
+    overflow: clip;
+  }
+}
+
+.rp-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.rp-skeleton .ui-skeleton {
+  height: var(--space-7);
+}
+
+.rp-empty__title {
+  margin: 0;
+  color: var(--ink-strong);
+  font-weight: var(--weight-semibold);
+}
+
+.rp-empty__hint {
+  margin: var(--space-1) 0 0;
+  color: var(--ink-muted);
+}
+
+.rp-error {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.rp-more-rows {
+  justify-content: center;
+  margin-top: var(--space-4);
+}
+
+/* Review queue: native tab buttons, items as native articles (Card renders only section or div, and the
+   specs find an item by role article). */
+
+.rp-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--seam);
+}
+
+.rp-tab {
+  min-height: var(--space-7);
+  padding: var(--space-1) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-2) var(--radius-2) 0 0;
+  background: transparent;
+  color: var(--ink-muted);
+  font: var(--weight-medium) var(--text-sm) / var(--leading-snug) var(--font);
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-out);
+}
+
+.rp-tab:hover {
+  color: var(--ink-strong);
+}
+
+.rp-tab[aria-selected="true"] {
+  color: var(--ink-strong);
+  font-weight: var(--weight-semibold);
+  box-shadow: inset 0 -2px 0 var(--live-edge);
+}
+
+.rp-tab:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+@media (pointer: coarse) {
+  .rp-tab {
+    min-height: 44px;
+  }
+}
+
+.rp-queue {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.rp-qcard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--seam);
+  border-radius: var(--radius-3);
+  background: var(--panel);
+}
+
+.rp-qcard__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.rp-qcard__who {
+  min-width: 0;
+}
+
+.rp-qcard__title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-md);
+  letter-spacing: var(--tracking-tight);
+}
+
+.rp-qcard__who .rp-sub,
+.rp-qcard__text {
+  margin: 0;
+}
+
+.rp-qcard__text {
+  color: var(--ink);
+}
+
+.rp-qcard__reject {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--seam);
+}
+
+.rp-empty {
+  padding: var(--space-7) var(--space-4);
+  border: 1px solid var(--seam);
+  border-radius: var(--radius-3);
+  background: var(--panel);
+  text-align: center;
+}
+
+.rp-empty .rp-empty__title {
+  margin: 0;
+}
+
+/* Slots */
+
+.rp-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.rp-slot-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.rp-slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rp-slot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--seam-soft);
+  border-radius: var(--radius-2);
+}
+
+.rp-slot__what {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.rp-slot__label {
+  color: var(--ink-strong);
+  font-weight: var(--weight-semibold);
+}
+
+/* From 768px a slot is one 36px line: label, status Tag and booked-by line inline, the Buttons at the
+   end, rows touching with a seam under each. Below 768px a slot wraps as before. */
+@media (min-width: 768px) {
+  .rp-slot-list {
+    gap: 0;
+  }
+
+  .rp-slot {
+    flex-wrap: nowrap;
+    min-height: var(--row-compact);
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0 0 1px;
+    border-radius: 0;
+  }
+
+  .rp-slot__what {
+    flex-wrap: nowrap;
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  .rp-slot__what .rp-sub {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .rp-slot > .rp-actions:not(form) {
+    flex-wrap: nowrap;
+    flex: none;
+  }
+}
+
+.rp-day__title {
+  margin: 0 0 var(--space-2);
+  color: var(--ink-strong);
+  font: var(--weight-medium) var(--text-sm) / var(--leading-snug) var(--mono);
+  letter-spacing: var(--tracking-mono);
+}
+
+/* Compact inputs of the move form, named by aria-label (the Field primitive needs a visible label). */
+.rp-input {
+  min-height: var(--space-7);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--seam-strong);
+  border-radius: var(--radius-2);
+  background: var(--panel);
+  color: var(--ink-strong);
+  font: var(--weight-regular) var(--text-base) / var(--leading-snug) var(--font);
+}
+
+.rp-input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .rp-input {
+    min-height: 44px;
+  }
+}
+
+.rp-skeleton--flush {
+  padding: 0;
+}
+
+/* Results: six tiles, three columns from 1440px, two from 768px, one below. */
+
+.rp-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.rp-tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+@media (min-width: 48rem) {
+  .rp-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 90rem) {
+  .rp-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.rp-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.rp-stat__value {
+  color: var(--ink-strong);
+  font: var(--weight-medium) var(--text-lg) / var(--leading-tight) var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.rp-stat__label {
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.rp-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+@media (min-width: 64rem) {
+  .rp-charts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.rp-page-head:has(.rp-field) {
+  align-items: flex-end;
+}
+
+/* BarCard (charts/, not ours) keeps its markup; its caption and table summaries use the legacy .muted
+   alpha colour, 3.65:1 on the white card. Inside the Results charts they take --ink-muted (4.99:1). */
+.rp-charts .muted,
+.rp-charts summary {
+  color: var(--ink-muted);
+}
+
+/* Message labels (ADR 0075): Jev's reading of a typed message as words under its bubble. Plain text in --ink,
+   no Tag and no colour: context for a person, not a warning. --ink holds 4.5:1 on the Candidate's bubble. */
+.rp-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin: var(--space-2) 0 0;
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--seam-soft);
+  color: var(--ink);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+.rp-labels__item {
+  display: inline-flex;
+  gap: var(--space-2);
+}
+
+.rp-labels-lede {
+  margin: 0 0 var(--space-2);
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+/* The Demo stage's Recruiter view lists every message's labels. */
+.rp-label-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rp-label-list__lede,
+.rp-label-list__none {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.rp-label-list__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rp-label-list__row {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--seam);
+  border-radius: var(--radius-2);
+}
+
+.rp-label-list__meta {
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+}
+
+.rp-label-list__row .rp-labels {
+  margin-top: var(--space-1);
+  border-top: 0;
+  padding-top: 0;
+  font-size: var(--text-sm);
+}

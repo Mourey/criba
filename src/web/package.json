@@ -1,0 +1,61 @@
+{
+  "name": "criba-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "@elevenlabs/react": "1.15.2",
+    "@fontsource/azeret-mono": "5.3.0",
+    "@fontsource/inter": "5.3.0",
+    "@radix-ui/react-dialog": "1.1.23",
+    "@radix-ui/react-icons": "1.3.2",
+    "@radix-ui/react-tabs": "1.1.21",
+    "@radix-ui/react-toast": "1.2.23",
+    "@tanstack/react-query": "5.104.1",
+    "motion": "13.4.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-is": "19.3.0",
+    "react-router": "8.4.0",
+    "recharts": "3.10.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.0",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@types/node": "26.6.4",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "@vitest/coverage-v8": "5.0.3",
+    "eslint": "10.12.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.7",
+    "globals": "17.13.0",
+    "jsdom": "30.1.2",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.1",
+    "vite": "8.3.4",
+    "vitest": "5.0.3"
+  },
+  "overrides": {
+    "framer-motion": "13.4.4",
+    "motion-dom": "13.4.4",
+    "motion-utils": "13.3.0"
+  }
+}

@@ -1,0 +1,8 @@
+# One ruff style for all Python under src/: the backend settings (line length, rules, target
+# version, isort) live in src/backend/pyproject.toml, and src/tests, src/scripts and src/hermes
+# take them from here.
+extend = "backend/pyproject.toml"
+
+# Import roots for isort's first-party detection, relative to this file: `criba` (the backend
+# package) and `sim` (the simulator under src/tests) sort as first-party wherever they are imported.
+src = ["backend", "tests"]

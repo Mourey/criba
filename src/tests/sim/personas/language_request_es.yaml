@@ -1,0 +1,45 @@
+id: language_request_es
+description: >
+  Spain, writes in Spanish and, at the licence question, asks in Spanish to continue in English
+  ("me preguntas en inglés porfi", the real Haiku demo of 2026-10-11, where Jev read the language
+  the message was written in and the reply, the buttons and the record disagreed). The Jev router
+  reads the request, not the language it is written in, and stores English on the same turn
+  (ADR 0061): the later answers are in English and the Application ends on en.
+quirks: []
+identity:
+  name: Marta Ruiz
+  phone: "+34600000031"
+  country: ES
+  locale: es-ES
+opening:
+  text: "Hola, busco trabajo de repartidor"
+answers:
+  full_name: [{text: Marta Ruiz, value: Marta Ruiz}]
+  zone: [{text: "Chamberí, Madrid", query: "Chamberí"}]
+  driver_license: [{text: "me preguntas en inglés porfi. Sí, tengo carnet", lang: es, value: "yes"}]
+  availability: [{text: "Full time, please", lang: en, value: [full_time]}]
+  preferred_schedule: [{text: Afternoons, lang: en, value: [afternoon]}]
+  experience_years: [{text: "2", lang: en, value: 2}]
+  experience_platforms: [{text: Glovo, lang: en, value: [glovo]}]
+  start_date: [{text: "Tomorrow works for me", lang: en, value: "+1d"}]
+confirm:
+  - {text: "Yes, that is right", lang: en}
+expect:
+  stage: qualified
+  status: open
+  final_language: en
+  fields:
+    full_name: {value: Marta Ruiz}
+    zone: {non_null: true}
+    driver_license: {value: true}
+    availability: {value: [full_time]}
+    preferred_schedule: {value: [afternoon]}
+    experience_years: {value: 2}
+    experience_platforms: {value: [glovo]}
+    start_date: {non_null: true}
+  field_order:
+    [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+  events: [application_started, answer_recorded, screening_finished]
+  forbidden_events: [knockout, escalation_raised, reopened, nudge_sent]
+  tools: [record_answer, finish_screening]
+  forbidden_agent_text: [Criba, colonia]

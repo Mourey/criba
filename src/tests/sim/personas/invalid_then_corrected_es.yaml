@@ -1,0 +1,51 @@
+id: invalid_then_corrected_es
+description: >
+  Spain, bad answers then good ones. The name fails twice (one word, then digits) and the start
+  date is in the past, each corrected on the next try, never reaching a third miss on any
+  question, so no Escalation. At the confirm step the Candidate corrects their surname, which
+  updates the field and re-runs its check.
+quirks: [invalid_answers, corrections]
+identity:
+  name: Ana Pérez
+  phone: "+34600000005"
+  country: ES
+  locale: es-ES
+opening:
+  text: "Hola"
+answers:
+  full_name:
+    [{text: Ana, value: Ana}, {text: ana123, value: ana123}, {text: Ana Pérez, value: Ana Pérez}]
+  zone: [{text: "Madrid, Chamberí"}]
+  driver_license: [{text: "sí, tengo carnet", value: "yes"}]
+  availability: [{text: tiempo completo, value: [full_time]}]
+  preferred_schedule: [{text: flexible, value: [flexible]}]
+  experience_years: [{text: 3 años, value: 3}]
+  experience_platforms: [{text: Glovo, value: [glovo]}]
+  start_date: [{text: ayer, value: "-1d"}, {text: el lunes, value: "next:mon"}]
+confirm:
+  - text: "Perdona, mi apellido es Pérez Ruiz"
+    field: full_name
+    value: Ana Pérez Ruiz
+  - text: "sí, ahora está bien"
+expect:
+  stage: qualified
+  status: open
+  fields:
+    full_name: {value: Ana Pérez Ruiz}
+    zone: {non_null: true}
+    driver_license: {value: true}
+    availability: {value: [full_time]}
+    preferred_schedule: {value: [flexible]}
+    experience_years: {value: 3}
+    experience_platforms: {value: [glovo]}
+    start_date: {non_null: true}
+  field_order:
+    [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+  events: [application_started, answer_invalid, answer_recorded, screening_finished]
+  event_counts: [{kind: answer_invalid, count: 3}]
+  forbidden_events: [escalation_raised, knockout, nudge_sent]
+  tools: [record_answer, finish_screening]
+  forbidden_tools: [raise_escalation]
+  forbidden_agent_text: [Criba, colonia]
+seed_assumptions:
+  - "Madrid, Chamberí is inside at least one ES Service Area."

@@ -1,0 +1,47 @@
+id: zone_texas_funnel_en
+description: >
+  The demo chat of 2026-10-12 (ADR 0068): an English Candidate on a web chat opened as Mexico
+  writes "I live in Texas!". Texas matches no Zone, so the old flow re-asked and looped (two
+  answer_invalid, no Knockout). Now search_zones finds nothing and the backend asks once, in a
+  fixed question, which of the cities with a Service Area the Candidate can work in, as a list of
+  the cities and "None of these". The Candidate taps "None of these": the Zone Knockout, sent at
+  once from the approved template in English, with no Zone stored and no miss counted.
+quirks: []
+identity:
+  name: Cody Walker
+  phone: "+525500000024"
+  country: MX
+  locale: en
+opening:
+  text: "Hi, I saw your delivery job"
+answers:
+  full_name: [{text: Cody Walker, value: Cody Walker}]
+  zone: [{text: "I live in Texas!", query: Texas}]
+# The only Zone answer meets the cities list: the Candidate taps the last option.
+zone_choice: None of these
+expect:
+  stage: zone
+  status: closed
+  outcome: knockout
+  knockout_criterion: zone
+  knockout_template: en
+  final_language: en
+  reply_language: en
+  fields:
+    full_name: {value: Cody Walker}
+  fields_unanswered:
+    [zone, driver_license, availability, preferred_schedule, experience_years, start_date]
+  field_order: [full_name]
+  events: [application_started, answer_recorded, answer_ambiguous, knockout, screening_finished]
+  event_counts:
+    - {kind: knockout, count: 1}
+    - {kind: answer_ambiguous, count: 1}
+    - {kind: answer_invalid, count: 0}
+  forbidden_events: [reopened, escalation_raised, nudge_sent]
+  tools: [search_zones, record_answer]
+  forbidden_tools: [raise_escalation, request_review, record_backout, finish_screening]
+  nudges: 0
+  forbidden_agent_text: [Criba, Spain]
+seed_assumptions:
+  - "\"Texas\" is no seeded Zone, alias or city, so search_zones finds nothing."
+  - "Mexico's cities with a Service Area are Ciudad de México, Guadalajara, Monterrey and Puebla."

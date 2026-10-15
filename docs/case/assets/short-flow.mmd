@@ -1,0 +1,12 @@
+flowchart LR
+  G([Greeting<br/>AI notice]) --> N[Name]
+  N --> Z{{Zone in a<br/>Service Area?}}
+  Z -- no --> K[Knockout]:::ko
+  Z -- yes --> L{{Driver's<br/>license?}}
+  L -- no --> K
+  L -- yes --> D[Details<br/>availability, schedule,<br/>experience, start date]
+  D --> C{{Confirm<br/>summary}}
+  C -- correct --> Q([Qualified]):::ok
+  C -. Zone or license<br/>corrected .-> Z
+  classDef ko fill:#fff4ed,stroke:#8a3b12,color:#8a3b12
+  classDef ok fill:#97ff48,stroke:#20271a,color:#20271a

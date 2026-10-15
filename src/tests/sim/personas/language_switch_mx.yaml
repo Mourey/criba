@@ -1,0 +1,44 @@
+id: language_switch_mx
+description: >
+  Mexico, switches Spanish to English to Spanish mid-screening. Each agent reply follows the
+  latest message, answers given earlier are kept, and the flow never restarts. Reaches Qualified
+  with the Application language back on es-MX.
+quirks: [code_switching]
+identity:
+  name: Luis Ortega
+  phone: "+525500000009"
+  country: MX
+  locale: es-MX
+opening:
+  text: "Hola, busco chamba de repartidor"
+answers:
+  full_name: [{text: Luis Ortega, value: Luis Ortega}]
+  zone: [{text: "Centro, Puebla"}]
+  driver_license: [{text: "Sorry, can we continue in English? Yes, I have a driver's license", lang: en, value: "yes"}]
+  availability: [{text: "Full time, please", lang: en, value: [full_time]}]
+  preferred_schedule: [{text: Afternoons, lang: en, value: [afternoon]}]
+  experience_years: [{text: "Mejor sigo en español: tengo 1 año de experiencia", lang: es, value: 1}]
+  experience_platforms: [{text: Rappi y DiDi Food, lang: es, value: [rappi, didi_food]}]
+  start_date: [{text: el lunes, lang: es, value: "next:mon"}]
+expect:
+  stage: qualified
+  status: open
+  final_language: es-MX
+  reply_languages_follow_latest: true
+  fields:
+    full_name: {value: Luis Ortega}
+    zone: {non_null: true}
+    driver_license: {value: true}
+    availability: {value: [full_time]}
+    preferred_schedule: {value: [afternoon]}
+    experience_years: {value: 1}
+    experience_platforms: {value: [rappi, didi_food]}
+    start_date: {non_null: true}
+  field_order:
+    [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+  events: [application_started, answer_recorded, screening_finished]
+  forbidden_events: [knockout, escalation_raised, reopened, nudge_sent]
+  tools: [record_answer, finish_screening]
+  forbidden_agent_text: [Criba]
+seed_assumptions:
+  - "\"Centro, Puebla\" names exactly one MX Zone (name and city), inside a Service Area."

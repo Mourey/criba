@@ -1,0 +1,45 @@
+id: opted_out_code_switch_es
+description: >
+  Spain, starts in Spanish then switches to English to say "stop messaging me". The agent
+  confirms once and the Candidate is marked Opted out; the Application stays as it is (open, not
+  withdrawn). Two days of simulated silence (the window in which nudges would go out) produce no
+  nudge. Replies follow the language of the latest message, so the Opt-out exchange is in English.
+quirks: [code_switching, opts_out]
+identity:
+  name: James Walker
+  phone: "+34600000008"
+  country: ES
+  locale: es-ES
+timing:
+  start_local_time: "14:00"
+opening:
+  text: "Hola, vi vuestro anuncio de repartidor"
+answers:
+  full_name: [{text: James Walker, value: James Walker}]
+  zone: [{text: "Madrid, Retiro"}]
+interrupts:
+  - at: driver_license
+    say: {text: "Sorry, please stop messaging me", lang: en}
+  - at: after_backout_prompt
+    say: {text: "Yes, please stop", lang: en}
+    advance: [1h, 19h, 28h]   # reaches 48h, when the template nudge would have gone out
+    then: stop
+expect:
+  stage: driver_license
+  status: open
+  candidate_opted_out: true
+  final_language: en
+  reply_languages_follow_latest: true
+  fields:
+    full_name: {value: James Walker}
+    zone: {non_null: true}
+  fields_unanswered: [driver_license, availability, preferred_schedule, experience_years, start_date]
+  events: [application_started, answer_recorded, opted_out]
+  event_counts: [{kind: opted_out, count: 1}, {kind: nudge_sent, count: 0}]
+  forbidden_events: [nudge_sent, withdrawn, abandoned, knockout, screening_finished]
+  tools: [record_backout]
+  forbidden_tools: [finish_screening]
+  nudges: 0
+  forbidden_agent_text: [Criba, colonia]
+seed_assumptions:
+  - "Madrid, Retiro is inside at least one ES Service Area."

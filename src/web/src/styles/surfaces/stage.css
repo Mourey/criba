@@ -1,0 +1,1420 @@
+/* stage surface styles: the demo stage and the Test chat. Token-only (DESIGN.md); imported by
+   TestChat.tsx and by the files under stage/. */
+
+.testchat {
+  max-width: 40rem;
+}
+
+/* Secondary text on the Test chat uses the solid muted ink: the legacy .muted alpha colour gives 3.5:1
+   on the light ground (log decision 61, as recruiter.css does for its pages). */
+.testchat .muted {
+  color: var(--ink-muted);
+}
+
+/* On the chat's own backgrounds even --ink-muted falls short (4.16-4.29:1), so the empty-chat hint and
+   each bubble's sender line and timestamp use full ink (owner decision 62). */
+.testchat .chat > .muted,
+.testchat .bubble .who-line,
+.testchat .bubble time {
+  color: var(--ink);
+}
+
+/* A new chat message enters once: a short rise and fade. Nothing leaves with an animation. */
+.testchat .bubble {
+  animation: testchat-bubble-in var(--motion-base) var(--ease-out);
+}
+
+@keyframes testchat-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-1));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The typing indicator pulses; it is rendered only while the agent is typing, so it loops only then. */
+.testchat .bubble.typing {
+  animation:
+    testchat-bubble-in var(--motion-base) var(--ease-out),
+    testchat-typing calc(var(--motion-slow) * 4) var(--ease-in-out) var(--motion-base) infinite;
+}
+
+@keyframes testchat-typing {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .testchat .bubble,
+  .testchat .bubble.typing {
+    animation: none;
+  }
+}
+
+/* Touch: chat links and option buttons reach a 44px target on a coarse pointer, as .ui-btn does. */
+@media (pointer: coarse) {
+  .testchat .bubble a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .testchat .opts .ui-btn {
+    min-width: 44px;
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------
+   Demo stage (/stage): full-bleed, two columns. Phone on the left, the live Application on the right.
+   Geometry from CSS only. At 1920x1080 the page does not scroll; at other sizes it may, and nothing
+   overlaps. Type is set a step above the console's, for a recording that is watched scaled down.
+   --------------------------------------------------------------------------------------------- */
+
+.stage-state,
+.stage {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--ground);
+  background-image: radial-gradient(circle, var(--ground-dot) 1px, transparent 1px);
+  background-size: var(--space-6) var(--space-6);
+}
+
+.stage-state {
+  display: grid;
+  place-items: center;
+  padding: var(--space-6) var(--space-4);
+}
+
+.stage-state .ui-skeleton {
+  width: min(100%, 40rem);
+}
+
+.stage {
+  padding: var(--space-4);
+}
+
+.stage > .ui-skeleton {
+  width: min(100%, 40rem);
+}
+
+.stage-screen {
+  display: grid;
+  grid-template-columns: minmax(0, 32rem) minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--space-4);
+  height: calc(100vh - 2 * var(--space-4));
+  height: calc(100dvh - 2 * var(--space-4));
+  min-height: 40rem;
+}
+
+.stage-screen > .phone {
+  min-width: 0;
+  min-height: 0;
+}
+
+.stage-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 0;
+}
+
+.stage-record {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* The slot's wrapper has no box of its own: while the Presenter console is closed it is empty, and it must
+   not cost a gap in .stage-side. The panel is fixed to the right edge over the stage, so opening it moves
+   no pane. No animation: the reduced-motion whitelist pins the animated selectors. */
+.stage-console {
+  display: contents;
+}
+
+.stage-console__panel {
+  position: fixed;
+  inset-block: var(--space-4);
+  inset-inline-end: var(--space-4);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  box-sizing: border-box;
+  width: min(28rem, calc(100vw - var(--space-7)));
+  overflow-y: auto;
+  padding: var(--space-4);
+  border: 1px solid var(--seam-strong);
+  border-radius: var(--radius-3);
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.stage-console__panel:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.stage-console__title {
+  margin: 0;
+  color: var(--ink-strong);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+}
+
+.stage-console__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.stage-console__takes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.stage-console__id {
+  display: inline-block;
+  max-width: calc(var(--space-9) * 2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.stage-console__window {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.stage-console__time {
+  color: var(--ink-strong);
+  font-family: var(--mono);
+  font-size: var(--text-md);
+}
+
+.stage-console__clock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* The simulated clock: a quiet caption over the record, with room for the playback controls. It reads in
+   the Take's zone, which is named here once. */
+.stage-clock {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: 0 var(--space-1);
+  color: var(--ink);
+  font-size: var(--text-md);
+}
+
+.stage-clock__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.stage-clock__time {
+  color: var(--ink-strong);
+  font-family: var(--mono);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.stage-clock__zone {
+  color: var(--ink);
+  font-size: var(--text-md);
+}
+
+@media (max-width: 56rem) {
+  .stage-screen {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+    min-height: 0;
+  }
+
+  .stage-screen > .phone {
+    height: 40rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------
+   Phone: a chat in the look of a phone's messaging app, in colour and layout only (no name, logo or
+   image of it). Light uses the --phone-* group. Dark composes the same roles from the console's own
+   olive tokens (an olive-green header, an olive in-bubble and a clearly greener out-bubble), because
+   the group's dark values are slate blue and near-identical bubbles. Pairs, light / dark:
+   header text --panel / --ink-strong on the header, 4.9 / 9.5; bubble text --ink-strong, 13.9 / 7.4
+   or better on both bubbles; times and the .ics type are --ink at 85% (6.1 / 5.0 or better);
+   the read tick is --status-info / --phone-tick (5.0 / 3.6 on the out-bubble, graphic needs 3);
+   reply text is --phone-header / --status-info on --phone-reply (4.9 / 5.9); a disabled reply is
+   --ink-muted (5.0 / 5.5) in a solid --ink 65% border (3.7 / 5.1 against the reply and the wallpaper).
+   --------------------------------------------------------------------------------------------- */
+
+.phone {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--phone-wallpaper);
+  border: 1px solid var(--seam-strong);
+  border-radius: var(--radius-3);
+  color: var(--ink-strong);
+  font: var(--weight-regular) var(--text-md) / var(--leading-body) var(--font);
+}
+
+.phone :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.phone-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  background: light-dark(var(--phone-header), color-mix(in srgb, var(--status-success) 28%, var(--ground)));
+  color: light-dark(var(--panel), var(--ink-strong));
+}
+
+.phone-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-pill);
+  background: light-dark(var(--phone-bubble-in), color-mix(in srgb, var(--ink) 10%, var(--ground)));
+  color: var(--ink-strong);
+  font: var(--weight-semibold) var(--text-md) / 1 var(--font);
+}
+
+.phone-header__text {
+  min-width: 0;
+}
+
+.phone-name,
+.phone-status {
+  margin: 0;
+}
+
+.phone-name {
+  overflow: hidden;
+  font: var(--weight-semibold) var(--text-lg) / var(--leading-snug) var(--font);
+  letter-spacing: var(--tracking-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-status {
+  font: var(--weight-regular) var(--text-sm) / var(--leading-snug) var(--font);
+}
+
+/* The wallpaper is CSS only: a faint dot lattice on the phone wallpaper colour. */
+.phone-chat {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+  padding: var(--space-4);
+  overflow-y: auto;
+  background-color: var(--phone-wallpaper);
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--ink) 9%, transparent) 1px, transparent 1px);
+  background-size: var(--space-5) var(--space-5);
+}
+
+.phone-chat--idle {
+  justify-content: center;
+  padding: var(--space-5);
+}
+
+.phone-empty {
+  align-self: center;
+  margin: auto;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-2);
+  background: color-mix(in srgb, light-dark(var(--phone-bubble-in), color-mix(in srgb, var(--ink) 10%, var(--ground))) 85%, transparent);
+  color: var(--ink);
+  font-size: var(--text-base);
+  text-align: center;
+}
+
+.phone-msg {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 84%;
+  animation: phone-in var(--motion-base) var(--ease-out) both;
+}
+
+/* A message with reply buttons is at least as wide as the buttons need. */
+.phone-msg:has(.phone-replies) {
+  min-width: min(100%, 16rem);
+}
+
+.phone-msg[data-side="right"] {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.phone-msg[data-side="left"] {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.phone-msg[data-side="center"] {
+  align-self: center;
+  align-items: center;
+  max-width: 90%;
+}
+
+.phone-bubble {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+  border-radius: var(--radius-3);
+  background: light-dark(var(--phone-bubble-in), color-mix(in srgb, var(--ink) 10%, var(--ground)));
+  color: var(--ink-strong);
+  overflow-wrap: anywhere;
+}
+
+.phone-msg[data-side="right"] .phone-bubble {
+  background: light-dark(var(--phone-bubble-out), color-mix(in srgb, var(--status-success) 38%, var(--ground)));
+  border-end-end-radius: var(--radius-1);
+}
+
+.phone-msg[data-side="left"] .phone-bubble {
+  border-end-start-radius: var(--radius-1);
+}
+
+.phone-msg[data-side="center"] .phone-bubble {
+  background: color-mix(in srgb, light-dark(var(--phone-bubble-in), color-mix(in srgb, var(--ink) 10%, var(--ground))) 85%, transparent);
+  color: var(--ink);
+  font-size: var(--text-base);
+  text-align: center;
+}
+
+.phone-who {
+  display: block;
+  color: light-dark(var(--phone-header), var(--status-info));
+  font: var(--weight-semibold) var(--text-sm) / var(--leading-snug) var(--font);
+}
+
+.phone-text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.phone-link {
+  display: block;
+  margin-top: var(--space-1);
+  color: light-dark(var(--phone-header), var(--status-info));
+}
+
+.phone-msg[data-side="right"] .phone-link {
+  color: var(--ink-strong);
+}
+
+/* The .ics card: a document-style row inside the bubble. */
+.phone-doc {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-2);
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  color: var(--ink-strong);
+  text-decoration: none;
+}
+
+.phone-doc__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-2);
+  background: light-dark(var(--phone-header), color-mix(in srgb, var(--status-success) 28%, var(--ground)));
+  color: light-dark(var(--panel), var(--ink-strong));
+}
+
+.phone-doc__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.phone-doc__name {
+  font: var(--weight-semibold) var(--text-md) / var(--leading-snug) var(--font);
+  overflow-wrap: anywhere;
+}
+
+.phone-doc__type {
+  color: color-mix(in srgb, var(--ink) 85%, transparent);
+  font: var(--weight-regular) var(--text-sm) / var(--leading-snug) var(--font);
+}
+
+.phone-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  color: color-mix(in srgb, var(--ink) 85%, transparent);
+  font: var(--weight-medium) var(--text-sm) / 1 var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-tick {
+  display: inline-flex;
+  align-items: center;
+}
+
+.phone-tick .ui-icon + .ui-icon {
+  margin-inline-start: calc(var(--space-1) * -1.5);
+}
+
+.phone-tick--read {
+  color: light-dark(var(--status-info), var(--phone-tick));
+}
+
+/* Reply buttons: stacked right under their bubble, as wide as it, and joined to it (flat top, no gap). */
+.phone-msg:has(.phone-replies) {
+  gap: 0;
+}
+
+.phone-msg:has(.phone-replies) .phone-bubble {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.phone-replies {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  align-self: stretch;
+  min-width: 0;
+}
+
+.phone-reply:first-child {
+  margin-top: calc(var(--space-1) * -0.25);
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+
+.phone-reply {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  border-radius: var(--radius-2);
+  background: var(--phone-reply);
+  color: light-dark(var(--phone-header), var(--status-info));
+  cursor: pointer;
+  font: var(--weight-semibold) var(--text-md) / var(--leading-snug) var(--font);
+  text-align: center;
+  transition: border-color var(--motion-fast) var(--ease-out);
+}
+
+.phone-reply:hover:not(:disabled) {
+  border-color: currentColor;
+}
+
+/* A reply that is no longer live reads as one by muted text and a firmer border, not by fading. */
+.phone-reply:disabled {
+  border-color: color-mix(in srgb, var(--ink) 65%, transparent);
+  color: var(--ink-muted);
+  cursor: default;
+}
+
+/* A list question's "Options" is the bubble's footer: a hairline rule, then the label in the phone accent.
+   Once the question is spent it is muted (and names the option chosen, when the Candidate tapped one). */
+.phone-list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: calc(100% + 2 * var(--space-3));
+  margin: var(--space-2) calc(-1 * var(--space-3)) calc(-1 * var(--space-2));
+  padding: var(--space-3);
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  border-end-start-radius: var(--radius-1);
+  border-end-end-radius: var(--radius-3);
+  background: transparent;
+  color: light-dark(var(--phone-header), var(--status-info));
+  cursor: pointer;
+  font: var(--weight-semibold) var(--text-md) / var(--leading-snug) var(--font);
+}
+
+.phone-list:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+
+.phone-list:disabled {
+  color: var(--ink-muted);
+  cursor: default;
+}
+
+/* Three dots while the agent's turn is not over. Each dot arrives once, in turn. */
+.phone-typing {
+  display: flex;
+  align-self: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-3);
+  border-end-start-radius: var(--radius-1);
+  background: light-dark(var(--phone-bubble-in), color-mix(in srgb, var(--ink) 10%, var(--ground)));
+}
+
+.phone-typing span {
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
+  animation: phone-dot var(--motion-slow) var(--ease-out) both;
+}
+
+.phone-typing span:nth-child(2) {
+  animation-delay: var(--motion-fast);
+}
+
+.phone-typing span:nth-child(3) {
+  animation-delay: calc(var(--motion-fast) * 2);
+}
+
+/* Start card: shown until a conversation exists. */
+.phone-start {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--seam);
+  border-radius: var(--radius-3);
+  background: var(--panel);
+}
+
+.phone-start__title {
+  margin: 0;
+  font: var(--weight-semibold) var(--text-lg) / var(--leading-snug) var(--font);
+  letter-spacing: var(--tracking-tight);
+}
+
+.phone-start__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.phone-start__label,
+.phone-start__phone dt {
+  color: var(--ink-strong);
+  font: var(--weight-semibold) var(--text-base) / var(--leading-snug) var(--font);
+}
+
+.phone-start__select {
+  min-height: var(--space-7);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--seam-strong);
+  border-radius: var(--radius-2);
+  background: var(--panel);
+  color: var(--ink-strong);
+  font: var(--weight-regular) var(--text-md) / var(--leading-snug) var(--font);
+}
+
+/* The phone of the Take is a figure, not a field. */
+.phone-start__phone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.phone-start__phone dd {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-2);
+  background: var(--ground);
+  color: var(--ink-strong);
+  font: var(--weight-medium) var(--text-md) / var(--leading-snug) var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The list sheet sits in the phone, above the composer, and pushes the chat up instead of covering it. */
+.phone-sheet {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  max-height: 45%;
+  overflow-y: auto;
+  border-top: 1px solid var(--seam-strong);
+  background: var(--panel);
+  animation: phone-sheet-in var(--motion-base) var(--ease-out) both;
+}
+
+.phone-sheet__option {
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-bottom: 1px solid var(--seam-soft);
+  background: transparent;
+  color: var(--ink-strong);
+  cursor: pointer;
+  font: var(--weight-medium) var(--text-md) / var(--leading-snug) var(--font);
+  text-align: start;
+}
+
+.phone-sheet__option:hover {
+  background: var(--live-soft);
+}
+
+.phone-alert {
+  flex: none;
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--seam);
+  background: var(--panel);
+  color: var(--danger);
+  font: var(--weight-medium) var(--text-base) / var(--leading-snug) var(--font);
+}
+
+.phone-composer {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-top: 1px solid var(--seam);
+  background: var(--ground);
+}
+
+.phone-composer__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: var(--space-7);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--seam-strong);
+  border-radius: var(--radius-2);
+  background: var(--panel);
+  color: var(--ink-strong);
+  font: var(--weight-regular) var(--text-md) / var(--leading-snug) var(--font);
+}
+
+.phone-composer__input::placeholder {
+  color: var(--ink-muted);
+}
+
+@keyframes phone-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-1));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes phone-dot {
+  from {
+    opacity: 0.25;
+    transform: translateY(var(--space-1));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes phone-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------
+   Record: the live Application, a quiet panel beside the phone (DESIGN.md: white panel, one-pixel
+   seam, mono small caps for labels and figures, no shadow). It scrolls inside itself if it must; at
+   Qualified in the Agent's view it fits the column at 1920x1080 (events are capped at five). The tab
+   panel and the two cards stretch to the panel's foot, so the column has no dead band under them.
+   --------------------------------------------------------------------------------------------- */
+
+.record {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--seam);
+  border-radius: var(--radius-3);
+  color: var(--ink);
+  font: var(--weight-regular) var(--text-md) / var(--leading-body) var(--font);
+}
+
+.record > .ui-skeleton {
+  flex: none;
+  height: var(--space-9);
+}
+
+.record .ui-tabs {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+
+.record .ui-tabs__trigger {
+  font-size: var(--text-md);
+}
+
+.record .ui-tabs__panel {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  gap: var(--space-4);
+  font-size: var(--text-md);
+}
+
+/* Radix keeps an inactive panel as an empty [hidden] div; the flex rule above must not show it. */
+.record .ui-tabs__panel[hidden] {
+  display: none;
+}
+
+.record .ui-card__title {
+  font-size: var(--text-sm);
+}
+
+/* Before the match: a calm message over the outline of the record that will fill in. */
+.record-placeholder {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  color: var(--ink);
+  font-size: var(--text-lg);
+  text-align: center;
+}
+
+.record-placeholder p {
+  margin: 0;
+}
+
+.record-placeholder__message {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) 0 var(--space-2);
+}
+
+.record-placeholder .ui-skeleton {
+  width: min(100%, 24rem);
+}
+
+/* The still outline: the labels of the slots that will fill in, each with a dash. No motion, no shimmer. */
+.record-ghost {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: min(100%, 56rem);
+  padding: var(--space-5);
+  border: 1px dashed var(--seam-strong);
+  border-radius: var(--radius-3);
+  color: var(--ink-muted);
+  font-size: var(--text-md);
+  text-align: start;
+}
+
+.record-ghost__title {
+  display: block;
+  width: 40%;
+  height: var(--space-5);
+  border-radius: var(--radius-1);
+  background: var(--seam-soft);
+}
+
+.record-ghost__facts {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.record-ghost__facts dt {
+  font: var(--weight-medium) var(--text-sm) / var(--leading-snug) var(--mono);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.record-ghost__facts dd {
+  margin: var(--space-1) 0 0;
+}
+
+.record-ghost__rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.record-ghost__rows li {
+  display: grid;
+  grid-template-columns: minmax(7rem, 10rem) minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--seam-soft);
+}
+
+.record-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.record-who {
+  min-width: 0;
+}
+
+.record-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.record-name {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink-strong);
+  font: var(--weight-semibold) var(--text-xl) / var(--leading-tight) var(--font);
+  letter-spacing: var(--tracking-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-phone {
+  margin: var(--space-1) 0 0;
+  color: var(--ink);
+  font: var(--weight-medium) var(--text-md) / var(--leading-snug) var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The outcome sits next to the name, large enough to read at a glance. */
+.record-stage {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1);
+  border-radius: var(--radius-2);
+}
+
+.record-stage .ui-badge,
+.record-stage .ui-tag {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.record-stage .ui-badge {
+  gap: var(--space-3);
+}
+
+.record-stage .ui-badge__dot {
+  width: var(--space-3);
+  height: var(--space-3);
+}
+
+/* Facts: one quiet row of label over value. */
+.record-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+  padding: var(--space-1) 0 var(--space-3);
+  border-bottom: 1px solid var(--seam);
+}
+
+/* The success Tag's own text (--status-success on its wash) is 3.2:1 in light, under AA for 11px text.
+   On the stage the text is deep olive; the green stays in the border and the wash. */
+.record .ui-tag--success {
+  color: var(--ink-strong);
+}
+
+.record-fact {
+  min-width: 0;
+}
+
+.record-fact dt {
+  color: var(--ink);
+  font: var(--weight-medium) var(--text-sm) / var(--leading-snug) var(--mono);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.record-fact dd {
+  margin: var(--space-1) 0 0;
+  color: var(--ink-strong);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+
+.record-fact__line {
+  display: block;
+}
+
+.record-flags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.record-flags__label {
+  color: var(--ink);
+  font: var(--weight-medium) var(--text-sm) / var(--leading-snug) var(--mono);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.record-split,
+.record-stack {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.record-split {
+  flex: 1 0 auto;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.record-stack {
+  align-content: start;
+}
+
+/* No card stretches: each hugs its content. */
+.record-split > .ui-card {
+  height: auto;
+  align-self: start;
+}
+
+@container (min-width: 56rem) {
+  .record-split {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+}
+
+.record-answers,
+.record-events,
+.record-queue {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* An answer: label, value and status on one line; the Candidate's words and notes under it. A valid
+   answer carries a quiet check, anything else a Tag. */
+.record-row {
+  display: grid;
+  grid-template-columns: minmax(9rem, 13rem) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-4) var(--space-1);
+  border-bottom: 1px solid var(--seam-soft);
+  border-radius: var(--radius-1);
+}
+
+.record-row:last-child {
+  border-bottom: 0;
+}
+
+.record-row__label {
+  color: var(--ink);
+  font: var(--weight-medium) var(--text-md) / var(--leading-snug) var(--font);
+}
+
+.record-row__value {
+  color: var(--ink-strong);
+  font: var(--weight-medium) var(--text-lg) / var(--leading-snug) var(--font);
+  overflow-wrap: anywhere;
+}
+
+.record-row__main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.record-row__ok {
+  display: inline-flex;
+  color: var(--status-success);
+}
+
+.record-row__extra {
+  grid-column: 2;
+  color: var(--ink);
+  font: var(--weight-regular) var(--text-base) / var(--leading-snug) var(--font);
+}
+
+/* The Recruiter's answers: two compact columns, no Candidate words. */
+.record-answers--compact {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--space-6);
+}
+
+.record-answers--compact .record-row {
+  grid-template-columns: minmax(7rem, 10rem) minmax(0, 1fr);
+  padding: var(--space-3) var(--space-1);
+}
+
+.record-earlier {
+  margin: 0 0 var(--space-2);
+  color: var(--ink-muted);
+  font: var(--weight-medium) var(--text-base) / var(--leading-snug) var(--font);
+}
+
+.record-event {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0 var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--seam-soft);
+}
+
+.record-event:last-child {
+  border-bottom: 0;
+}
+
+.record-event__time {
+  grid-row: span 2;
+  color: var(--ink);
+  font: var(--weight-medium) var(--text-sm) / var(--leading-snug) var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.record-event__kind {
+  color: var(--ink-strong);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+}
+
+.record-event__actor {
+  color: var(--ink);
+  font-size: var(--text-base);
+}
+
+.record-summary {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-lg);
+  line-height: var(--leading-body);
+}
+
+/* What waits for a person leads the Recruiter's view, in the live treatment (DESIGN.md, the One Live Rule):
+   --live-soft wash, --live-edge border, the live Tag, and --ink-strong text at title size. Pairs, light / dark:
+   --ink-strong on --live-soft 14.3 / 11.8; the Tag's --live-ink on --live is 12.2 in both. */
+.record-queue--lead {
+  gap: var(--space-2);
+}
+
+.record-queue__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--live-edge);
+  border-radius: var(--radius-2);
+  background: var(--live-soft);
+}
+
+.record-queue--lead .record-queue__text {
+  color: var(--ink-strong);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+}
+
+.record-queue--lead .ui-tag {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+/* Settle: a changed field or badge washes once from the info tone to nothing. Two copies of the same
+   keyframes (a and b) let a second change on the same element play again. */
+.record [data-settle="a"] {
+  animation: record-settle-a var(--motion-slow) var(--ease-out);
+}
+
+.record [data-settle="b"] {
+  animation: record-settle-b var(--motion-slow) var(--ease-out);
+}
+
+@keyframes record-settle-a {
+  from {
+    background-color: color-mix(in srgb, var(--status-info) 16%, transparent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes record-settle-b {
+  from {
+    background-color: color-mix(in srgb, var(--status-info) 16%, transparent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+/* Reduced motion: nothing in the stage animates or transitions. Keep this block last. */
+@media (prefers-reduced-motion: reduce) {
+  .stage *,
+  .stage *::before,
+  .stage *::after,
+  .stage .record [data-settle],
+  .stage .phone-typing span {
+    animation: none;
+    transition-duration: 0s;
+  }
+}
+
+/* The record and the panel under it share the side column (ADR 0075). The panel is closed by default, a one-line
+   strip, so the record has the column's height and a take's record fits at 1920 by 1080 without scrolling.
+   Opened, the record keeps most of the height and scrolls on its own; the panel is capped and scrolls too, so
+   neither the phone nor the record is pushed off screen. */
+.stage-record-stack {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 0;
+}
+
+.stage-record-stack > .stage-record {
+  flex: 1 1 58%;
+}
+
+.stage-under {
+  flex: 0 1 42%;
+  min-height: 0;
+  padding: var(--space-3) var(--space-4);
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--seam);
+  border-radius: var(--radius-3);
+  color: var(--ink);
+}
+
+.stage-under[data-open="false"] {
+  flex: 0 0 auto;
+  padding: var(--space-1) var(--space-2);
+  overflow: hidden;
+}
+
+.stage-under__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-2);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.stage-under__toggle:hover {
+  background: var(--live-soft);
+}
+
+.stage-under__toggle:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.stage-under[data-open="true"] .stage-under__toggle {
+  margin-block-end: var(--space-2);
+}
+
+.stage-under:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* The Operator panel brings its own frame on the Application page; under the record the region is the frame. */
+.stage-under .op-panel {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.record-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.record-viewas {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.record-viewas__label {
+  margin-inline-end: var(--space-1);
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.record-toolbar__status,
+.record-toolbar__error {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.record-toolbar__status:empty {
+  display: none;
+}
+
+.record-recruiter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Agent activity (ADR 0075): one block per Candidate turn, a time column and a line per stored record. */
+.activity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.activity-legend {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+.activity-turns,
+.activity-steps {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.activity-turns {
+  gap: var(--space-2);
+}
+
+.activity-turn {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--seam);
+  border-radius: var(--radius-2);
+}
+
+.activity-steps {
+  gap: var(--space-1);
+}
+
+.activity-step {
+  display: grid;
+  grid-template-columns: var(--space-9) minmax(0, 1fr);
+  gap: var(--space-2);
+  line-height: var(--leading-snug);
+}
+
+.activity-step__time {
+  color: var(--ink-muted);
+  font-family: var(--mono);
+  font-size: var(--text-xs);
+}
+
+.activity-step__body {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.activity-step[data-step="tool"] .activity-step__body {
+  padding-inline-start: var(--space-3);
+}
+
+.activity-call {
+  font-family: var(--mono);
+  font-size: var(--text-xs);
+}
+
+.activity-muted {
+  margin: 0;
+  color: var(--ink-muted);
+}
+
+.activity-retry {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* The tabs under the record stay in view while the timeline scrolls to its newest turn. */
+.stage-under .ui-tabs__list {
+  position: sticky;
+  top: calc(-1 * var(--space-3));
+  z-index: 1;
+  background: var(--panel);
+}

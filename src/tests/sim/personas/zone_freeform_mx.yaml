@@ -1,0 +1,56 @@
+id: zone_freeform_mx
+description: >
+  Mexico, a Zone said in free form (spec 006, ADR 0042). "por la salida a Toluca" names a road,
+  not a place, but the agent finds the uncovered town Toluca; the designed flow is the Zone
+  confirmation ("¿Vives en Toluca?" with Sí/No), never a direct Knockout (the old parser read
+  Toluca and knocked the Candidate out). The Candidate taps No, which counts no miss and clears
+  the buttons, and the agent asks for the Zone again. Then "Ciudad de México, Cuajimalpa": the
+  agent searches the city, the backend offers the city's Zones as a list (Q45, no miss) because
+  Cuajimalpa is not a Zone, and the Candidate taps Polanco. The rest is a normal Qualified run.
+quirks: [ambiguous_zone]
+identity:
+  name: Valeria Núñez
+  phone: "+525500000013"
+  country: MX
+  locale: es-MX
+opening:
+  text: "Hola, vi el anuncio de repartidor"
+answers:
+  full_name: [{text: Valeria Núñez, value: Valeria Núñez}]
+  zone:
+    - {text: "por la salida a Toluca", query: Toluca}
+    - {text: "No", pick_option: 1, query: null}
+    - {text: "Ciudad de México, Cuajimalpa", query: "Ciudad de México"}
+  driver_license: [{text: "Sí, tengo licencia de manejo", value: "yes"}]
+  availability: [{text: tiempo completo, value: [full_time]}]
+  preferred_schedule: [{text: en la mañana o en la noche, value: [morning, evening]}]
+  experience_years: [{text: 1.5 años, value: 1.5}]
+  experience_platforms: [{text: Rappi, value: [rappi]}]
+  start_date: [{text: el lunes, value: "next:mon"}]
+# The second Zone answer meets the list: the driver taps this one rather than typing again.
+zone_choice: Polanco
+expect:
+  stage: qualified
+  status: open
+  fields:
+    full_name: {value: Valeria Núñez}
+    zone: {non_null: true}
+    driver_license: {value: true}
+    availability: {value: [full_time]}
+    preferred_schedule: {value: [morning, evening]}
+    experience_years: {value: 1.5}
+    experience_platforms: {value: [rappi]}
+    start_date: {non_null: true}
+  field_order:
+    [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+  events: [application_started, answer_ambiguous, answer_recorded, screening_finished]
+  # Three answer_ambiguous: the Toluca confirmation, the No tap that clears its buttons, and the
+  # Cuajimalpa city list. No answer_invalid: neither the No nor the list counts a miss.
+  event_counts: [{kind: answer_invalid, count: 0}, {kind: answer_ambiguous, count: 3}, {kind: knockout, count: 0}]
+  forbidden_events: [knockout, escalation_raised, nudge_sent]
+  tools: [search_zones, record_answer, finish_screening]
+  nudges: 0
+  forbidden_agent_text: [Criba]
+seed_assumptions:
+  - "Toluca is a seeded Zone outside every MX Service Area (UNCOVERED_TOWNS), which the old parser read in \"por la salida a Toluca\"; `search_zones(\"Toluca\")` finds it, so the backend asks for a Sí/No confirmation first (ADR 0042)."
+  - "\"Ciudad de México\" ranks nine Zones of one city (eight covered, plus Milpa Alta), which Q45 offers as a list; Cuajimalpa is not a seeded Zone, and Polanco is covered."

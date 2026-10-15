@@ -1,0 +1,77 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.11.6"
+      - name: Install dependencies
+        run: uv sync --locked --project src/backend
+      - name: Ruff
+        run: |
+          uv run --project src/backend ruff check src/backend
+          uv run --project src/backend ruff format --check src/backend
+      - name: Pytest
+        run: uv run --project src/backend pytest -q
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: "26.11.1"
+          cache: npm
+          cache-dependency-path: src/web/package-lock.json
+      - run: npm --prefix src/web ci --no-audit --no-fund
+      - run: npm --prefix src/web run lint
+      - run: npm --prefix src/web test
+      - run: npm --prefix src/web run build
+
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Validate Compose file
+        run: docker compose config -q
+      - name: Build backend and web images
+        run: docker compose build backend web
+
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.11.6"
+      - name: Install sqlite3
+        run: sudo apt-get update && sudo apt-get install -y sqlite3
+      - name: Contract gate (spec 005)
+        run: src/scripts/check_contracts.sh
+
+  # CONSTRAINTS.md: every check, in the dev container (src/scripts/check.sh full).
+  constraints:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0 # merge base with main, and gitleaks scans history
+      - name: Local main branch for the merge base
+        run: |
+          git rev-parse --verify -q refs/heads/main >/dev/null ||
+            { git fetch --no-tags origin main && git branch main FETCH_HEAD; }
+      - name: Build the dev image
+        run: docker compose --profile dev build dev
+      - name: check.sh full
+        run: docker compose --profile dev run --rm -T dev src/scripts/check.sh full

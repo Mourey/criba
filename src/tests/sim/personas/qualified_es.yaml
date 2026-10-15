@@ -1,0 +1,48 @@
+id: qualified_es
+description: >
+  Happy path in Spain. Gives name, Zone and driver's license in the opening message ("Soy Ana,
+  vivo en ... y tengo ..."), so the agent captures three fields at once and skips ahead. Reaches
+  Qualified with every field in the required order and no Escalation.
+quirks: [multi_answer]
+identity:
+  name: Ana García
+  phone: "+34600000001"
+  country: ES
+  locale: es-ES
+opening:
+  text: "Hola, soy Ana García, vivo en Madrid, Chamberí y tengo carnet de conducir"
+  covers: [full_name, zone, driver_license]
+  value: {full_name: Ana García, driver_license: "yes"}
+  query: "Madrid, Chamberí"
+# The first three are fallbacks, used only if the agent asks for a field the opening covered.
+answers:
+  full_name: [{text: Ana García, value: Ana García}]
+  zone: [{text: "Madrid, Chamberí"}]
+  driver_license: [{text: "Sí, tengo carnet", value: "yes"}]
+  availability: [{text: tiempo completo, value: [full_time]}]
+  preferred_schedule: [{text: por la tarde, value: [afternoon]}]
+  experience_years: [{text: 2 años, value: 2}]
+  experience_platforms: [{text: Glovo y Uber Eats, value: [glovo, uber_eats]}]
+  start_date: [{text: el lunes, value: "next:mon"}]
+expect:
+  stage: qualified
+  status: open
+  fields:
+    full_name: {value: Ana García}
+    zone: {non_null: true}
+    driver_license: {value: true}
+    availability: {value: [full_time]}
+    preferred_schedule: {value: [afternoon]}
+    experience_years: {value: 2}
+    experience_platforms: {value: [glovo, uber_eats]}
+    start_date: {non_null: true}
+  field_order:
+    [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+  events: [application_started, answer_recorded, screening_finished]
+  forbidden_events: [knockout, escalation_raised, withdrawn, abandoned, nudge_sent, rejection]
+  tools: [record_answer, finish_screening]
+  forbidden_tools: [request_review, raise_escalation, record_backout]
+  nudges: 0
+  forbidden_agent_text: [Criba, colonia]
+seed_assumptions:
+  - "Madrid, Chamberí is inside at least one ES Service Area."

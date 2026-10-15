@@ -1,0 +1,20 @@
+# Serve another turn model from the real profile, for the model comparison (spec 004 task 9).
+#
+# The turn model is fixed in src/hermes/profiles/criba-recruiter/config.yaml (Haiku 5.5, ADR 0025)
+# and the profile is baked into the Hermes image. This file mounts a copy of that config with
+# the model changed over the baked one, so nothing in the product's files changes:
+#
+#   sed 's#^  default: anthropic/claude-haiku-5.5#  default: anthropic/claude-sonnet-5.5#' \
+#       src/hermes/profiles/criba-recruiter/config.yaml > /tmp/criba-recruiter-sonnet.yaml
+#   chmod 644 /tmp/criba-recruiter-sonnet.yaml
+#   CRIBA_TURN_MODEL_CONFIG=/tmp/criba-recruiter-sonnet.yaml CRIBA_WEB_PORT=18111 \
+#     docker compose -p criba-real-sonnet \
+#       -f docker-compose.yml -f src/tests/sim/compare/docker-compose.turn-model.yml \
+#       up -d --build --wait
+#
+# The entrypoint copies the mounted file into the profile home on every start. Only the real
+# profile `criba-recruiter` is affected; never combine this with docker-compose.sim.yml.
+services:
+  hermes:
+    volumes:
+      - ${CRIBA_TURN_MODEL_CONFIG:?path of the profile config with the turn model changed}:/opt/criba/hermes/profiles/criba-recruiter/config.yaml:ro

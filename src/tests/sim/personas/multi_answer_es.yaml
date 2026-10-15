@@ -1,0 +1,48 @@
+id: multi_answer_es
+description: >
+  Spain, answers the name question with three fields at once ("Ana López, vivo en Chamberí y
+  tengo carnet"). The agent records the name, the Zone and the license from that one message, in
+  collection order, and goes straight on to availability: the Zone and license questions are
+  never asked. Reaches Qualified the normal way.
+quirks: [multi_answer]
+identity:
+  name: Ana López
+  phone: "+34600000011"
+  country: ES
+  locale: es-ES
+opening:
+  text: "Hola"
+# zone and driver_license are fallbacks, sent only if the agent asks for them; the scenario suite
+# checks that it never does.
+answers:
+  full_name: [{text: "Ana López, vivo en Chamberí y tengo carnet", covers: [full_name, zone, driver_license], value: {full_name: Ana López, driver_license: "yes"}, query: "Madrid, Chamberí"}]
+  zone: [{text: "Madrid, Chamberí"}]
+  driver_license: [{text: "Sí, tengo carnet", value: "yes"}]
+  availability: [{text: medio tiempo, value: [part_time]}]
+  preferred_schedule: [{text: por la mañana, value: [morning]}]
+  experience_years: [{text: 1 año, value: 1}]
+  experience_platforms: [{text: Just Eat, value: [just_eat]}]
+  start_date: [{text: el lunes, value: "next:mon"}]
+expect:
+  stage: qualified
+  status: open
+  fields:
+    full_name: {value: Ana López}
+    zone: {value: Chamberí}
+    driver_license: {value: true}
+    availability: {value: [part_time]}
+    preferred_schedule: {value: [morning]}
+    experience_years: {value: 1}
+    experience_platforms: {value: [just_eat]}
+    start_date: {non_null: true}
+  field_order:
+    [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+  events: [application_started, answer_recorded, screening_finished]
+  event_counts: [{kind: answer_invalid, count: 0}]
+  forbidden_events: [knockout, escalation_raised, answer_ambiguous, nudge_sent]
+  tools: [record_answer, finish_screening]
+  forbidden_tools: [raise_escalation]
+  nudges: 0
+  forbidden_agent_text: [Criba, colonia]
+seed_assumptions:
+  - "\"Chamberí\" alone names exactly one ES Zone (Madrid), inside a Service Area."

@@ -1,0 +1,2354 @@
+[
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Hola, sí, soy Lucía Fernández Gil.",
+  "transcript": "Hola, sí, soy Lucía Fernández Gil."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Hola, sí, soy Lucía Fernández Gil.",
+  "transcript": "Hola, sí, soy Lucía Fernández."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Hola, sí, soy Lucía Fernández Gil.",
+  "transcript": "Hola, sí, soy Lucía Fernández Gil."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Vivo en Madrid, en Chamberí. El código postal es el veintiocho cero diez.",
+  "transcript": "Vivo en Madrid, en Chamberí. El código postal es el 28010."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Vivo en Madrid, en Chamberí. El código postal es el veintiocho cero diez.",
+  "transcript": "Vivo en Madrid, en Chamberí. El código postal es el 28010."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Vivo en Madrid, en Chamberí. El código postal es el veintiocho cero diez.",
+  "transcript": "Vivo en Madrid, en Chamberí. El código postal es el 28010."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Sí, claro, tengo el carné B desde hace años.",
+  "transcript": "Sí, claro. Tengo el carnet B desde hace años."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Sí, claro, tengo el carné B desde hace años.",
+  "transcript": "Sí, claro. Tengo el carnet B desde hace años."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Sí, claro, tengo el carné B desde hace años.",
+  "transcript": "Sí, claro. Tengo el carnet B desde hace años."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Con moto, una de ciento veinticinco.",
+  "transcript": "Con moto, una de 125."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Con moto, una de ciento veinticinco.",
+  "transcript": "Con moto, una de 125."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Con moto, una de ciento veinticinco.",
+  "transcript": "Con moto, una de 125."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 4,
+  "condition": "clean",
+  "text": "Jornada completa.",
+  "transcript": "Jornada completa."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 4,
+  "condition": "loud",
+  "text": "Jornada completa.",
+  "transcript": "Jornada completa."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 4,
+  "condition": "moderate",
+  "text": "Jornada completa.",
+  "transcript": "Jornada completa."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 5,
+  "condition": "clean",
+  "text": "Por las tardes, mejor.",
+  "transcript": "Por las tardes, mejor."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 5,
+  "condition": "loud",
+  "text": "Por las tardes, mejor.",
+  "transcript": "Por las tardes, mejor."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 5,
+  "condition": "moderate",
+  "text": "Por las tardes, mejor.",
+  "transcript": "Por las tardes, mejor."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 6,
+  "condition": "clean",
+  "text": "Tres años, primero con Glovo y luego con Uber Eats.",
+  "transcript": "Tres años. Primero con Glovo y luego con Uber Eats."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 6,
+  "condition": "loud",
+  "text": "Tres años, primero con Glovo y luego con Uber Eats.",
+  "transcript": "Tres años. Primero con Glovo y luego con Uber Eats."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 6,
+  "condition": "moderate",
+  "text": "Tres años, primero con Glovo y luego con Uber Eats.",
+  "transcript": "Tres años. Primero con Glovo y luego con Uber Eats."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 7,
+  "condition": "clean",
+  "text": "Puedo empezar el lunes que viene.",
+  "transcript": "Puedo empezar el lunes que viene."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 7,
+  "condition": "loud",
+  "text": "Puedo empezar el lunes que viene.",
+  "transcript": "Puedo empezar el lunes que viene."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 7,
+  "condition": "moderate",
+  "text": "Puedo empezar el lunes que viene.",
+  "transcript": "Puedo empezar el lunes que viene."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 8,
+  "condition": "clean",
+  "text": "Sí, todo correcto.",
+  "transcript": "Sí, todo correcto."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 8,
+  "condition": "loud",
+  "text": "Sí, todo correcto.",
+  "transcript": "Sí, todo correcto."
+ },
+ {
+  "call": "es01",
+  "country": "ES",
+  "turn": 8,
+  "condition": "moderate",
+  "text": "Sí, todo correcto.",
+  "transcript": "Sí, todo correcto."
+ },
+ {
+  "call": "es02",
+  "country": "ES",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Me llamo Javier Moreno Ruiz.",
+  "transcript": "Me llamo Javier Moreno Ruiz."
+ },
+ {
+  "call": "es02",
+  "country": "ES",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Me llamo Javier Moreno Ruiz.",
+  "transcript": "Me llamo Javier Moreno Ruiz."
+ },
+ {
+  "call": "es02",
+  "country": "ES",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Me llamo Javier Moreno Ruiz.",
+  "transcript": "Me llamo Javier Moreno Ruiz."
+ },
+ {
+  "call": "es02",
+  "country": "ES",
+  "turn": 1,
+  "condition": "clean",
+  "text": "En Vallecas. Veintiocho cero treinta y ocho.",
+  "transcript": "En Vallecas, 28038."
+ },
+ {
+  "call": "es02",
+  "country": "ES",
+  "turn": 1,
+  "condition": "loud",
+  "text": "En Vallecas. Veintiocho cero treinta y ocho.",
+  "transcript": "En Vallecas, 28038."
+ },
+ {
+  "call": "es02",
+  "country": "ES",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "En Vallecas. Veintiocho cero treinta y ocho.",
+  "transcript": "En Vallecas, 28038."
+ },
+ {
+  "call": "es02",
+  "country": "ES",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Qué va, no tengo carné todavía. Me lo estoy sacando.",
+  "transcript": "Qué va, no tengo carnet todavía. Me lo estoy sacando."
+ },
+ {
+  "call": "es02",
+  "country": "ES",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Qué va, no tengo carné todavía. Me lo estoy sacando.",
+  "transcript": "¿Qué va? No tengo carnet todavía. Me lo estoy sacando."
+ },
+ {
+  "call": "es02",
+  "country": "ES",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Qué va, no tengo carné todavía. Me lo estoy sacando.",
+  "transcript": "Qué va, no tengo carnet todavía. Me lo estoy sacando."
+ },
+ {
+  "call": "es02",
+  "country": "ES",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Vale, vale. Pues os escribo cuando lo tenga, gracias.",
+  "transcript": "Vale, vale. Pues os escribo cuando lo tenga. Gracias."
+ },
+ {
+  "call": "es02",
+  "country": "ES",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Vale, vale. Pues os escribo cuando lo tenga, gracias.",
+  "transcript": "Vale, vale. Pues os escribo cuando lo tenga. Gracias."
+ },
+ {
+  "call": "es02",
+  "country": "ES",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Vale, vale. Pues os escribo cuando lo tenga, gracias.",
+  "transcript": "Vale, vale. Pues os escribo cuando lo tenga. Gracias."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Hola, soy Rocío Jiménez Vega.",
+  "transcript": "Hola, soy Rocío Jiménez Vega."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Hola, soy Rocío Jiménez Vega.",
+  "transcript": "Hola, soy Rocío Jiménez."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Hola, soy Rocío Jiménez Vega.",
+  "transcript": "Hola, soy Rocío Jiménez Vega."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 1,
+  "condition": "clean",
+  "text": "En Triana, en Sevilla. Cuarenta y uno cero diez.",
+  "transcript": "En Triana, en Sevilla, 41010."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 1,
+  "condition": "loud",
+  "text": "En Triana, en Sevilla. Cuarenta y uno cero diez.",
+  "transcript": "En Triana, en Sevilla. 41010."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "En Triana, en Sevilla. Cuarenta y uno cero diez.",
+  "transcript": "En Triana, en Sevilla, 41010."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 2,
+  "condition": "clean",
+  "text": "El jueves a las diez de la mañana me viene genial.",
+  "transcript": "El jueves a las 10:00 a.m. me viene genial."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 2,
+  "condition": "loud",
+  "text": "El jueves a las diez de la mañana me viene genial.",
+  "transcript": "El jueves a las 10:00 a.m. me viene genial."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "El jueves a las diez de la mañana me viene genial.",
+  "transcript": "El jueves a las 10:00 a.m. me viene genial."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Uy, no, espera. Mejor el viernes dieciséis a las cinco y media de la tarde.",
+  "transcript": "Uy, no, espera. Mejor el viernes 16 a las 5:30 p.m."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Uy, no, espera. Mejor el viernes dieciséis a las cinco y media de la tarde.",
+  "transcript": "Uy, no, espera. Mejor el viernes 16 a las 5:30 p.m."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Uy, no, espera. Mejor el viernes dieciséis a las cinco y media de la tarde.",
+  "transcript": "Uy, no, espera. Mejor el viernes 16 a las 5:30 p.m."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 4,
+  "condition": "clean",
+  "text": "Sí, perfecto, ahí estaré.",
+  "transcript": "Sí, perfecto. Ahí estaré."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 4,
+  "condition": "loud",
+  "text": "Sí, perfecto, ahí estaré.",
+  "transcript": "Sí, perfecto. Ahí está."
+ },
+ {
+  "call": "es03",
+  "country": "ES",
+  "turn": 4,
+  "condition": "moderate",
+  "text": "Sí, perfecto, ahí estaré.",
+  "transcript": "Sí, perfecto. Ahí estaré."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Soy Andrés Navarro Prieto.",
+  "transcript": "Soy Andrés Navarro Prieto."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Soy Andrés Navarro Prieto.",
+  "transcript": "Soy Andrés Navarro Prieto."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Soy Andrés Navarro Prieto.",
+  "transcript": "Soy Andrés Navarro Prieto."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Vivo en Arganzuela, el veintiocho cero cero cinco.",
+  "transcript": "Vivo en Arganzuela, el 28005."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Vivo en Arganzuela, el veintiocho cero cero cinco.",
+  "transcript": "Vivo en Arganzuela, el 28005."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Vivo en Arganzuela, el veintiocho cero cero cinco.",
+  "transcript": "Vivo en Arganzuela, el 28005."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 2,
+  "condition": "clean",
+  "text": "No, perdona, es el veintiocho cero cero siete.",
+  "transcript": "No, perdona, es el 28007."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 2,
+  "condition": "loud",
+  "text": "No, perdona, es el veintiocho cero cero siete.",
+  "transcript": "No, perdona. Es el 28007."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "No, perdona, es el veintiocho cero cero siete.",
+  "transcript": "No, perdona. Es el 28007."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Sí, tengo carné de conducir.",
+  "transcript": "Sí, tengo carnet de conducir."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Sí, tengo carné de conducir.",
+  "transcript": "Sí, tengo carnet de conducir."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Sí, tengo carné de conducir.",
+  "transcript": "Sí, tengo carnet de conducir."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 4,
+  "condition": "clean",
+  "text": "Media jornada, por las mañanas.",
+  "transcript": "Media jornada, por las mañanas."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 4,
+  "condition": "loud",
+  "text": "Media jornada, por las mañanas.",
+  "transcript": "Media jornada, por las mañanas."
+ },
+ {
+  "call": "es04",
+  "country": "ES",
+  "turn": 4,
+  "condition": "moderate",
+  "text": "Media jornada, por las mañanas.",
+  "transcript": "Media jornada, por las mañanas."
+ },
+ {
+  "call": "es05",
+  "country": "ES",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Sí, dime. Soy Marcos Díaz.",
+  "transcript": "Sí, dime. Soy Marcos Díaz."
+ },
+ {
+  "call": "es05",
+  "country": "ES",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Sí, dime. Soy Marcos Díaz.",
+  "transcript": "Sí, dime. Soy Marcos Díaz."
+ },
+ {
+  "call": "es05",
+  "country": "ES",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Sí, dime. Soy Marcos Díaz.",
+  "transcript": "Sí, dime. Soy Marcos Díaz."
+ },
+ {
+  "call": "es05",
+  "country": "ES",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Baja.",
+  "transcript": "Baja."
+ },
+ {
+  "call": "es05",
+  "country": "ES",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Baja.",
+  "transcript": "Baja."
+ },
+ {
+  "call": "es05",
+  "country": "ES",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Baja.",
+  "transcript": "Baja."
+ },
+ {
+  "call": "es05",
+  "country": "ES",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Que no me llaméis más, por favor.",
+  "transcript": "Que no me llaméis más, por favor."
+ },
+ {
+  "call": "es05",
+  "country": "ES",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Que no me llaméis más, por favor.",
+  "transcript": "Que no me llaméis más, por favor."
+ },
+ {
+  "call": "es05",
+  "country": "ES",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Que no me llaméis más, por favor.",
+  "transcript": "Que no me llaméis más, por favor."
+ },
+ {
+  "call": "es05",
+  "country": "ES",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Stop.",
+  "transcript": "\"Stop\"."
+ },
+ {
+  "call": "es05",
+  "country": "ES",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Stop.",
+  "transcript": "Stop."
+ },
+ {
+  "call": "es05",
+  "country": "ES",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Stop.",
+  "transcript": "Stop."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Eh, pues... me llamo Kevin, bueno, Kevin Smith López.",
+  "transcript": "Eh, pues me llamo Kevin. Bueno, Kevin Smith López."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Eh, pues... me llamo Kevin, bueno, Kevin Smith López.",
+  "transcript": "Pues, me llamo Kevin. Bueno, Kevin Smith López."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Eh, pues... me llamo Kevin, bueno, Kevin Smith López.",
+  "transcript": "Eh, pues me llamo Kevin. Bueno, Kevin Smith Loco."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Vivo en Gràcia, en Barcelona, o sea, en el cero ocho cero uno dos.",
+  "transcript": "Vivo en Gràcia, en Barcelona. O sea, en el 08012."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Vivo en Gràcia, en Barcelona, o sea, en el cero ocho cero uno dos.",
+  "transcript": "Vivo en Gràcia, en Barcelona. O sea, en el 08012."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Vivo en Gràcia, en Barcelona, o sea, en el cero ocho cero uno dos.",
+  "transcript": "Vivo en Gràcia, en Barcelona. O sea, en el 08012."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Yes, I mean... sí, sí, tengo carné.",
+  "transcript": "Yes, I mean, sí, sí, tengo carnet."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Yes, I mean... sí, sí, tengo carné.",
+  "transcript": "Yes, I mean, sí, sí, tengo paro."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Yes, I mean... sí, sí, tengo carné.",
+  "transcript": "Yes, I mean, sí, sí, tengo carnet."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Part-time, media jornada, vamos.",
+  "transcript": "Part-time. Media jornada, vamos."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Part-time, media jornada, vamos.",
+  "transcript": "Part-time. Media jornada. Vamos."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Part-time, media jornada, vamos.",
+  "transcript": "Part-time. Media jornada. Vamos."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 4,
+  "condition": "clean",
+  "text": "Mmm, weekends mostly. Los fines de semana.",
+  "transcript": "Mmm, weekends, mostly. Los fines de semana."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 4,
+  "condition": "loud",
+  "text": "Mmm, weekends mostly. Los fines de semana.",
+  "transcript": "Mmm, \"weekends\", mostly. Los fines de semana."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 4,
+  "condition": "moderate",
+  "text": "Mmm, weekends mostly. Los fines de semana.",
+  "transcript": "Mmm, weekends, mostly. Los fines de semana."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 5,
+  "condition": "clean",
+  "text": "Eh... con la bici, que es eléctrica.",
+  "transcript": "Eeeh, con la bici, que es eléctrica."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 5,
+  "condition": "loud",
+  "text": "Eh... con la bici, que es eléctrica.",
+  "transcript": "Eeeh, con la bici, que es eléctrica."
+ },
+ {
+  "call": "es06",
+  "country": "ES",
+  "turn": 5,
+  "condition": "moderate",
+  "text": "Eh... con la bici, que es eléctrica.",
+  "transcript": "Eeeh, con la bici, que es eléctrica."
+ },
+ {
+  "call": "es07",
+  "country": "ES",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Mi nombre es Álvaro Ortega Cano.",
+  "transcript": "Mi nombre es Álvaro Ortega Cano."
+ },
+ {
+  "call": "es07",
+  "country": "ES",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Mi nombre es Álvaro Ortega Cano.",
+  "transcript": "Mi nombre es Álvaro Ortega Cano."
+ },
+ {
+  "call": "es07",
+  "country": "ES",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Mi nombre es Álvaro Ortega Cano.",
+  "transcript": "Mi nombre es Álvaro Ortega Cano."
+ },
+ {
+  "call": "es07",
+  "country": "ES",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Ahora vivo en Alcalá de Henares, el veintiocho ochocientos uno.",
+  "transcript": "Ahora vivo en Alcalá de Henares, el 28801."
+ },
+ {
+  "call": "es07",
+  "country": "ES",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Ahora vivo en Alcalá de Henares, el veintiocho ochocientos uno.",
+  "transcript": "Ahora vivo en Alcalá de Henares, el 28801."
+ },
+ {
+  "call": "es07",
+  "country": "ES",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Ahora vivo en Alcalá de Henares, el veintiocho ochocientos uno.",
+  "transcript": "Ahora vivo en Alcalá de Henares, el 28801."
+ },
+ {
+  "call": "es07",
+  "country": "ES",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Pero me mudo a Valencia, a Ruzafa, cuarenta y seis cero cero seis.",
+  "transcript": "Pero me mudo a Valencia, a Ruzafa, 46006."
+ },
+ {
+  "call": "es07",
+  "country": "ES",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Pero me mudo a Valencia, a Ruzafa, cuarenta y seis cero cero seis.",
+  "transcript": "Pero me mudo a Valencia, a Roçà, 46006."
+ },
+ {
+  "call": "es07",
+  "country": "ES",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Pero me mudo a Valencia, a Ruzafa, cuarenta y seis cero cero seis.",
+  "transcript": "Pero me mudo a Valencia, a Ruzafa, 46006."
+ },
+ {
+  "call": "es07",
+  "country": "ES",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Y si no, en Getafe, veintiocho novecientos uno.",
+  "transcript": "Y si no, en Getafe, 28901."
+ },
+ {
+  "call": "es07",
+  "country": "ES",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Y si no, en Getafe, veintiocho novecientos uno.",
+  "transcript": "Y si no, en Getafe, 28901."
+ },
+ {
+  "call": "es07",
+  "country": "ES",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Y si no, en Getafe, veintiocho novecientos uno.",
+  "transcript": "Y si no, en Getafe, 28901."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Soy Nerea Castillo. Tengo diecinueve años, recién cumplidos.",
+  "transcript": "Soy Nerea Castillo. Tengo 19 años, recién cumplidos."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Soy Nerea Castillo. Tengo diecinueve años, recién cumplidos.",
+  "transcript": "Soy Nerea Castillo. Tengo 19 años, recién cumplidos."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Soy Nerea Castillo. Tengo diecinueve años, recién cumplidos.",
+  "transcript": "Soy Nerea Castillo. Tengo 19 años, recién cumplidos."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Llevo año y medio repartiendo con Just Eat.",
+  "transcript": "Llevo año y medio repartiendo con Just Eat."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Llevo año y medio repartiendo con Just Eat.",
+  "transcript": "Llevo año y medio repartiendo con Just Eat."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Llevo año y medio repartiendo con Just Eat.",
+  "transcript": "Llevo año y medio repartiendo con Just Eat."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Podría empezar el uno de noviembre.",
+  "transcript": "Podría empezar el 1 de noviembre."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Podría empezar el uno de noviembre.",
+  "transcript": "Podría empezar en el 1 de noviembre."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Podría empezar el uno de noviembre.",
+  "transcript": "Podría empezar el 1 de noviembre."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Tengo un coche, un Seat Ibiza del dos mil quince.",
+  "transcript": "Tengo un coche, un Seat Ibiza del 2015."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Tengo un coche, un Seat Ibiza del dos mil quince.",
+  "transcript": "Tengo un coche, un Seat Ibiza del 2015."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Tengo un coche, un Seat Ibiza del dos mil quince.",
+  "transcript": "Tengo un coche, un Seat Ibiza del 2015."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 4,
+  "condition": "clean",
+  "text": "Flexible, me da igual el turno.",
+  "transcript": "Flexible. Me da igual el turno."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 4,
+  "condition": "loud",
+  "text": "Flexible, me da igual el turno.",
+  "transcript": "Flexible. Me da igual el turno."
+ },
+ {
+  "call": "es08",
+  "country": "ES",
+  "turn": 4,
+  "condition": "moderate",
+  "text": "Flexible, me da igual el turno.",
+  "transcript": "Flexible. Me da igual el turno."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Por supuesto, tengo el carné de moto y el de coche.",
+  "transcript": "Por supuesto. Tengo el carnet de moto y el de coche."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Por supuesto, tengo el carné de moto y el de coche.",
+  "transcript": "Por supuesto. Tengo el carnet de moto y el de coche."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Por supuesto, tengo el carné de moto y el de coche.",
+  "transcript": "Por supuesto. Tengo el carnet de moto y el de coche."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Que no, que no he trabajado nunca de repartidor.",
+  "transcript": "Que no, que no he trabajado nunca de repartidor."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Que no, que no he trabajado nunca de repartidor.",
+  "transcript": "Que no, que no he trabajado nunca de repartidor."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Que no, que no he trabajado nunca de repartidor.",
+  "transcript": "Que no, que no he trabajado nunca de repartidor."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Vale.",
+  "transcript": "Vale."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Vale.",
+  "transcript": "Vale."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Vale.",
+  "transcript": "Vale."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Para nada, no me importa trabajar de noche.",
+  "transcript": "Para nada. No me importa trabajar de noche."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Para nada, no me importa trabajar de noche.",
+  "transcript": "Para nada. No me importa trabajar de noche."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Para nada, no me importa trabajar de noche.",
+  "transcript": "Para nada. No me importa trabajar de noche."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 4,
+  "condition": "clean",
+  "text": "Con un patinete eléctrico.",
+  "transcript": "Con un patimete eléctrico."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 4,
+  "condition": "loud",
+  "text": "Con un patinete eléctrico.",
+  "transcript": "Con un patinete eléctrico."
+ },
+ {
+  "call": "es09",
+  "country": "ES",
+  "turn": 4,
+  "condition": "moderate",
+  "text": "Con un patinete eléctrico.",
+  "transcript": "Con un patinete eléctrico."
+ },
+ {
+  "call": "es10",
+  "country": "ES",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Hola. Soy Paula Romero.",
+  "transcript": "Hola, soy Paula Romero."
+ },
+ {
+  "call": "es10",
+  "country": "ES",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Hola. Soy Paula Romero.",
+  "transcript": "Hola, soy Paula Romero."
+ },
+ {
+  "call": "es10",
+  "country": "ES",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Hola. Soy Paula Romero.",
+  "transcript": "Hola, soy Paula Romero."
+ },
+ {
+  "call": "es10",
+  "country": "ES",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Mira, ya no me interesa, he encontrado otro curro.",
+  "transcript": "Mira, ya no me interesa. He encontrado otro curro."
+ },
+ {
+  "call": "es10",
+  "country": "ES",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Mira, ya no me interesa, he encontrado otro curro.",
+  "transcript": "Mira, ya no me interesa. He encontrado otro."
+ },
+ {
+  "call": "es10",
+  "country": "ES",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Mira, ya no me interesa, he encontrado otro curro.",
+  "transcript": "Mira, ya no me interesa. He encontrado otro cliente."
+ },
+ {
+  "call": "es10",
+  "country": "ES",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Dadme de baja, porfa.",
+  "transcript": "Dadme de baja, porfa."
+ },
+ {
+  "call": "es10",
+  "country": "ES",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Dadme de baja, porfa.",
+  "transcript": "Dadme de baja, porfa."
+ },
+ {
+  "call": "es10",
+  "country": "ES",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Dadme de baja, porfa.",
+  "transcript": "Dadme de baja, porfa."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Buenas tardes, soy Guadalupe Ramírez Torres.",
+  "transcript": "Buenas tardes. Soy Guadalupe Ramírez Torres."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Buenas tardes, soy Guadalupe Ramírez Torres.",
+  "transcript": "Buenas tardes. Soy Guadalupe Ramírez Torres."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Buenas tardes, soy Guadalupe Ramírez Torres.",
+  "transcript": "Buenas tardes. Soy Guadalupe Ramírez Torres."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 1,
+  "condition": "clean",
+  "text": "En Coyoacán. El código postal es cero cuatro uno cero cero.",
+  "transcript": "En Coyoacán. El código postal es 04100."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 1,
+  "condition": "loud",
+  "text": "En Coyoacán. El código postal es cero cuatro uno cero cero.",
+  "transcript": "En Coyoacán. El código postal es 04100."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "En Coyoacán. El código postal es cero cuatro uno cero cero.",
+  "transcript": "En Coyoacán. El código postal es 04100."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Sí, tengo licencia de manejo.",
+  "transcript": "Sí, tengo licencia de manejo."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Sí, tengo licencia de manejo.",
+  "transcript": "Sí, tengo licencia de manejo."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Sí, tengo licencia de manejo.",
+  "transcript": "Sí, tengo licencia de manejo."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 3,
+  "condition": "clean",
+  "text": "En motoneta, tengo una Italika.",
+  "transcript": "En motoneta. Tengo una Itálica."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 3,
+  "condition": "loud",
+  "text": "En motoneta, tengo una Italika.",
+  "transcript": "En motoneta. Tengo una Italika."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "En motoneta, tengo una Italika.",
+  "transcript": "En motoneta. Tengo una Itálica."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 4,
+  "condition": "clean",
+  "text": "Tiempo completo.",
+  "transcript": "Tiempo completo."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 4,
+  "condition": "loud",
+  "text": "Tiempo completo.",
+  "transcript": "Tiempo completo."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 4,
+  "condition": "moderate",
+  "text": "Tiempo completo.",
+  "transcript": "Tiempo completo."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 5,
+  "condition": "clean",
+  "text": "En la mañana.",
+  "transcript": "En la mañana."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 5,
+  "condition": "loud",
+  "text": "En la mañana.",
+  "transcript": "En la mañana."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 5,
+  "condition": "moderate",
+  "text": "En la mañana.",
+  "transcript": "En la mañana."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 6,
+  "condition": "clean",
+  "text": "Dos años con Rappi y DiDi Food.",
+  "transcript": "Dos años con Rappi y Didi Food."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 6,
+  "condition": "loud",
+  "text": "Dos años con Rappi y DiDi Food.",
+  "transcript": "Tú sabes que trato y te difundo."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 6,
+  "condition": "moderate",
+  "text": "Dos años con Rappi y DiDi Food.",
+  "transcript": "Dos años con Rappi y Didi Food."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 7,
+  "condition": "clean",
+  "text": "El próximo lunes.",
+  "transcript": "El próximo lunes."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 7,
+  "condition": "loud",
+  "text": "El próximo lunes.",
+  "transcript": "El próximo lunes."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 7,
+  "condition": "moderate",
+  "text": "El próximo lunes.",
+  "transcript": "El próximo lunes."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 8,
+  "condition": "clean",
+  "text": "Sí, está todo bien.",
+  "transcript": "Sí, está todo bien."
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 8,
+  "condition": "loud",
+  "text": "Sí, está todo bien.",
+  "transcript": "Sí, está todo bien. ¡No, no!"
+ },
+ {
+  "call": "mx01",
+  "country": "MX",
+  "turn": 8,
+  "condition": "moderate",
+  "text": "Sí, está todo bien.",
+  "transcript": "Sí, está todo bien. ¡No, no!"
+ },
+ {
+  "call": "mx02",
+  "country": "MX",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Me llamo Luis Hernández Cruz.",
+  "transcript": "Me llamo Luis Hernández Cruz."
+ },
+ {
+  "call": "mx02",
+  "country": "MX",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Me llamo Luis Hernández Cruz.",
+  "transcript": "Me llamo Luis Hernández Cruz."
+ },
+ {
+  "call": "mx02",
+  "country": "MX",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Me llamo Luis Hernández Cruz.",
+  "transcript": "Me llamo Luis Hernández Cruz."
+ },
+ {
+  "call": "mx02",
+  "country": "MX",
+  "turn": 1,
+  "condition": "clean",
+  "text": "En Iztapalapa.",
+  "transcript": "En Iztapalapa."
+ },
+ {
+  "call": "mx02",
+  "country": "MX",
+  "turn": 1,
+  "condition": "loud",
+  "text": "En Iztapalapa.",
+  "transcript": "En Ixtapaluapa."
+ },
+ {
+  "call": "mx02",
+  "country": "MX",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "En Iztapalapa.",
+  "transcript": "En Iztapalapa."
+ },
+ {
+  "call": "mx02",
+  "country": "MX",
+  "turn": 2,
+  "condition": "clean",
+  "text": "No, no tengo licencia. Nomás manejo la bici.",
+  "transcript": "No, no tengo licencia. Nomás manejo una bici."
+ },
+ {
+  "call": "mx02",
+  "country": "MX",
+  "turn": 2,
+  "condition": "loud",
+  "text": "No, no tengo licencia. Nomás manejo la bici.",
+  "transcript": "No, no tengo licencia. Nomás manejo una bici."
+ },
+ {
+  "call": "mx02",
+  "country": "MX",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "No, no tengo licencia. Nomás manejo la bici.",
+  "transcript": "No, no tengo licencia. Nomás manejo una bici."
+ },
+ {
+  "call": "mx02",
+  "country": "MX",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Ah, órale. Bueno, gracias.",
+  "transcript": "Ah, órale. Bueno, gracias."
+ },
+ {
+  "call": "mx02",
+  "country": "MX",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Ah, órale. Bueno, gracias.",
+  "transcript": "Ah, órale. Bueno, gracias."
+ },
+ {
+  "call": "mx02",
+  "country": "MX",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Ah, órale. Bueno, gracias.",
+  "transcript": "Ah, órale. Bueno, gracias."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Qué tal, soy Jesús Garza Treviño.",
+  "transcript": "¿Qué tal? Soy Jesús Garza Treviño."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Qué tal, soy Jesús Garza Treviño.",
+  "transcript": "¿Qué tal? Soy Jesús Garza Treviño."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Qué tal, soy Jesús Garza Treviño.",
+  "transcript": "¿Qué tal? Soy Jesús Garza Treviño."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 1,
+  "condition": "clean",
+  "text": "En San Nicolás de los Garza, Nuevo León.",
+  "transcript": "En San Nicolás de los Garza, Nuevo León."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 1,
+  "condition": "loud",
+  "text": "En San Nicolás de los Garza, Nuevo León.",
+  "transcript": "En San Nicolás de los Garza, Nuevo León."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "En San Nicolás de los Garza, Nuevo León.",
+  "transcript": "En San Nicolás de los Garza, Nuevo León."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 2,
+  "condition": "clean",
+  "text": "El martes a las once, ese me queda.",
+  "transcript": "El martes a las 11:00 a.m. Ese me queda."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 2,
+  "condition": "loud",
+  "text": "El martes a las once, ese me queda.",
+  "transcript": "El martes a las 11:00 a.m. Ese me queda."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "El martes a las once, ese me queda.",
+  "transcript": "El martes a las 11:00 a.m. Ese me queda."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 3,
+  "condition": "clean",
+  "text": "No, mejor el miércoles catorce a las cuatro de la tarde.",
+  "transcript": "No, mejor el miércoles 14 a las 4:00 p.m."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 3,
+  "condition": "loud",
+  "text": "No, mejor el miércoles catorce a las cuatro de la tarde.",
+  "transcript": "No, mejor el miércoles 14 a las 4:00 p.m."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "No, mejor el miércoles catorce a las cuatro de la tarde.",
+  "transcript": "No, mejor el miércoles 14 a las 4:00 p.m."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 4,
+  "condition": "clean",
+  "text": "Sí, ándale, ahí nos vemos.",
+  "transcript": "Sí, ándale. Ahí nos vemos."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 4,
+  "condition": "loud",
+  "text": "Sí, ándale, ahí nos vemos.",
+  "transcript": "Sí, ándale. Ahí nos vemos."
+ },
+ {
+  "call": "mx03",
+  "country": "MX",
+  "turn": 4,
+  "condition": "moderate",
+  "text": "Sí, ándale, ahí nos vemos.",
+  "transcript": "Sí, ándale. Ahí nos vemos."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Soy Karla Domínguez.",
+  "transcript": "Soy Karla Domínguez."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Soy Karla Domínguez.",
+  "transcript": "Soy Karla Domínguez."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Soy Karla Domínguez.",
+  "transcript": "Soy Karla Domínguez."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 1,
+  "condition": "clean",
+  "text": "En Iztapalapa, el cero nueve cero cero cero.",
+  "transcript": "En Iztapalapa, el 09000."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 1,
+  "condition": "loud",
+  "text": "En Iztapalapa, el cero nueve cero cero cero.",
+  "transcript": "En Iztapalapa, el 09000."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "En Iztapalapa, el cero nueve cero cero cero.",
+  "transcript": "En Iztapalapa, el 09000."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 2,
+  "condition": "clean",
+  "text": "No, perdón, es el cero nueve, dos treinta.",
+  "transcript": "No, perdón. Es el 09230."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 2,
+  "condition": "loud",
+  "text": "No, perdón, es el cero nueve, dos treinta.",
+  "transcript": "No, perdón. Es el 09230."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "No, perdón, es el cero nueve, dos treinta.",
+  "transcript": "No, perdón. Es el 09230."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Sí tengo licencia, la de motociclista.",
+  "transcript": "Sí, tengo licencia, la de motociclista."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Sí tengo licencia, la de motociclista.",
+  "transcript": "Sí tengo licencia, la de motociclista."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Sí tengo licencia, la de motociclista.",
+  "transcript": "Sí tengo licencia, la de motociclista."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 4,
+  "condition": "clean",
+  "text": "En la Juárez también puedo, cero seis, seiscientos.",
+  "transcript": "En la Juárez también puedo. 06600."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 4,
+  "condition": "loud",
+  "text": "En la Juárez también puedo, cero seis, seiscientos.",
+  "transcript": "En la Juárez también puedo. 06600."
+ },
+ {
+  "call": "mx04",
+  "country": "MX",
+  "turn": 4,
+  "condition": "moderate",
+  "text": "En la Juárez también puedo, cero seis, seiscientos.",
+  "transcript": "En la Juárez también puedo. 06600."
+ },
+ {
+  "call": "mx05",
+  "country": "MX",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Bueno, sí. Soy Ramiro Salinas.",
+  "transcript": "Bueno, sí. Soy Ramiro Salinas."
+ },
+ {
+  "call": "mx05",
+  "country": "MX",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Bueno, sí. Soy Ramiro Salinas.",
+  "transcript": "Bueno, sí. Soy Ramiro Salinas."
+ },
+ {
+  "call": "mx05",
+  "country": "MX",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Bueno, sí. Soy Ramiro Salinas.",
+  "transcript": "Bueno, sí, soy Ramiro Salinas."
+ },
+ {
+  "call": "mx05",
+  "country": "MX",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Ya no me llamen, por favor.",
+  "transcript": "Ya no me llamen, por favor."
+ },
+ {
+  "call": "mx05",
+  "country": "MX",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Ya no me llamen, por favor.",
+  "transcript": "Ya no me llamen, por favor."
+ },
+ {
+  "call": "mx05",
+  "country": "MX",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Ya no me llamen, por favor.",
+  "transcript": "Ya no me llamen, por favor."
+ },
+ {
+  "call": "mx05",
+  "country": "MX",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Baja.",
+  "transcript": "Baja."
+ },
+ {
+  "call": "mx05",
+  "country": "MX",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Baja.",
+  "transcript": "Baja."
+ },
+ {
+  "call": "mx05",
+  "country": "MX",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Baja.",
+  "transcript": "Baja."
+ },
+ {
+  "call": "mx05",
+  "country": "MX",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Stop.",
+  "transcript": "\"Stop\"."
+ },
+ {
+  "call": "mx05",
+  "country": "MX",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Stop.",
+  "transcript": "Stop."
+ },
+ {
+  "call": "mx05",
+  "country": "MX",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Stop.",
+  "transcript": "\"Stop\"."
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Este... pues, mi nombre es Brayan Hernández.",
+  "transcript": "Este, pues mi nombre es Brayan Hernández."
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Este... pues, mi nombre es Brayan Hernández.",
+  "transcript": "Este, pues mi nombre es Brayan Hernández."
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Este... pues, mi nombre es Brayan Hernández.",
+  "transcript": "Este, pues mi nombre es Brayan Hernández."
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Ah, okay, sí, tengo license... la licencia, sí.",
+  "transcript": "Ah, okey, sí, tengo \"license\". La licencia, sí."
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Ah, okay, sí, tengo license... la licencia, sí.",
+  "transcript": "Ah, okey. Sí, tengo \"license\". \"License\", sí."
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Ah, okay, sí, tengo license... la licencia, sí.",
+  "transcript": "Ah, okey. Sí, tengo \"license\". La licencia, sí."
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Part time, medio tiempo.",
+  "transcript": "\"Part-time\", medio tiempo."
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Part time, medio tiempo.",
+  "transcript": "No hay. No hay. Medio tiempo."
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Part time, medio tiempo.",
+  "transcript": "Part-time, medio tiempo."
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Ehh... Uber Eats, como un año.",
+  "transcript": "Eeeh, Uber Eats como un año."
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Ehh... Uber Eats, como un año.",
+  "transcript": "Eh, Uber Eats, como un año."
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Ehh... Uber Eats, como un año.",
+  "transcript": "Eeeh, Uber Eats como un año."
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 4,
+  "condition": "clean",
+  "text": "En la noche, after school, ¿sabes?",
+  "transcript": "En la noche, \"after school\", ¿sabes?"
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 4,
+  "condition": "loud",
+  "text": "En la noche, after school, ¿sabes?",
+  "transcript": "En la noche, \"after school\", ¿sabes?"
+ },
+ {
+  "call": "mx06",
+  "country": "MX",
+  "turn": 4,
+  "condition": "moderate",
+  "text": "En la noche, after school, ¿sabes?",
+  "transcript": "En la noche, \"after school\", ¿sabes?"
+ },
+ {
+  "call": "mx07",
+  "country": "MX",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Mi nombre es Fernando Aguilar Mendoza.",
+  "transcript": "Mi nombre es Fernando Aguilar Mendoza."
+ },
+ {
+  "call": "mx07",
+  "country": "MX",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Mi nombre es Fernando Aguilar Mendoza.",
+  "transcript": "Mi nombre es Fernando Aguilar Mendoza."
+ },
+ {
+  "call": "mx07",
+  "country": "MX",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Mi nombre es Fernando Aguilar Mendoza.",
+  "transcript": "Mi nombre es Fernando Aguilar Mendoza."
+ },
+ {
+  "call": "mx07",
+  "country": "MX",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Vivo en Zapopan, Guadalajara. Código postal cuatro cinco uno cero cero.",
+  "transcript": "Vivo en Zapopan, Guadalajara. Código postal 45100."
+ },
+ {
+  "call": "mx07",
+  "country": "MX",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Vivo en Zapopan, Guadalajara. Código postal cuatro cinco uno cero cero.",
+  "transcript": "Vivo en Zapopan, Guadalajara. Código postal 45100."
+ },
+ {
+  "call": "mx07",
+  "country": "MX",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Vivo en Zapopan, Guadalajara. Código postal cuatro cinco uno cero cero.",
+  "transcript": "Vivo en Zapopan, Guadalajara. Código postal 45100."
+ },
+ {
+  "call": "mx07",
+  "country": "MX",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Antes vivía en Puebla, en Angelópolis.",
+  "transcript": "Antes vivía en Puebla, en Angelópolis."
+ },
+ {
+  "call": "mx07",
+  "country": "MX",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Antes vivía en Puebla, en Angelópolis.",
+  "transcript": "Antes vivía en Puebla, en Angelópolis."
+ },
+ {
+  "call": "mx07",
+  "country": "MX",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Antes vivía en Puebla, en Angelópolis.",
+  "transcript": "Antes vivía en Puebla, en Angelópolis."
+ },
+ {
+  "call": "mx07",
+  "country": "MX",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Y también puedo en Ecatepec, Estado de México, cincuenta y cinco cero cero cero.",
+  "transcript": "Y también puedo en Ecatepec, Estado de México, 55000."
+ },
+ {
+  "call": "mx07",
+  "country": "MX",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Y también puedo en Ecatepec, Estado de México, cincuenta y cinco cero cero cero.",
+  "transcript": "Y también puedo en Ecatepec, Estado de México, 55000."
+ },
+ {
+  "call": "mx07",
+  "country": "MX",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Y también puedo en Ecatepec, Estado de México, cincuenta y cinco cero cero cero.",
+  "transcript": "Y también puedo en Ecatepec, Estado de México, 55000."
+ },
+ {
+  "call": "mx08",
+  "country": "MX",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Soy Ximena Ochoa. Tengo diecisiete años.",
+  "transcript": "Soy Jimena Ochoa. Tengo 17 años."
+ },
+ {
+  "call": "mx08",
+  "country": "MX",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Soy Ximena Ochoa. Tengo diecisiete años.",
+  "transcript": "Soy Jimena Ochoa. Tengo 17 años."
+ },
+ {
+  "call": "mx08",
+  "country": "MX",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Soy Ximena Ochoa. Tengo diecisiete años.",
+  "transcript": "Soy Jimena Ochoa. Tengo 17 años."
+ },
+ {
+  "call": "mx08",
+  "country": "MX",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Como seis meses con DiDi.",
+  "transcript": "Como seis meses con Didi."
+ },
+ {
+  "call": "mx08",
+  "country": "MX",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Como seis meses con DiDi.",
+  "transcript": "Como seis meses con Didi."
+ },
+ {
+  "call": "mx08",
+  "country": "MX",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Como seis meses con DiDi.",
+  "transcript": "Como seis meses con Didi."
+ },
+ {
+  "call": "mx08",
+  "country": "MX",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Puedo empezar el quince de noviembre.",
+  "transcript": "Puedo empezar el 15 de noviembre."
+ },
+ {
+  "call": "mx08",
+  "country": "MX",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Puedo empezar el quince de noviembre.",
+  "transcript": "Puedo empezar el 15 de noviembre."
+ },
+ {
+  "call": "mx08",
+  "country": "MX",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Puedo empezar el quince de noviembre.",
+  "transcript": "Puedo empezar el 15 de noviembre."
+ },
+ {
+  "call": "mx08",
+  "country": "MX",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Mi moto es del dos mil diecinueve.",
+  "transcript": "Mi moto es del 2019."
+ },
+ {
+  "call": "mx08",
+  "country": "MX",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Mi moto es del dos mil diecinueve.",
+  "transcript": "Mi moto es del 2019."
+ },
+ {
+  "call": "mx08",
+  "country": "MX",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Mi moto es del dos mil diecinueve.",
+  "transcript": "Mi moto es del 2019."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Simón, sí tengo licencia.",
+  "transcript": "Simón, sí tengo licencia."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Simón, sí tengo licencia.",
+  "transcript": "Simón, sí tengo licencia."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Simón, sí tengo licencia.",
+  "transcript": "Simón, sí tengo licencia."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Nel, nunca he trabajado de repartidora.",
+  "transcript": "Nee, nunca he trabajado de repartidora."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Nel, nunca he trabajado de repartidora.",
+  "transcript": "Neeey, nunca he trabajado de repartidor."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Nel, nunca he trabajado de repartidora.",
+  "transcript": "Neeey, nunca he trabajado de repartidora."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Sí, cómo no.",
+  "transcript": "Sí, cómo no."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Sí, cómo no.",
+  "transcript": "Sí, cómo no."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Sí, cómo no.",
+  "transcript": "Sí, cómo no."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 3,
+  "condition": "clean",
+  "text": "Tengo carro, un Tsuru.",
+  "transcript": "Tengo carro, un Tsuru."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 3,
+  "condition": "loud",
+  "text": "Tengo carro, un Tsuru.",
+  "transcript": "Tengo carro, un Subaru."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 3,
+  "condition": "moderate",
+  "text": "Tengo carro, un Tsuru.",
+  "transcript": "Tengo carro, un Zuru."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 4,
+  "condition": "clean",
+  "text": "Fines de semana nomás.",
+  "transcript": "Fines de semana, nomás."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 4,
+  "condition": "loud",
+  "text": "Fines de semana nomás.",
+  "transcript": "Fines de semana nomás."
+ },
+ {
+  "call": "mx09",
+  "country": "MX",
+  "turn": 4,
+  "condition": "moderate",
+  "text": "Fines de semana nomás.",
+  "transcript": "Fines de semana, nomás."
+ },
+ {
+  "call": "mx10",
+  "country": "MX",
+  "turn": 0,
+  "condition": "clean",
+  "text": "Hola, soy Diego Fuentes.",
+  "transcript": "Hola, soy Diego Fuentes."
+ },
+ {
+  "call": "mx10",
+  "country": "MX",
+  "turn": 0,
+  "condition": "loud",
+  "text": "Hola, soy Diego Fuentes.",
+  "transcript": "Hola, soy Diego Fuentes."
+ },
+ {
+  "call": "mx10",
+  "country": "MX",
+  "turn": 0,
+  "condition": "moderate",
+  "text": "Hola, soy Diego Fuentes.",
+  "transcript": "Hola, soy Diego Fuentes."
+ },
+ {
+  "call": "mx10",
+  "country": "MX",
+  "turn": 1,
+  "condition": "clean",
+  "text": "Fíjate que ya encontré otro jale, gracias.",
+  "transcript": "Fíjate que ya encontré otro jale. Gracias."
+ },
+ {
+  "call": "mx10",
+  "country": "MX",
+  "turn": 1,
+  "condition": "loud",
+  "text": "Fíjate que ya encontré otro jale, gracias.",
+  "transcript": "Fíjate que ya encontré otro jale. Gracias."
+ },
+ {
+  "call": "mx10",
+  "country": "MX",
+  "turn": 1,
+  "condition": "moderate",
+  "text": "Fíjate que ya encontré otro jale, gracias.",
+  "transcript": "Fíjate que ya encontré otro jale. Gracias."
+ },
+ {
+  "call": "mx10",
+  "country": "MX",
+  "turn": 2,
+  "condition": "clean",
+  "text": "Bórrenme de su lista, ya no me marquen.",
+  "transcript": "Bórrenme de su lista. Ya no me marquen."
+ },
+ {
+  "call": "mx10",
+  "country": "MX",
+  "turn": 2,
+  "condition": "loud",
+  "text": "Bórrenme de su lista, ya no me marquen.",
+  "transcript": "Bórrenme de su lista. Ya no me marquen."
+ },
+ {
+  "call": "mx10",
+  "country": "MX",
+  "turn": 2,
+  "condition": "moderate",
+  "text": "Bórrenme de su lista, ya no me marquen.",
+  "transcript": "Bórrenme de su lista. Ya no me marquen."
+ }
+]

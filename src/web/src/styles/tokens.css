@@ -1,0 +1,140 @@
+/*
+ * The only file that defines custom properties. Every colour is declared once as
+ * light-dark(light, dark); the theme switches through color-scheme (system by default,
+ * overridden by data-theme). Needs Chrome 123+, Safari 17.5+ or Firefox 120+.
+ *
+ * Direction: Quiet Console (DESIGN.md), light first.
+ * Seed palette, kept in every card: cream #f6f3ec, olive ink #343f2b, lime #97ff48.
+ * One-pixel seams instead of shadows; lime is the single live accent; mono for figures and labels.
+ */
+
+:root {
+  color-scheme: light dark;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+:root {
+  /* Console surfaces, text and accents. --ink and --ink-strong below are shared with the legacy set. */
+  --ground: light-dark(#f6f3ec, #161b12);
+  --ground-dot: light-dark(rgba(52, 63, 43, 0.07), rgba(228, 236, 219, 0.06));
+  --rail: light-dark(rgba(246, 243, 236, 0.85), rgba(22, 27, 18, 0.85));
+  --panel: light-dark(#ffffff, #20271a);
+  --seam: light-dark(#dcd9cc, #343f2b);
+  --seam-strong: light-dark(#c9c6b6, #465538);
+  --seam-soft: light-dark(#eeece3, #2a3322);
+  --ink-muted: light-dark(#6b7262, #a3ad97);
+  --ink-faint: light-dark(#9a9f90, #858e79);
+  --live: light-dark(#97ff48, #97ff48);
+  --live-soft: light-dark(#eefbe1, #2c3a22);
+  --live-ink: light-dark(#20271a, #20271a);
+  --live-edge: light-dark(#6fd12a, #6fd12a);
+  --status-warn: light-dark(#b4560f, #f0a064);
+  --status-warn-soft: light-dark(#fff7f0, #3a2418);
+  --status-warn-edge: light-dark(#e9c9ad, #6b4128);
+  --status-info: light-dark(#2f6f8f, #7ab8d6);
+  --status-success: light-dark(#3f9b3a, #6cc866);
+  /* The Client's own accent (Grupo Sazón), for the Client mark only; dark meets 3:1 on --ground and --panel. */
+  --client-accent: light-dark(#c8462b, #e0664a);
+
+  /* Phone skin for the Candidate's chat (WhatsApp-faithful). Wallpaper and bubbles keep today's chat colours. */
+  --phone-wallpaper: light-dark(#efeae2, #1b2116);
+  --phone-header: light-dark(#008069, #1f2c34);
+  --phone-bubble-in: light-dark(#ffffff, #273020);
+  --phone-bubble-out: light-dark(#d9fdd3, #2f4a24);
+  --phone-tick: light-dark(#53bdeb, #53bdeb);
+  --phone-meta: light-dark(#667781, #8696a0);
+  --phone-reply: light-dark(#ffffff, #2a3524);
+
+  /* Spacing, 4px scale. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+  --space-9: 64px;
+
+  /* Layout sizes: the navigation column (open and the icon rail), the widest page, the compact row. */
+  --nav-rail: 56px;
+  --nav-open: 14rem;
+  --page-max: 1920px;
+  --row-compact: 36px;
+
+  /* Radius: the console is square-shouldered (4, 6, 8), with a pill for tags. */
+  --radius-1: 4px;
+  --radius-2: 6px;
+  --radius-3: 8px;
+  --radius-pill: 999px;
+
+  /* Type scale, weights, leading and tracking (Inter for text, Azeret Mono for figures and labels). */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 15px;
+  --text-lg: 20px;
+  --text-xl: 30px;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-body: 1.45;
+  --tracking-tight: -0.02em;
+  --tracking-mono: 0.04em;
+  --tracking-caps: 0.16em;
+
+  /* Motion: short, ease-out, and nothing longer than a third of a second. */
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 320ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Legacy names, at the exact values app.css carried before this file existed. */
+  --bg: light-dark(#f6f3ec, #161b12);
+  --surface: light-dark(#ffffff, #20271a);
+  --surface-2: light-dark(#f5ffee, #273020);
+  --ink: light-dark(#343f2b, #e4ecdb);
+  --ink-strong: light-dark(#20271a, #f5ffee);
+  --muted: light-dark(rgba(52, 63, 43, 0.62), rgba(228, 236, 219, 0.62));
+  --line: light-dark(#dae3d3, #343f2b);
+  --accent: light-dark(#97ff48, #97ff48);
+  --accent-ink: light-dark(#20271a, #20271a);
+  --accent-soft: light-dark(#e7fad7, #2c3a22);
+  --warn: light-dark(#fff4ed, #3a2418);
+  --warn-ink: light-dark(#8a3b12, #ffc9a8);
+  --danger: light-dark(#b3261e, #ff9a92);
+  --bubble-in: light-dark(#ffffff, #273020);
+  --bubble-out: light-dark(#d9fdd3, #2f4a24);
+  --bubble-human: light-dark(#e3efff, #1f3350);
+  --chat-bg: light-dark(#efeae2, #1b2116);
+  --focus: light-dark(#20271a, #97ff48);
+
+  /* Chart tokens (dataviz reference palette, first three categorical slots, validated). */
+  --series-1: light-dark(#2a78d6, #3987e5);
+  --series-2: light-dark(#eb6834, #d95926);
+  --series-3: light-dark(#1baf7a, #199e70);
+  --ramp-1: light-dark(#86b6ef, #6da7ec);
+  --ramp-2: light-dark(#5598e7, #4a91e9);
+  --ramp-3: light-dark(#2a78d6, #307cd7);
+  --ramp-4: light-dark(#1c5cab, #2469ba);
+  --ramp-5: light-dark(#104281, #18579e);
+  --chart-grid: light-dark(#e1e0d9, #2c2c2a);
+  --chart-axis: light-dark(#c3c2b7, #383835);
+  --chart-label: light-dark(#52514e, #c3c2b7);
+
+  --radius: 16px;
+  --radius-lg: 24px;
+  --font: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Azeret Mono", ui-monospace, monospace;
+}

@@ -1,0 +1,14 @@
+# Voice persona (voice-agent sim-personas SM4): confirm_correction_mx on a voice call, Mexico.
+# Corrects the Zone at the read-back, reaches Qualified, then books by voice after the Approval.
+id: confirm_correction_mx
+description: >
+  Mexico, a Zone correction said at the read-back ("no, mi zona es La Paz"); the Zone check
+  runs again, the summary comes back and the Candidate confirms. Qualified, then a slot said
+  after the Approval books the Interview.
+typed: confirm_correction_mx
+phone: "+525500001002"
+moments:
+  correction:
+    field: zone
+    text: "no, mi zona es La Paz"
+booking: {}

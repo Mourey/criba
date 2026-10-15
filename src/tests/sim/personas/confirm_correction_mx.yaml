@@ -1,0 +1,51 @@
+id: confirm_correction_mx
+description: >
+  Mexico, corrects the Zone at the confirm step ("no, mi zona es La Paz"). The agent records the
+  Zone again instead of finishing, the backend re-runs the Zone check (La Paz, Puebla is
+  covered), the summary question comes back, and the Candidate confirms. Reaches Qualified with
+  the corrected Zone.
+quirks: [corrections]
+identity:
+  name: Diego Martínez
+  phone: "+525500000012"
+  country: MX
+  locale: es-MX
+opening:
+  text: "Hola, quiero ser repartidor"
+answers:
+  full_name: [{text: Diego Martínez, value: Diego Martínez}]
+  zone: [{text: "Centro, Puebla"}]
+  driver_license: [{text: "Sí, tengo licencia de manejo", value: "yes"}]
+  availability: [{text: tiempo completo, value: [full_time]}]
+  preferred_schedule: [{text: flexible, value: [flexible]}]
+  experience_years: [{text: 2 años, value: 2}]
+  experience_platforms: [{text: DiDi Food, value: [didi_food]}]
+  start_date: [{text: el lunes, value: "next:mon"}]
+confirm:
+  - text: "no, mi zona es La Paz"
+    field: zone
+    query: "La Paz, Puebla"
+  - text: "sí, ahora sí"
+expect:
+  stage: qualified
+  status: open
+  fields:
+    full_name: {value: Diego Martínez}
+    zone: {value: La Paz}
+    driver_license: {value: true}
+    availability: {value: [full_time]}
+    preferred_schedule: {value: [flexible]}
+    experience_years: {value: 2}
+    experience_platforms: {value: [didi_food]}
+    start_date: {non_null: true}
+  field_order:
+    [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+  events: [application_started, answer_recorded, screening_finished]
+  event_counts: [{kind: screening_finished, count: 1}, {kind: answer_invalid, count: 0}]
+  forbidden_events: [knockout, escalation_raised, answer_ambiguous, nudge_sent]
+  tools: [record_answer, finish_screening]
+  nudges: 0
+  forbidden_agent_text: [Criba]
+seed_assumptions:
+  - "\"Centro, Puebla\" names exactly one MX Zone (name and city), inside a Service Area."
+  - "\"La Paz\" alone names exactly one MX Zone (Puebla), inside a Service Area."

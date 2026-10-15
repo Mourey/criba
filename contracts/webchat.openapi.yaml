@@ -1,0 +1,625 @@
+openapi: 3.1.0
+info:
+  title: Criba web chat channel API
+  version: 0.1.0-phase2
+  summary: The Candidate-side web chat channel, shared by the test chat page, the simulator and the demo.
+  description: |
+    Owner after wave 0: lane B (channel). Frozen by spec 005; change only through lane B, in a
+    separate commit listed in the wave merge notes. The sim clock endpoints at `/api/sim/clock*`
+    are documented here so the simulator has one contract, but are implemented by lane D
+    (`src/backend/criba/api/sim.py`); changes to them go through lane B with lane D's agreement.
+
+    **Model.** A conversation is one web chat identity of one Candidate (ADR 0021): the
+    Candidate writes first (ADR 0013), and the router attaches each message to the Candidate's
+    open Application, reopens one within 30 days of a Knockout or Abandonment, or starts a new
+    one. The client never sees Application or Candidate ids.
+
+    **Voice conversations** (ADR 0059). Voice is its own flow and channel, never a mode of the
+    chat. `POST /api/chat/conversations` with `channel: voice` starts a voice conversation: the
+    entry point of a voice page. Only a voice conversation starts a call
+    (`POST .../voice-session`); its transcript (the spoken turns and the spoken replies, each
+    `modality: spoken`) is read with the same `GET` endpoints, and it takes no typed message or
+    tap (404). A web chat conversation is unchanged and cannot start a call (409).
+
+    **Access.** No login. `conversation_id` is an unguessable token returned by
+    `POST /api/chat/conversations`; treat it as a bearer secret.
+
+    **Idempotency.** Every inbound message carries a client-generated `message_id`
+    (a UUID is recommended). Re-sending the same `message_id` returns the original result with
+    `duplicate: true` and never starts a second agent run.
+
+    **Reading.** Outbound messages arrive asynchronously. Poll
+    `GET .../messages?after=<cursor>`; `wait` turns it into a long poll. The cursor is the
+    integer `id` of the last message seen; `0` reads from the start.
+
+    **Interactive options.** Agent messages may carry `interactive` options (reply buttons for up
+    to 3, a list for up to 10, as on WhatsApp). Answer one with `POST .../replies`.
+
+    Candidate-facing examples are in Spanish. Team members are always shown as the Client's team,
+    never by name and never as Criba.
+servers:
+  - url: http://localhost:8080
+    description: nginx in Compose (proxies /api to the backend)
+  - url: http://localhost:4011
+    description: Prism mock (`npx @stoplight/prism-cli mock contracts/webchat.openapi.yaml -p 4011`)
+security: []
+tags:
+  - name: chat
+  - name: sim
+
+paths:
+  /api/chat/conversations:
+    post:
+      tags: [chat]
+      operationId: startConversation
+      summary: Start a web chat or voice conversation
+      description: Creates (or, with a known `phone`, finds) the Candidate's web chat identity, or with `channel` `voice` their voice identity (ADR 0059). No Application exists until the first message.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartConversationRequest' }
+            examples:
+              spain: { value: { country: ES, phone: '+34612345678', locale: es-ES, client: test_chat } }
+              mexico: { value: { country: MX, phone: null, locale: es-MX, client: simulator } }
+              voice: { value: { country: ES, channel: voice, client: demo } }
+      responses:
+        '201':
+          description: Conversation started
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Conversation' }
+              example:
+                conversation_id: wc_9f2c7e1b4a6d4e0f8b3a5c7d9e1f2a3b
+                created_at: '2026-10-09T10:00:00Z'
+                cursor: 0
+                persona_name: Sazón Empleo
+                language: es-ES
+                channel: webchat
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/chat/conversations/{conversation_id}:
+    parameters:
+      - { $ref: '#/components/parameters/ConversationId' }
+    get:
+      tags: [chat]
+      operationId: getConversation
+      summary: Conversation state, for reconnecting clients
+      responses:
+        '200':
+          description: Conversation
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Conversation' }
+              example:
+                conversation_id: wc_9f2c7e1b4a6d4e0f8b3a5c7d9e1f2a3b
+                created_at: '2026-10-09T10:00:00Z'
+                cursor: 12
+                persona_name: Sazón Empleo
+                language: es-ES
+                channel: webchat
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/chat/conversations/{conversation_id}/messages:
+    parameters:
+      - { $ref: '#/components/parameters/ConversationId' }
+    post:
+      tags: [chat]
+      operationId: sendMessage
+      summary: Send a Candidate message (idempotent on message_id)
+      description: |
+        Stored verbatim before anything else. Accepts empty text, emoji only, media stand-ins and
+        very long text without failing (robustness, spec 002 task 22); the agent decides how to
+        answer. Responds as soon as the message is stored; replies are read with GET. A voice
+        conversation takes no typed message: 404 (ADR 0059).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SendMessageRequest' }
+            examples:
+              text: { value: { message_id: 6f1c2d3e-4a5b-4c6d-8e7f-9a0b1c2d3e4f, text: 'Hola, soy Ana López y vivo en Chamberí' } }
+              media: { value: { message_id: 7a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d, text: '', media: { type: audio, filename: nota-de-voz.ogg } } }
+      responses:
+        '202':
+          description: Stored (or already stored, if `duplicate`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MessageAccepted' }
+              examples:
+                new: { value: { message_id: 6f1c2d3e-4a5b-4c6d-8e7f-9a0b1c2d3e4f, id: 13, duplicate: false } }
+                repeated: { value: { message_id: 6f1c2d3e-4a5b-4c6d-8e7f-9a0b1c2d3e4f, id: 13, duplicate: true } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+    get:
+      tags: [chat]
+      operationId: readMessages
+      summary: Read messages after a cursor (both directions, oldest first)
+      parameters:
+        - name: after
+          in: query
+          description: Return messages with `id` greater than this. `0` reads from the start.
+          schema: { type: integer, minimum: 0, default: 0 }
+        - name: wait
+          in: query
+          description: |
+            Long poll. Hold the request up to this many seconds until a newer message exists or the
+            run state changes (`agent_typing` or `run_finished`), whichever comes first.
+          schema: { type: integer, minimum: 0, maximum: 30, default: 0 }
+        - name: agent_typing
+          in: query
+          description: |
+            The `agent_typing` of the last page this client read. Send it with `run_finished`, so the
+            poll compares the run state against what the client saw, not against its own first read:
+            a run that ended between two polls then returns at once instead of at the deadline. Ignored
+            unless both are sent.
+          schema: { type: boolean }
+        - name: run_finished
+          in: query
+          description: The `run_finished` of the last page this client read. See `agent_typing`.
+          schema: { type: boolean }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 100 }
+      responses:
+        '200':
+          description: Messages after the cursor
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MessagePage' }
+              example:
+                cursor: 15
+                agent_typing: false
+                run_finished: true
+                persona_name: Sazón Empleo
+                language: es-ES
+                messages:
+                  - id: 13
+                    message_id: 6f1c2d3e-4a5b-4c6d-8e7f-9a0b1c2d3e4f
+                    direction: inbound
+                    sender: candidate
+                    sender_label: null
+                    text: 'Hola, soy Ana López y vivo en Chamberí'
+                    interactive: null
+                    reply_to: null
+                    links: []
+                    attachments: []
+                    created_at: '2026-10-09T10:00:10Z'
+                  - id: 14
+                    message_id: null
+                    direction: outbound
+                    sender: agent
+                    sender_label: Sazón Empleo
+                    text: '¡Encantado, Ana! ¿Tienes carnet de conducir?'
+                    interactive:
+                      style: buttons
+                      options:
+                        - { id: 'yes', label: Sí }
+                        - { id: 'no', label: 'No' }
+                    reply_to: null
+                    links: []
+                    attachments: []
+                    created_at: '2026-10-09T10:00:12Z'
+                  - id: 15
+                    message_id: null
+                    direction: outbound
+                    sender: agent
+                    sender_label: Sazón Empleo
+                    text: '¡Buenas noticias, Ana! Tu solicitud está aprobada. ¿Cuándo te viene bien la entrevista?'
+                    interactive:
+                      style: buttons
+                      options:
+                        - { id: so_7f3k2, label: 'mié 14 · 10:00' }
+                        - { id: so_7f3k3, label: 'mié 14 · 16:00' }
+                        - { id: other, label: Otro horario }
+                    reply_to: null
+                    links: []
+                    attachments: []
+                    created_at: '2026-10-10T09:00:00Z'
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/chat/conversations/{conversation_id}/replies:
+    parameters:
+      - { $ref: '#/components/parameters/ConversationId' }
+    post:
+      tags: [chat]
+      operationId: sendButtonReply
+      summary: Answer an interactive message by tapping an option (idempotent on message_id)
+      description: Stored as a `button_reply` message whose text is the option's label. 409 `option_expired` if the options were superseded by a later interactive message. A voice conversation takes no tap (404, ADR 0059).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ButtonReplyRequest' }
+            example: { message_id: 8b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e, in_reply_to: 14, option_id: 'yes' }
+      responses:
+        '202':
+          description: Stored (or already stored, if `duplicate`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MessageAccepted' }
+              example: { message_id: 8b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e, id: 16, duplicate: false }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/chat/conversations/{conversation_id}/voice-session:
+    parameters:
+      - { $ref: '#/components/parameters/ConversationId' }
+    post:
+      tags: [chat]
+      operationId: startVoiceSession
+      summary: Start a voice call for this voice conversation
+      description: |
+        Mints a WebRTC conversation token for the ElevenLabs agent of the conversation's country
+        and a short-lived `voice_token` that the browser passes as `customLlmExtraBody`
+        `{criba_voice_token}`. Only a voice conversation (`channel: voice`) starts a call (ADR
+        0059): a web chat conversation gets the 409, as does a Candidate whose open Application
+        is not a voice one. No Application is required. Refusals are checked before anything is
+        written or minted. The 409 never says why (no Takeover, opt-out or channel status); every
+        503 uses `voice_unavailable`, whether voice is off, a spend cap is reached or minting
+        failed.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartVoiceSessionRequest' }
+            example: {}
+      responses:
+        '201':
+          description: Voice session started
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VoiceSession' }
+              example:
+                conversation_token: eyJhbGciOiJIUzI1NiJ9.example-livekit-token
+                voice_token: vt_example.signature
+                expires_at: '2026-10-11T10:30:00Z'
+                country: ES
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: A voice call cannot start for this conversation now
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: voice_refused, message: 'No podemos empezar la llamada ahora. Inténtalo más tarde.' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503':
+          description: Voice is not available (off, spend cap reached, or the call could not be set up)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: voice_unavailable, message: 'La llamada de voz no está disponible ahora. Inténtalo más tarde.' }
+
+  /api/sim/clock:
+    get:
+      tags: [sim]
+      operationId: getSimClock
+      summary: Read the simulated clock (only when CRIBA_ENV=sim)
+      description: Returns 404 `sim_disabled` in any other environment; the route is not mounted.
+      x-env: sim
+      responses:
+        '200':
+          description: Clock state
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ClockState' }
+              example: { now: '2026-10-09T10:00:00Z', offset_seconds: 0, due_jobs_run: 0 }
+        '404': { $ref: '#/components/responses/SimDisabled' }
+
+  /api/sim/clock/advance:
+    post:
+      tags: [sim]
+      operationId: advanceSimClock
+      summary: Move the simulated clock forward and run every scheduler job now due (only when CRIBA_ENV=sim)
+      description: Exactly one of `seconds` or `to`. The clock never moves backwards. Responds after due jobs (nudges, Abandoned, flags) have run, so the caller can read their effects at once.
+      x-env: sim
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdvanceClockRequest' }
+            examples:
+              oneHour: { value: { seconds: 3600 } }
+              sevenDays: { value: { to: '2026-10-16T10:00:00Z' } }
+      responses:
+        '200':
+          description: Clock advanced
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ClockState' }
+              example: { now: '2026-10-09T11:00:00Z', offset_seconds: 3600, due_jobs_run: 1 }
+        '404': { $ref: '#/components/responses/SimDisabled' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/sim/clock/reset:
+    post:
+      tags: [sim]
+      operationId: resetSimClock
+      summary: Reset the simulated clock to real time (only when CRIBA_ENV=sim)
+      x-env: sim
+      responses:
+        '200':
+          description: Clock reset
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ClockState' }
+              example: { now: '2026-10-09T10:00:00Z', offset_seconds: 0, due_jobs_run: 0 }
+        '404': { $ref: '#/components/responses/SimDisabled' }
+
+components:
+  parameters:
+    ConversationId:
+      name: conversation_id
+      in: path
+      required: true
+      schema: { type: string, minLength: 16 }
+      example: wc_9f2c7e1b4a6d4e0f8b3a5c7d9e1f2a3b
+
+  responses:
+    NotFound:
+      description: Unknown conversation
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: not_found, message: Conversation not found. }
+    Conflict:
+      description: The same message_id was reused with different content, or the tapped options expired
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            mismatch: { value: { error: message_id_reused, message: This message_id was already used for a different message. } }
+            expired: { value: { error: option_expired, message: 'Esas opciones ya no están disponibles. Escribe tu respuesta, por favor.' } }
+    ValidationError:
+      description: Request failed validation
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: validation_error, message: message_id is required. }
+    RateLimited:
+      description: Too many messages in a short time
+      headers:
+        Retry-After:
+          schema: { type: integer }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: rate_limited, message: 'Vas muy rápido. Espera un momento y vuelve a escribir.' }
+    SimDisabled:
+      description: Not running with CRIBA_ENV=sim
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: sim_disabled, message: The sim clock is available only when CRIBA_ENV=sim. }
+
+  schemas:
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          enum: [not_found, validation_error, message_id_reused, option_expired, rate_limited, sim_disabled, internal, voice_unavailable, voice_refused]
+        message: { type: string, description: 'Candidate-facing codes (option_expired, rate_limited) carry Spanish text.' }
+
+    StartVoiceSessionRequest:
+      type: object
+      additionalProperties: false
+      description: Empty. Never carries an Application, Candidate or agent id.
+      properties: {}
+
+    VoiceSession:
+      type: object
+      additionalProperties: false
+      required: [conversation_token, voice_token, expires_at, country]
+      properties:
+        conversation_token: { type: string, description: 'ElevenLabs WebRTC conversation token, for `Conversation.startSession({conversationToken})`.' }
+        voice_token: { type: string, description: 'Short-lived token bound to this conversation; pass it as `customLlmExtraBody: {criba_voice_token}`.' }
+        expires_at: { type: string, format: date-time, description: When `voice_token` expires. }
+        country: { $ref: '#/components/schemas/Country' }
+
+    Country: { type: string, enum: [ES, MX] }
+    Locale: { type: string, enum: [es-ES, es-MX, en] }
+
+    StartConversationRequest:
+      type: object
+      required: [country]
+      additionalProperties: false
+      properties:
+        country: { $ref: '#/components/schemas/Country' }
+        phone:
+          type: [string, 'null']
+          pattern: '^\+(34|52)[0-9]{8,11}$'
+          description: E.164. When present, it identifies the Candidate across conversations and must match `country` (+34 ES, +52 MX).
+        locale: { $ref: '#/components/schemas/Locale' }
+        client:
+          type: string
+          enum: [test_chat, simulator, demo]
+          default: test_chat
+          description: Which client opened the conversation. Recorded for metrics only; behaviour is identical.
+        channel: { $ref: '#/components/schemas/ConversationChannel' }
+        persona_id:
+          type: [string, 'null']
+          pattern: '^[a-z0-9_]{1,64}$'
+          description: The Demo stage persona's id, a code and never free text. Accepted only with `client` `demo` (422 otherwise). Recorded so an Operator can tell which persona a conversation used.
+
+    ConversationChannel:
+      type: string
+      enum: [webchat, voice]
+      default: webchat
+      description: |
+        `webchat`, a typed chat; `voice`, a voice conversation (ADR 0059): it starts calls, takes no
+        typed message or tap, and its transcript is read with the same endpoints.
+
+    Conversation:
+      type: object
+      required: [conversation_id, created_at, cursor]
+      properties:
+        conversation_id: { type: string }
+        created_at: { type: string, format: date-time }
+        cursor: { type: integer, minimum: 0, description: id of the latest message in the conversation. }
+        persona_name: { $ref: '#/components/schemas/PersonaName' }
+        language: { $ref: '#/components/schemas/ConversationLanguage' }
+        channel:
+          $ref: '#/components/schemas/ConversationChannel'
+          description: The conversation's channel. Optional, like `persona_name`; the backend always sends it.
+
+    PersonaName:
+      type: string
+      description: |
+        The name the agent writes under (the `sender_label` of its messages). Optional: the
+        backend always sends it; the simulator's fake channel need not.
+
+    ConversationLanguage:
+      description: |
+        The language of the conversation: the `locale` chosen at start, then the language of the
+        Candidate's latest exchange. `null` until one is known. Optional: the backend always
+        sends it (null or a value); the simulator's fake channel need not.
+      anyOf:
+        - { $ref: '#/components/schemas/Locale' }
+        - { type: 'null' }
+
+    Media:
+      type: object
+      required: [type]
+      additionalProperties: false
+      description: A stand-in for a voice note, image or file. Phase 2 stores the fact, not the bytes, and the agent asks for text.
+      properties:
+        type: { type: string, enum: [audio, image, video, document, sticker] }
+        filename: { type: string, maxLength: 255 }
+
+    SendMessageRequest:
+      type: object
+      required: [message_id, text]
+      additionalProperties: false
+      properties:
+        message_id: { type: string, minLength: 1, maxLength: 128, description: Client-generated idempotency key. }
+        text: { type: string, maxLength: 20000, description: 'Verbatim. May be empty (with media) or longer than 4,000 characters; the backend handles both.' }
+        media: { $ref: '#/components/schemas/Media' }
+
+    ButtonReplyRequest:
+      type: object
+      required: [message_id, in_reply_to, option_id]
+      additionalProperties: false
+      properties:
+        message_id: { type: string, minLength: 1, maxLength: 128 }
+        in_reply_to: { type: integer, minimum: 1, description: id of the interactive message being answered. }
+        option_id: { type: string, minLength: 1 }
+
+    MessageAccepted:
+      type: object
+      required: [message_id, id, duplicate]
+      properties:
+        message_id: { type: string }
+        id: { type: integer, description: Stored message id (a cursor value). }
+        duplicate: { type: boolean, description: 'True when this message_id was already stored; no new run was started.' }
+
+    InteractiveOption:
+      type: object
+      required: [id, label]
+      properties:
+        id: { type: string }
+        label: { type: string, maxLength: 24 }
+
+    Interactive:
+      type: object
+      required: [style, options]
+      properties:
+        style: { type: string, enum: [buttons, list], description: 'buttons: up to 3 options; list: up to 10.' }
+        options: { type: array, minItems: 1, maxItems: 10, items: { $ref: '#/components/schemas/InteractiveOption' } }
+
+    Link:
+      type: object
+      required: [url, label]
+      properties:
+        url: { type: string, format: uri }
+        label: { type: string }
+
+    Attachment:
+      type: object
+      required: [type, url, filename]
+      description: |
+        A file for the Candidate to download. Today only the Interview invite: the agent's
+        confirmation of a booking made in the chat carries it (type `ics`). `url` is the public
+        `GET /api/public/booking/{token}/invite.ics` endpoint of the web app API, signed with the
+        booking-link token, so it needs no login; it serves the Application's current booking.
+      properties:
+        type: { type: string, enum: [ics] }
+        url: { type: string }
+        filename: { type: string }
+
+    ChatMessage:
+      type: object
+      required: [id, message_id, direction, sender, sender_label, text, interactive, reply_to, links, attachments, created_at]
+      properties:
+        id: { type: integer, description: Monotonic; use as the read cursor. }
+        message_id: { type: [string, 'null'], description: "The client's idempotency key, for inbound messages." }
+        direction: { type: string, enum: [inbound, outbound] }
+        sender:
+          type: string
+          enum: [candidate, agent, human, system]
+          description: human is a team member during a Takeover; system is a notice such as a team member joining.
+        sender_label:
+          type: [string, 'null']
+          description: "Display name: the Client-branded persona for agent, 'Equipo de Grupo Sazón' for human. Never a person's name, never Criba."
+        text: { type: string }
+        interactive: { oneOf: [{ $ref: '#/components/schemas/Interactive' }, { type: 'null' }] }
+        reply_to:
+          type: [object, 'null']
+          description: For button replies, which message and option were tapped.
+          required: [message_id, option_id]
+          properties:
+            message_id: { type: integer }
+            option_id: { type: string }
+        links: { type: array, items: { $ref: '#/components/schemas/Link' } }
+        attachments: { type: array, items: { $ref: '#/components/schemas/Attachment' } }
+        created_at: { type: string, format: date-time }
+        modality:
+          type: string
+          enum: [typed, spoken]
+          readOnly: true
+          description: Whether the message was typed or spoken on a voice call (replies to spoken turns are spoken).
+
+    MessagePage:
+      type: object
+      required: [cursor, messages, agent_typing, run_finished]
+      properties:
+        cursor: { type: integer, minimum: 0, description: Pass as `after` on the next read. }
+        agent_typing: { type: boolean, description: True while an agent run for this conversation is in progress. }
+        run_finished:
+          type: boolean
+          description: |
+            True when no agent run for this conversation is queued or in progress. It turns false
+            as soon as a message that starts a run is accepted (before `POST` answers 202), so a
+            client never reads a stale true for its own message, and true again once that run has
+            stored its reply (or ended without one). When true, every reply of the finished runs
+            is in this page or, past `limit`, the next. Use it, not `agent_typing`, to know the
+            agent's turn is over.
+        persona_name: { $ref: '#/components/schemas/PersonaName' }
+        language: { $ref: '#/components/schemas/ConversationLanguage' }
+        messages: { type: array, items: { $ref: '#/components/schemas/ChatMessage' } }
+
+    ClockState:
+      type: object
+      required: [now, offset_seconds, due_jobs_run]
+      properties:
+        now: { type: string, format: date-time, description: The backend's simulated current time (UTC). }
+        offset_seconds: { type: integer, minimum: 0, description: Total advance over real time. }
+        due_jobs_run: { type: integer, minimum: 0, description: Scheduler jobs run by this call. }
+
+    AdvanceClockRequest:
+      oneOf:
+        - type: object
+          required: [seconds]
+          additionalProperties: false
+          properties:
+            seconds: { type: integer, minimum: 1, maximum: 7776000 }
+        - type: object
+          required: [to]
+          additionalProperties: false
+          properties:
+            to: { type: string, format: date-time }

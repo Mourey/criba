@@ -1,0 +1,38 @@
+# Secrets: only the *.example templates are tracked.
+secrets/*
+!secrets/*.example
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Check reports (src/scripts/check.sh)
+.coverage-reports/
+src/web/coverage/
+
+# Node / web
+node_modules/
+src/web/dist/
+src/web/playwright-report/
+src/web/test-results/
+
+# Reports of the live and real-model runs (src/scripts/live_smoke.sh, src/tests/live/)
+reports/
+
+# Data
+*.db
+*.db-shm
+*.db-wal
+
+# OS
+.DS_Store
+
+# Agent worktrees (lane branches live here while a wave runs)
+.claude/worktrees/

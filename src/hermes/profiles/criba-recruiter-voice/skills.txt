@@ -1,0 +1,4 @@
+# Skills this profile's system prompt is built from, one src/skills path per line.
+# The entrypoint appends each skill's SKILL.md body (frontmatter removed) to SOUL.md,
+# because the lean toolset has no skill tools to load a skill on demand.
+criba/voice-screener

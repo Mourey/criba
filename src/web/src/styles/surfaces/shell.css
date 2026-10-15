@@ -1,0 +1,295 @@
+/* shell surface styles: the signed-in Shell, the auth states, Login and Page not found. Token-only
+   (DESIGN.md); imported by Shell.tsx, Login.tsx and NotFound.tsx. */
+
+/* The console ground: a one-pixel dot grid on the cream ground (the approved comp), over the full
+   viewport. Login wraps its page in .shell-ground; .public stays plain (booking page, Test chat). */
+.shell,
+.shell-state,
+.shell-ground {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--ground);
+  background-image: radial-gradient(circle, var(--ground-dot) 1px, transparent 1px);
+  background-size: var(--space-6) var(--space-6);
+}
+
+.shell-state {
+  display: grid;
+  place-items: center;
+  padding: var(--space-6) var(--space-4);
+}
+
+.shell-state .ui-skeleton {
+  width: min(100%, 40rem);
+}
+
+/* The frame: the navigation column and the content area side by side, at most --page-max wide and
+   at the left edge; the ground behind it (.shell) always covers the window. The column is the 56px rail
+   by default and below 768px whatever the viewer chose; open (14rem) from 768px up. */
+.shell-frame {
+  display: grid;
+  grid-template-columns: var(--nav-rail) minmax(0, 1fr);
+  max-width: var(--page-max);
+  min-height: 100vh;
+  min-height: 100dvh;
+  transition: grid-template-columns var(--motion-base) var(--ease-out);
+}
+
+/* Content area (the contract ui-detail builds on, pinned by tests/unit/nav.test.tsx): the preview
+   banner, then main.page, which takes the rest of the height. */
+.shell-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-width: 0;
+}
+
+/* The column: rail over the ground, one seam on its right. It sticks to the top of the window, so the
+   document stays the scroller on list pages. */
+.shell-column {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  height: 100vh;
+  height: 100dvh;
+  min-width: 0;
+  padding: var(--space-3) var(--space-2);
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--rail);
+  border-right: 1px solid var(--seam);
+}
+
+/* Labels: visually hidden in the rail, still text in the DOM, so every name and the role badge stay. */
+.shell-column .shell-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.shell-toggle.ui-btn {
+  align-self: center;
+  width: var(--space-7);
+  padding: 0;
+}
+
+.shell-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.shell-brand .brand {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-2);
+  color: var(--ink-strong);
+  font-weight: var(--weight-bold);
+}
+
+/* The Client mark: the name in ink, with the Client accent as a small dot beside it. */
+.shell-client {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.client-accent .shell-client::before {
+  content: "";
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--client-accent);
+}
+
+.shell-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.shell-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: var(--space-7);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-2);
+  color: var(--ink);
+  font: var(--weight-medium) var(--text-base) / var(--leading-snug) var(--font);
+  text-decoration: none;
+}
+
+.shell-nav a:hover {
+  background: var(--live-soft);
+  color: var(--ink-strong);
+}
+
+.shell-nav a[aria-current="page"] {
+  background: var(--live);
+  color: var(--live-ink);
+  font-weight: var(--weight-semibold);
+}
+
+.shell-nav a:focus-visible,
+.shell-brand .brand:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* The user's controls sit at the foot of the column. */
+.shell-who {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: auto;
+  min-width: 0;
+}
+
+.shell-user {
+  color: var(--ink-strong);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.shell-column .shell-action.ui-btn {
+  width: 100%;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.shell-theme .ui-theme-toggle {
+  justify-content: center;
+  width: 100%;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.shell-theme .ui-theme-toggle span {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .shell-nav-open .shell-frame {
+    grid-template-columns: var(--nav-open) minmax(0, 1fr);
+  }
+
+  .shell-nav-open .shell-column .shell-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+  }
+
+  .shell-nav-open .shell-column .shell-user {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .shell-nav-open .shell-toggle.ui-btn {
+    align-self: flex-end;
+  }
+
+  .shell-nav-open .shell-brand {
+    align-items: flex-start;
+    padding: 0 var(--space-2);
+  }
+
+  .shell-nav-open .shell-brand-mark {
+    display: none;
+  }
+
+  .shell-nav-open .shell-nav a {
+    justify-content: flex-start;
+  }
+
+  .shell-nav-open .shell-who {
+    align-items: stretch;
+  }
+
+  .shell-nav-open .shell-who .tag {
+    align-self: flex-start;
+  }
+
+  .shell-nav-open .shell-who .shell-user,
+  .shell-nav-open .shell-who .tag {
+    margin: 0 var(--space-2);
+  }
+
+  .shell-nav-open .shell-column .shell-action.ui-btn {
+    justify-content: flex-start;
+    padding-right: var(--space-3);
+    padding-left: var(--space-3);
+  }
+
+  .shell-nav-open .shell-theme .ui-theme-toggle {
+    justify-content: flex-start;
+    padding-right: var(--space-3);
+    padding-left: var(--space-3);
+  }
+
+  .shell-nav-open .shell-theme .ui-theme-toggle span {
+    display: inline;
+  }
+}
+
+@media (pointer: coarse) {
+  .shell-nav a {
+    min-height: 44px;
+  }
+}
+
+/* A row of Tags or StatusBadges (FlagTags, StageOutcome). */
+.tag-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.shell-banner-action {
+  margin-left: var(--space-2);
+}
+
+/* Route change: a short entering fade only; the old page is never kept to fade out. */
+.shell-route {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  animation: shell-route-in var(--motion-base) var(--ease-out);
+}
+
+@keyframes shell-route-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell-route {
+    animation: none;
+  }
+
+  .shell-frame {
+    transition: none;
+  }
+}

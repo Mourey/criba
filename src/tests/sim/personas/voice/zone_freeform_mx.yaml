@@ -1,0 +1,15 @@
+# Voice persona (voice-agent sim-personas SM4): zone_freeform_mx on a voice call, Mexico. At the
+# Toluca Sí/No confirmation the Candidate says both a yes and a no (spike 004 mx01 turn 8, as
+# transcribed under loud noise); the backend asks again, and the clear "No" clears the
+# confirmation as the typed tap does. The Zone is then picked from the city's list by voice.
+id: zone_freeform_mx
+description: >
+  Mexico, a free-form Zone and a yes/no conflict at its confirmation: "Sí, está todo bien. ¡No,
+  no!" draws the re-ask, "No" answers it, and the CDMX list pick leads to Qualified.
+typed: zone_freeform_mx
+phone: "+525500001006"
+moments:
+  yes_no_conflict:
+    at: zone
+    text: "Sí, está todo bien. ¡No, no!"
+    then: "No"

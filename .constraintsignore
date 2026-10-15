@@ -1,0 +1,7 @@
+# Paths src/scripts/floor_guard.mjs skips (CONSTRAINTS.md, Floor). One glob per line, each with its reason.
+
+# The guard's own pattern definitions name every suppression and stub it looks for.
+src/scripts/floor_guard.mjs
+
+# Hermes container shims must change sys.path before importing Hermes, so `# noqa: E402` is required.
+src/backend/tests/hermes/container/**

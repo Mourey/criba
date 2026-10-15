@@ -1,0 +1,950 @@
+{
+  "capture_version": 1,
+  "kind": "post_call_webhook",
+  "method": "POST",
+  "path": "/api/voice/webhooks/post-call",
+  "complete": true,
+  "outcome": "responded",
+  "timing": {
+    "arrived_unix": 1791680184.232,
+    "arrived_iso": "2026-10-11T00:56:24.231+00:00",
+    "body_read_s": 0.007,
+    "first_byte_sent_after_s": null,
+    "stream_completed_after_s": null,
+    "client_disconnected_after_s": null,
+    "disconnect_phase": null
+  },
+  "control": null,
+  "control_error": false,
+  "headers": {
+    "host": "<redacted>",
+    "user-agent": "ElevenLabs/1.0",
+    "content-length": "17470",
+    "accept": "*/*",
+    "accept-encoding": "<redacted>",
+    "cdn-loop": "<redacted>",
+    "cf-connecting-ip": "<redacted>",
+    "cf-ew-via": "<redacted>",
+    "cf-ipcountry": "<redacted>",
+    "cf-ray": "<redacted>",
+    "cf-visitor": "<redacted>",
+    "cf-warp-tag-id": "<redacted>",
+    "cf-worker": "<redacted>",
+    "connection": "<redacted>",
+    "content-type": "application/json",
+    "elevenlabs-signature": "<redacted>",
+    "x-forwarded-for": "<redacted>",
+    "x-forwarded-proto": "<redacted>"
+  },
+  "header_analysis": {
+    "names_in_order": [
+      "host",
+      "user-agent",
+      "content-length",
+      "accept",
+      "accept-encoding",
+      "cdn-loop",
+      "cf-connecting-ip",
+      "cf-ew-via",
+      "cf-ipcountry",
+      "cf-ray",
+      "cf-visitor",
+      "cf-warp-tag-id",
+      "cf-worker",
+      "connection",
+      "content-type",
+      "elevenlabs-signature",
+      "x-forwarded-for",
+      "x-forwarded-proto"
+    ],
+    "secret_known": true,
+    "secret_match": null,
+    "conversation_id_headers": [],
+    "signature": {
+      "format": "t=<int:10>,v0=<hex:64>",
+      "hmac_sha256_verified": true,
+      "timestamp_skew_s": 1.2
+    }
+  },
+  "body": {
+    "type": "post_call_transcription",
+    "event_timestamp": 1791680183,
+    "data": {
+      "agent_id": "<agent-1>",
+      "agent_name": "<text:len=26>",
+      "conversation_product": "<text:len=5>",
+      "status": "done",
+      "user_id": null,
+      "branch_id": "<text:len=36>",
+      "version_id": "<text:len=36>",
+      "metadata": {
+        "start_time_unix_secs": 1791680166,
+        "accepted_time_unix_secs": 1791680166,
+        "call_duration_secs": 14,
+        "queue_wait_secs": null,
+        "cost": 99,
+        "deletion_settings": {
+          "deletion_time_unix_secs": null,
+          "deleted_logs_at_time_unix_secs": null,
+          "deleted_audio_at_time_unix_secs": null,
+          "deleted_transcript_at_time_unix_secs": null,
+          "delete_transcript_and_pii": false,
+          "delete_audio": false
+        },
+        "feedback": {
+          "type": null,
+          "overall_score": null,
+          "likes": 0,
+          "dislikes": 0,
+          "rating": null,
+          "comment": null
+        },
+        "authorization_method": "<text:len=10>",
+        "charging": {
+          "dev_discount": false,
+          "is_burst": false,
+          "tier": "<text:len=7>",
+          "llm_usage": {
+            "irreversible_generation": {
+              "model_usage": {
+                "custom-llm": {
+                  "input": {
+                    "tokens": 1276,
+                    "price": 0.0
+                  },
+                  "input_cache_read": {
+                    "tokens": 0,
+                    "price": 0.0
+                  },
+                  "input_cache_write": {
+                    "tokens": 0,
+                    "price": 0.0
+                  },
+                  "output_total": {
+                    "tokens": 71,
+                    "price": 0.0
+                  }
+                }
+              },
+              "detailed_model_usage": [
+                {
+                  "config": {
+                    "model": "custom-llm",
+                    "service_tier": "<text:len=8>"
+                  },
+                  "usage": {
+                    "input": {
+                      "tokens": 1276,
+                      "price": 0.0
+                    },
+                    "input_cache_read": {
+                      "tokens": 0,
+                      "price": 0.0
+                    },
+                    "input_cache_write": {
+                      "tokens": 0,
+                      "price": 0.0
+                    },
+                    "output_total": {
+                      "tokens": 71,
+                      "price": 0.0
+                    }
+                  }
+                }
+              ]
+            },
+            "initiated_generation": {
+              "model_usage": {
+                "custom-llm": {
+                  "input": {
+                    "tokens": 1276,
+                    "price": 0.0
+                  },
+                  "input_cache_read": {
+                    "tokens": 0,
+                    "price": 0.0
+                  },
+                  "input_cache_write": {
+                    "tokens": 0,
+                    "price": 0.0
+                  },
+                  "output_total": {
+                    "tokens": 71,
+                    "price": 0.0
+                  }
+                }
+              },
+              "detailed_model_usage": [
+                {
+                  "config": {
+                    "model": "custom-llm",
+                    "service_tier": "<text:len=8>"
+                  },
+                  "usage": {
+                    "input": {
+                      "tokens": 1276,
+                      "price": 0.0
+                    },
+                    "input_cache_read": {
+                      "tokens": 0,
+                      "price": 0.0
+                    },
+                    "input_cache_write": {
+                      "tokens": 0,
+                      "price": 0.0
+                    },
+                    "output_total": {
+                      "tokens": 71,
+                      "price": 0.0
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "llm_price": 0.0,
+          "llm_charge": 0,
+          "call_charge": 99,
+          "platform_charge": 99,
+          "platform_usage": {
+            "category_usage": {
+              "voice": {
+                "credits": 99,
+                "price": 0.01786564459465444,
+                "quantity": 0.22332055743318052
+              }
+            }
+          },
+          "platform_price": 0.01786564459465444,
+          "free_minutes_consumed": 0.0,
+          "free_llm_dollars_consumed": 0.0,
+          "tts_usage": {
+            "primary_tts_model": "<text:len=17>",
+            "total_audio_output_seconds": 7.88375,
+            "total_characters": 152,
+            "per_voice_usage": [
+              {
+                "voice_id": "<text:len=20>",
+                "audio_output_seconds": 7.88375
+              }
+            ]
+          },
+          "asr_usage": {
+            "asr_model": "<text:len=15>",
+            "total_transcription_calls": 13,
+            "total_audio_input_seconds": 2.1599999999999997
+          },
+          "analysis": null
+        },
+        "phone_call": null,
+        "batch_call": null,
+        "termination_reason": "<text:len=25>",
+        "error": null,
+        "warnings": [],
+        "main_language": "<text:len=2>",
+        "rag_usage": null,
+        "text_only": false,
+        "features_usage": {
+          "language_detection": {
+            "enabled": false,
+            "used": false
+          },
+          "transfer_to_agent": {
+            "enabled": false,
+            "used": false
+          },
+          "transfer_to_number": {
+            "enabled": false,
+            "used": false
+          },
+          "multivoice": {
+            "enabled": false,
+            "used": false
+          },
+          "dtmf_tones": {
+            "enabled": false,
+            "used": false
+          },
+          "external_mcp_servers": {
+            "enabled": false,
+            "used": false
+          },
+          "pii_zrm_workspace": false,
+          "pii_zrm_agent": false,
+          "tool_dynamic_variable_updates": {
+            "enabled": false,
+            "used": false
+          },
+          "is_livekit": true,
+          "voicemail_detection": {
+            "enabled": false,
+            "used": false
+          },
+          "dtmf_input": {
+            "enabled": false,
+            "used": false
+          },
+          "workflow": {
+            "enabled": false,
+            "tool_node": {
+              "enabled": false,
+              "used": false
+            },
+            "standalone_agent_node": {
+              "enabled": false,
+              "used": false
+            },
+            "phone_number_node": {
+              "enabled": false,
+              "used": false
+            },
+            "end_node": {
+              "enabled": false,
+              "used": false
+            },
+            "override_agent_node": {
+              "enabled": false,
+              "used": false
+            },
+            "say_node": {
+              "enabled": false,
+              "used": false
+            },
+            "update_state_node": {
+              "enabled": false,
+              "used": false
+            },
+            "subgraph_node": {
+              "enabled": false,
+              "used": false
+            },
+            "transfer_to_genesys_node": {
+              "enabled": false,
+              "used": false
+            }
+          },
+          "<agent-2>": {
+            "enabled": false,
+            "tests_ran_after_last_modification": false,
+            "tests_ran_in_last_7_days": false
+          },
+          "versioning": {
+            "enabled": true,
+            "used": false
+          },
+          "file_input": {
+            "enabled": true,
+            "used": false
+          },
+          "freeform_procedure": {
+            "enabled": false,
+            "used": false
+          },
+          "structured_procedure": {
+            "enabled": false,
+            "used": false
+          }
+        },
+        "eleven_assistant": {
+          "is_eleven_assistant": false
+        },
+        "initiator_id": null,
+        "conversation_initiation_source": "<text:len=6>",
+        "conversation_initiation_source_version": "<text:len=6>",
+        "timezone": null,
+        "async_metadata": null,
+        "whatsapp": null,
+        "sms": null,
+        "agent_created_from": "<text:len=3>",
+        "agent_last_updated_from": "<text:len=3>",
+        "stream_state": null,
+        "voice_rewards": [],
+        "cost_fiat": 0.01786564459465444
+      },
+      "analysis": {
+        "evaluation_criteria_results": {},
+        "data_collection_results": {},
+        "evaluation_criteria_results_list": [],
+        "data_collection_results_list": [],
+        "call_successful": "success",
+        "call_success_score": null,
+        "transcript_summary": "<text:len=252>",
+        "call_summary_title": "<text:len=26>",
+        "scoped": [],
+        "sentiment_analysis": {
+          "overall_label": "<text:len=8>",
+          "overall_sentiment_score": 0.2,
+          "overall_frustration_score": 0.0,
+          "min_user_sentiment_score": 0.2,
+          "max_user_frustration_score": 0.0,
+          "num_scored_user_turns": 1
+        }
+      },
+      "visited_agents": [
+        {
+          "agent_id": "<agent-1>",
+          "branch_id": "<text:len=36>"
+        }
+      ],
+      "conversation_initiation_client_data": {
+        "conversation_config_override": {
+          "asr": null,
+          "turn": null,
+          "tts": {
+            "model_id": null,
+            "voice_id": null,
+            "supported_voices": null,
+            "stability": null,
+            "speed": null,
+            "similarity_boost": null,
+            "pronunciation_dictionary_locators": null
+          },
+          "conversation": {
+            "text_only": null,
+            "max_duration_seconds": null
+          },
+          "agent": {
+            "first_message": null,
+            "language": null,
+            "max_conversation_duration_message": null,
+            "silence_end_call_message": null,
+            "prompt": null
+          }
+        },
+        "custom_llm_extra_body": {
+          "criba_voice_token": "<criba_voice_token:synthetic-match>"
+        },
+        "user_id": null,
+        "source_info": {
+          "source": "<text:len=6>",
+          "version": "<text:len=6>"
+        },
+        "branch_id": null,
+        "environment": null,
+        "starting_workflow_node_id": null,
+        "experiments": [],
+        "procedure_ids": null,
+        "dynamic_variables": {
+          "system__agent_id": "<agent-1>",
+          "system__agent_turns": 2,
+          "system__current_agent_turns": 2,
+          "system__current_subagent_turns": 2,
+          "system__current_agent_id": "<agent-1>",
+          "system__conversation_id": "<conv-9>",
+          "system__call_duration_secs": 13,
+          "system__time_utc": "<text:len=32>",
+          "system__timezone": null,
+          "system__time": "<text:len=29>",
+          "system__time_hour": 0,
+          "system__time_minute": 56,
+          "system__time_second": 20,
+          "system__is_text_only": false,
+          "system__channel": "<text:len=6>",
+          "system__caller_id": null,
+          "system__called_number": null,
+          "system__call_sid": null,
+          "system__call_id": null,
+          "system__conversation_history": "<text:len=693>",
+          "system__user_id": null,
+          "system__initiator_id": null,
+          "system__environment": "<text:len=10>"
+        },
+        "tool_mock_config": {
+          "mocking_strategy": "<text:len=4>",
+          "fallback_strategy": "<text:len=11>",
+          "mocked_tool_names": []
+        },
+        "tool_mock_overrides": {}
+      },
+      "environment": "<text:len=10>",
+      "experiment_assignments": null,
+      "hiding_reason": null,
+      "smb_metadata": null,
+      "conversation_id": "<conv-9>",
+      "has_audio": false,
+      "has_user_audio": false,
+      "has_response_audio": false,
+      "has_auxiliary_audio": false,
+      "transcript": [
+        {
+          "role": "user",
+          "<agent-3>": null,
+          "message": "<text:len=15>",
+          "multivoice_message": null,
+          "tool_calls": [],
+          "tool_results": [],
+          "feedback": null,
+          "llm_override": null,
+          "producing_llm": null,
+          "time_in_call_secs": 0,
+          "conversation_turn_metrics": {
+            "metrics": {
+              "convai_asr_trailing_service_latency": {
+                "elapsed_time": 0.03694942919537425
+              }
+            },
+            "convai_asr_provider": "<text:len=18>",
+            "convai_tts_model": null,
+            "convai_tts_cascade": null
+          },
+          "rag_retrieval_info": null,
+          "llm_usage": null,
+          "interrupted": false,
+          "ignored_as_backchannel": false,
+          "platform_event": null,
+          "original_message": null,
+          "reasoning": [],
+          "source_medium": "audio",
+          "source_event_id": 10,
+          "used_static_kb_document_ids": [],
+          "analysis": {
+            "user_sentiment_score": 0.2,
+            "user_frustration_score": 0.0
+          },
+          "user_identifier": null,
+          "id": null,
+          "compaction": null,
+          "triggered_guardrails": [],
+          "file_input": null,
+          "file_inputs": [],
+          "contextual_update_info": null,
+          "config_snapshot_id": null,
+          "reasoned": false
+        },
+        {
+          "role": "agent",
+          "<agent-3>": {
+            "agent_id": "<agent-1>",
+            "branch_id": "<text:len=36>",
+            "workflow_node_id": null,
+            "version_id": "<text:len=36>"
+          },
+          "message": "<text:len=57>",
+          "multivoice_message": null,
+          "tool_calls": [],
+          "tool_results": [],
+          "feedback": null,
+          "llm_override": null,
+          "producing_llm": "<text:len=10>",
+          "time_in_call_secs": 2,
+          "conversation_turn_metrics": {
+            "metrics": {
+              "convai_llm_service_ttf_sentence": {
+                "elapsed_time": 0.3037176448851824
+              },
+              "convai_llm_service_ttfb": {
+                "elapsed_time": 0.302552904933691
+              },
+              "convai_llm_service_tt_last_sentence": {
+                "elapsed_time": 0.30739600490778685
+              },
+              "convai_tts_service_ttfb": {
+                "elapsed_time": 0.08423497807234526
+              },
+              "convai_ttf_audio_since_silence": {
+                "elapsed_time": 0.7579714620299638
+              },
+              "convai_turn_silence_before_initiation": {
+                "elapsed_time": 0.32
+              },
+              "convai_turn_asr_latency": {
+                "elapsed_time": 0.03694942919537425
+              }
+            },
+            "convai_asr_provider": null,
+            "convai_tts_model": "<text:len=17>",
+            "convai_tts_cascade": null
+          },
+          "rag_retrieval_info": null,
+          "llm_usage": {
+            "model_usage": {
+              "custom-llm": {
+                "input": {
+                  "tokens": 626,
+                  "price": 0.0
+                },
+                "input_cache_read": {
+                  "tokens": 0,
+                  "price": 0.0
+                },
+                "input_cache_write": {
+                  "tokens": 0,
+                  "price": 0.0
+                },
+                "output_total": {
+                  "tokens": 19,
+                  "price": 0.0
+                }
+              }
+            },
+            "detailed_model_usage": [
+              {
+                "config": {
+                  "model": "custom-llm",
+                  "service_tier": "<text:len=8>"
+                },
+                "usage": {
+                  "input": {
+                    "tokens": 626,
+                    "price": 0.0
+                  },
+                  "input_cache_read": {
+                    "tokens": 0,
+                    "price": 0.0
+                  },
+                  "input_cache_write": {
+                    "tokens": 0,
+                    "price": 0.0
+                  },
+                  "output_total": {
+                    "tokens": 19,
+                    "price": 0.0
+                  }
+                }
+              }
+            ]
+          },
+          "interrupted": false,
+          "ignored_as_backchannel": false,
+          "platform_event": null,
+          "original_message": null,
+          "reasoning": [],
+          "source_medium": null,
+          "source_event_id": 10,
+          "used_static_kb_document_ids": [],
+          "analysis": null,
+          "user_identifier": null,
+          "id": null,
+          "compaction": null,
+          "triggered_guardrails": [],
+          "file_input": null,
+          "file_inputs": [],
+          "contextual_update_info": null,
+          "config_snapshot_id": null,
+          "reasoned": false
+        },
+        {
+          "role": "user",
+          "<agent-3>": null,
+          "message": "<text:len=14>",
+          "multivoice_message": null,
+          "tool_calls": [],
+          "tool_results": [],
+          "feedback": null,
+          "llm_override": null,
+          "producing_llm": null,
+          "time_in_call_secs": 6,
+          "conversation_turn_metrics": null,
+          "rag_retrieval_info": null,
+          "llm_usage": null,
+          "interrupted": false,
+          "ignored_as_backchannel": false,
+          "platform_event": null,
+          "original_message": null,
+          "reasoning": [],
+          "source_medium": "text",
+          "source_event_id": 44,
+          "used_static_kb_document_ids": [],
+          "analysis": null,
+          "user_identifier": null,
+          "id": null,
+          "compaction": null,
+          "triggered_guardrails": [],
+          "file_input": null,
+          "file_inputs": [],
+          "contextual_update_info": null,
+          "config_snapshot_id": null,
+          "reasoned": false
+        },
+        {
+          "role": "agent",
+          "<agent-3>": {
+            "agent_id": "<agent-1>",
+            "branch_id": "<text:len=36>",
+            "workflow_node_id": null,
+            "version_id": "<text:len=36>"
+          },
+          "message": "<text:len=95>",
+          "multivoice_message": null,
+          "tool_calls": [],
+          "tool_results": [],
+          "feedback": null,
+          "llm_override": null,
+          "producing_llm": "<text:len=10>",
+          "time_in_call_secs": 7,
+          "conversation_turn_metrics": {
+            "metrics": {
+              "convai_llm_service_ttf_sentence": {
+                "elapsed_time": 0.40267719281837344
+              },
+              "convai_llm_service_ttfb": {
+                "elapsed_time": 0.4019243228249252
+              },
+              "convai_llm_service_tt_last_sentence": {
+                "elapsed_time": 0.4046154231764376
+              },
+              "convai_tts_service_ttfb": {
+                "elapsed_time": 0.08627162920311093
+              },
+              "convai_ttf_audio_since_silence": {
+                "elapsed_time": 0.49542462220415473
+              },
+              "convai_turn_silence_before_initiation": {
+                "elapsed_time": 0.0
+              }
+            },
+            "convai_asr_provider": null,
+            "convai_tts_model": "<text:len=17>",
+            "convai_tts_cascade": null
+          },
+          "rag_retrieval_info": null,
+          "llm_usage": null,
+          "interrupted": false,
+          "ignored_as_backchannel": false,
+          "platform_event": null,
+          "original_message": null,
+          "reasoning": [],
+          "source_medium": null,
+          "source_event_id": 44,
+          "used_static_kb_document_ids": [],
+          "analysis": null,
+          "user_identifier": null,
+          "id": null,
+          "compaction": null,
+          "triggered_guardrails": [],
+          "file_input": null,
+          "file_inputs": [],
+          "contextual_update_info": null,
+          "config_snapshot_id": null,
+          "reasoned": false
+        },
+        {
+          "role": "agent",
+          "<agent-3>": {
+            "agent_id": "<agent-1>",
+            "branch_id": "<text:len=36>",
+            "workflow_node_id": null,
+            "version_id": "<text:len=36>"
+          },
+          "message": null,
+          "multivoice_message": null,
+          "tool_calls": [
+            {
+              "type": "system",
+              "request_id": "<text:len=14>",
+              "tool_name": "end_call",
+              "params_as_json": "<text:len=54>",
+              "tool_has_been_called": true,
+              "tool_details": null
+            }
+          ],
+          "tool_results": [],
+          "feedback": null,
+          "llm_override": null,
+          "producing_llm": "<text:len=10>",
+          "time_in_call_secs": 7,
+          "conversation_turn_metrics": {
+            "metrics": {
+              "convai_llm_service_ttf_sentence": {
+                "elapsed_time": 0.40267719281837344
+              },
+              "convai_llm_service_ttfb": {
+                "elapsed_time": 0.4019243228249252
+              },
+              "convai_llm_tool_request_generation_latency": {
+                "elapsed_time": 0.35334996366873384
+              },
+              "convai_llm_service_tt_last_sentence": {
+                "elapsed_time": 0.4046154231764376
+              },
+              "convai_tts_service_ttfb": {
+                "elapsed_time": 0.08627162920311093
+              },
+              "convai_ttf_audio_since_silence": {
+                "elapsed_time": 0.49542462220415473
+              },
+              "convai_turn_silence_before_initiation": {
+                "elapsed_time": 0.0
+              }
+            },
+            "convai_asr_provider": null,
+            "convai_tts_model": "<text:len=17>",
+            "convai_tts_cascade": null
+          },
+          "rag_retrieval_info": null,
+          "llm_usage": {
+            "model_usage": {
+              "custom-llm": {
+                "input": {
+                  "tokens": 650,
+                  "price": 0.0
+                },
+                "input_cache_read": {
+                  "tokens": 0,
+                  "price": 0.0
+                },
+                "input_cache_write": {
+                  "tokens": 0,
+                  "price": 0.0
+                },
+                "output_total": {
+                  "tokens": 52,
+                  "price": 0.0
+                }
+              }
+            },
+            "detailed_model_usage": [
+              {
+                "config": {
+                  "model": "custom-llm",
+                  "service_tier": "<text:len=8>"
+                },
+                "usage": {
+                  "input": {
+                    "tokens": 650,
+                    "price": 0.0
+                  },
+                  "input_cache_read": {
+                    "tokens": 0,
+                    "price": 0.0
+                  },
+                  "input_cache_write": {
+                    "tokens": 0,
+                    "price": 0.0
+                  },
+                  "output_total": {
+                    "tokens": 52,
+                    "price": 0.0
+                  }
+                }
+              }
+            ]
+          },
+          "interrupted": false,
+          "ignored_as_backchannel": false,
+          "platform_event": null,
+          "original_message": null,
+          "reasoning": [],
+          "source_medium": null,
+          "source_event_id": 44,
+          "used_static_kb_document_ids": [],
+          "analysis": null,
+          "user_identifier": null,
+          "id": null,
+          "compaction": null,
+          "triggered_guardrails": [],
+          "file_input": null,
+          "file_inputs": [],
+          "contextual_update_info": null,
+          "config_snapshot_id": null,
+          "reasoned": false
+        },
+        {
+          "role": "agent",
+          "<agent-3>": {
+            "agent_id": "<agent-1>",
+            "branch_id": "<text:len=36>",
+            "workflow_node_id": null,
+            "version_id": "<text:len=36>"
+          },
+          "message": null,
+          "multivoice_message": null,
+          "tool_calls": [],
+          "tool_results": [
+            {
+              "request_id": "<text:len=14>",
+              "tool_name": "end_call",
+              "result_value": "<text:len=88>",
+              "is_error": false,
+              "is_blocked": false,
+              "tool_has_been_called": true,
+              "tool_latency_secs": 0.5013830321840942,
+              "error_type": "<text:len=0>",
+              "raw_error_message": "<text:len=0>",
+              "dynamic_variable_updates": [],
+              "type": "system",
+              "result": {
+                "result_type": "<text:len=16>",
+                "status": "success",
+                "reason": "<text:len=8>",
+                "message": null
+              }
+            }
+          ],
+          "feedback": null,
+          "llm_override": null,
+          "producing_llm": null,
+          "time_in_call_secs": 13,
+          "conversation_turn_metrics": null,
+          "rag_retrieval_info": null,
+          "llm_usage": null,
+          "interrupted": false,
+          "ignored_as_backchannel": false,
+          "platform_event": null,
+          "original_message": null,
+          "reasoning": [],
+          "source_medium": null,
+          "source_event_id": 44,
+          "used_static_kb_document_ids": [],
+          "analysis": null,
+          "user_identifier": null,
+          "id": null,
+          "compaction": null,
+          "triggered_guardrails": [],
+          "file_input": null,
+          "file_inputs": [],
+          "contextual_update_info": null,
+          "config_snapshot_id": null,
+          "reasoned": false
+        }
+      ],
+      "tag_ids": [],
+      "realtime_config_snapshots": null,
+      "orchestrator": "<text:len=14>",
+      "otlp_traces": null
+    }
+  },
+  "body_parse_error": false,
+  "body_summary": {
+    "top_level_keys": [
+      "type",
+      "event_timestamp",
+      "data"
+    ],
+    "token": "match",
+    "token_paths": [
+      "body.data.conversation_initiation_client_data.custom_llm_extra_body.criba_voice_token"
+    ],
+    "conversation_id": {
+      "headers": [],
+      "body": [
+        "body.data.conversation_initiation_client_data.dynamic_variables.system__conversation_id",
+        "body.data.conversation_id"
+      ],
+      "partial_body": []
+    },
+    "agent_id_paths": [
+      "body.data.agent_id",
+      "body.data.visited_agents[0].agent_id",
+      "body.data.conversation_initiation_client_data.dynamic_variables.system__agent_id",
+      "body.data.conversation_initiation_client_data.dynamic_variables.system__current_agent_id",
+      "body.data.transcript[1].<agent-3>.agent_id",
+      "body.data.transcript[3].<agent-3>.agent_id",
+      "body.data.transcript[4].<agent-3>.agent_id",
+      "body.data.transcript[5].<agent-3>.agent_id"
+    ],
+    "transcript_roles": [
+      "user",
+      "agent",
+      "user",
+      "agent",
+      "agent",
+      "agent"
+    ]
+  },
+  "response": {
+    "status": 200,
+    "ended_with_done": false,
+    "frames": []
+  }
+}

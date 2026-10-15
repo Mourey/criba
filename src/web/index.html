@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Criba</title>
+    <script>
+      // Pre-paint theme, the same rule as applyTheme in src/components/ui/theme.ts: data-theme only
+      // for a stored "light" or "dark"; anything else leaves it absent so the system setting decides.
+      try {
+        var stored = window.localStorage.getItem("criba.theme");
+        if (stored === "light" || stored === "dark") document.documentElement.setAttribute("data-theme", stored);
+      } catch (e) {
+        /* storage blocked: keep the system theme */
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

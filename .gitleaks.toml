@@ -1,0 +1,12 @@
+# gitleaks config for `src/scripts/check.sh` (CONSTRAINTS.md, "Security: secrets").
+# Default rules plus one allowlist, tracked as exception W2 in CONSTRAINTS.md.
+title = "criba"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "W2: placeholder session secret in backend tests, not a credential"
+condition = "AND"
+paths = ['''^src/backend/tests/''']
+regexes = ['''^0123456789abcdef$''']

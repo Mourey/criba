@@ -1,0 +1,15 @@
+# Voice persona (voice-agent sim-personas SM4): opted_out_code_switch_es on a voice call, Spain.
+# At the licence question the Candidate says a spoken opt-out phrase (spike 004 es05 turn 2);
+# the agent asks once and "Baja." opts the Candidate out.
+id: opted_out_code_switch_es
+description: >
+  Spain, a spoken opt-out: "Que no me llaméis más, por favor." at the licence question, the
+  agent's confirmation question, then "Baja.". The Candidate is Opted out; the Application stays
+  open at the licence.
+typed: opted_out_code_switch_es
+phone: "+34600001005"
+moments:
+  optout:
+    at: driver_license
+    phrase: "Que no me llaméis más, por favor."
+    then: "Baja."

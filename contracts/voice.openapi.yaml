@@ -1,0 +1,362 @@
+openapi: 3.1.0
+info:
+  title: Criba voice endpoints called by ElevenLabs
+  version: 0.1.0-voice
+  summary: The custom-LLM endpoint and the post-call webhook that ElevenLabs Agents call.
+  description: |
+    Owner: lane B (channel). Change only through lane B, in a separate commit
+    (`contracts/README.md`). Built from the phase 0 probe captures in
+    `src/tests/fixtures/spikes/005-elevenlabs-custom-llm/captures/`;
+    the probe's validator checked every capture against this file.
+
+    **Vendor payloads are open, our frames are closed.** The request ElevenLabs sends and the
+    post-call webhook require only the fields the design reads and allow extra properties, so a
+    field ElevenLabs adds is not a 422. The `chat.completion.chunk` frames we stream back are
+    closed.
+
+    **Binding.** Each custom-LLM request carries the agent's workspace secret as
+    `Authorization: Bearer` (probe P1) and the voice token the browser passed as
+    `customLlmExtraBody` in the top-level `elevenlabs_extra_body.criba_voice_token` (P3), on
+    every turn. The ElevenLabs conversation id is not in the request by default (P3).
+
+    **Repeated requests and timeout** (P2). ElevenLabs abandons a request after about 15 s
+    without a first byte and opens a new request with the same `messages` about every 4 s while
+    no first byte has arrived. One Candidate turn can therefore arrive as up to three concurrent
+    requests with the same history.
+
+    **History** (P4). `messages` is the whole conversation, system message first. An assistant
+    message interrupted by a barge-in is kept, truncated to what was spoken; the count of `user`
+    messages grows by exactly one per utterance.
+
+    **Ending the call** (P8). A final frame may carry an `end_call` tool call. ElevenLabs acts on it
+    only when its JSON `arguments` include `reason`; the line streamed before it is spoken
+    first. The Takeover marker travels as `criba_end_reason` in the same arguments:
+    `{"reason": "takeover", "criba_end_reason": "takeover"}`. It reaches ElevenLabs and the
+    post-call webhook's transcript, but not the browser SDK.
+
+    **Webhook** (P5). One `post_call_transcription` per call, a few seconds after it ends, signed
+    with `ElevenLabs-Signature: t=<unix seconds>,v0=<hex HMAC-SHA256 of "{t}.{raw body}">`. Its
+    `data.conversation_id` equals the `conversation_id` the WebRTC token response returned.
+    The body also carries the voice token (in
+    `data.conversation_initiation_client_data.custom_llm_extra_body`) and the transcript; neither is
+    required here, and neither may be stored.
+servers:
+  - url: http://localhost:8080
+    description: nginx in Compose (proxies /api to the backend)
+tags:
+  - name: voice
+
+paths:
+  /api/voice/v1/chat/completions:
+    post:
+      operationId: voiceChatCompletion
+      tags: [voice]
+      summary: Custom-LLM turn (called by ElevenLabs)
+      description: |
+        OpenAI-compatible chat completion that ElevenLabs calls for each Candidate turn. The
+        response is a `text/event-stream` of `data: <ChatCompletionChunk>` lines, ending with
+        `data: [DONE]`.
+      security:
+        - voiceLlmBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VoiceChatCompletionRequest' }
+            example:
+              messages:
+                - { role: system, content: Probe agent. The custom LLM answers every turn. }
+                - { role: user, content: Hola, quiero informacion sobre el puesto de repartidor. }
+              model: probe-model
+              max_tokens: 8192
+              stream: true
+              stream_options: { include_usage: true }
+              temperature: 0.0
+              tools:
+                - type: function
+                  function:
+                    name: end_call
+                    description: Ends the call.
+                    parameters:
+                      type: object
+                      required: [reason]
+                      properties:
+                        reason: { type: string }
+                        system__message_to_speak: { type: string }
+              elevenlabs_extra_body: { criba_voice_token: example-voice-token }
+      responses:
+        '200':
+          description: |
+            Server-sent events. Each event is one line `data: ` followed by a JSON
+            `ChatCompletionChunk`, then a blank line; the stream ends with `data: [DONE]`. The first
+            chunk sets `delta.role: assistant`; text follows in `delta.content`; the last chunk has
+            `finish_reason` `stop`, or `tool_calls` after an `end_call` tool-call chunk.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+              examples:
+                reply:
+                  value: |
+                    data: {"id":"chatcmpl-1","object":"chat.completion.chunk","created":1791679675,"model":"criba-voice","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null}]}
+
+                    data: {"id":"chatcmpl-1","object":"chat.completion.chunk","created":1791679675,"model":"criba-voice","choices":[{"index":0,"delta":{"content":"Gracias. "},"finish_reason":null}]}
+
+                    data: {"id":"chatcmpl-1","object":"chat.completion.chunk","created":1791679675,"model":"criba-voice","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
+                    data: [DONE]
+                takeover:
+                  value: |
+                    data: {"id":"chatcmpl-2","object":"chat.completion.chunk","created":1791679931,"model":"criba-voice","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null}]}
+
+                    data: {"id":"chatcmpl-2","object":"chat.completion.chunk","created":1791679931,"model":"criba-voice","choices":[{"index":0,"delta":{"content":"Una persona del equipo continuará contigo."},"finish_reason":null}]}
+
+                    data: {"id":"chatcmpl-2","object":"chat.completion.chunk","created":1791679931,"model":"criba-voice","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"id":"call_end","type":"function","function":{"name":"end_call","arguments":"{\"reason\": \"takeover\", \"criba_end_reason\": \"takeover\"}"}}]},"finish_reason":null}]}
+
+                    data: {"id":"chatcmpl-2","object":"chat.completion.chunk","created":1791679931,"model":"criba-voice","choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}]}
+
+                    data: [DONE]
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /api/voice/webhooks/post-call:
+    post:
+      operationId: voicePostCallWebhook
+      tags: [voice]
+      summary: Post-call webhook (called by ElevenLabs)
+      description: |
+        Verify `ElevenLabs-Signature` against the raw body before parsing. Join on
+        `data.conversation_id`. Store neither the transcript, the analysis text nor
+        `conversation_initiation_client_data`.
+      security:
+        - elevenLabsSignature: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PostCallWebhook' }
+            example:
+              type: post_call_transcription
+              event_timestamp: 1791679702
+              data:
+                agent_id: agent_example
+                conversation_id: conv_example
+                status: done
+                metadata:
+                  start_time_unix_secs: 1791679674
+                  call_duration_secs: 24
+                  termination_reason: end_call tool was called.
+                  cost: 171
+      responses:
+        '200':
+          description: Received
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WebhookAck' }
+              example: { status: received }
+        '400':
+          description: Signed and in the window, but not a JSON object with a string `type`, or a transcription without `data.agent_id`, `data.conversation_id` or a non-negative integer `data.metadata.call_duration_secs`
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VoiceError' }
+              example: { error: validation_error, message: Invalid webhook payload. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+
+components:
+  securitySchemes:
+    voiceLlmBearer:
+      type: http
+      scheme: bearer
+      description: The ElevenLabs workspace secret configured as the agent's `custom_llm.api_key` (probe P1).
+    elevenLabsSignature:
+      type: apiKey
+      in: header
+      name: ElevenLabs-Signature
+      description: '`t=<unix seconds>,v0=<hex HMAC-SHA256 of "{t}.{raw body}" with the webhook secret>` (probe P5).'
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid credentials, or an invalid or ended voice session
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/VoiceError' }
+          example: { error: unauthorized, message: Invalid credentials. }
+    NotFound:
+      description: Unknown path or conversation
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/VoiceError' }
+          example: { error: not_found, message: Not found. }
+    PayloadTooLarge:
+      description: Request body over the size limit
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/VoiceError' }
+          example: { error: payload_too_large, message: Request body too large. }
+    ValidationError:
+      description: Request failed validation
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/VoiceError' }
+          example: { error: validation_error, message: messages is required. }
+    RateLimited:
+      description: Too many requests
+      headers:
+        Retry-After:
+          schema: { type: integer }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/VoiceError' }
+          example: { error: rate_limited, message: Too many requests. }
+
+  schemas:
+    VoiceError:
+      type: object
+      additionalProperties: false
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          enum: [unauthorized, not_found, payload_too_large, validation_error, rate_limited]
+        message: { type: string }
+
+    VoiceChatCompletionRequest:
+      type: object
+      description: Sent by ElevenLabs (OpenAI Python SDK). Extra properties are allowed.
+      required: [messages, elevenlabs_extra_body]
+      properties:
+        messages:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/VoiceRequestMessage' }
+        model: { type: string }
+        max_tokens: { type: integer }
+        stream: { type: boolean }
+        stream_options: { type: object }
+        temperature: { type: number }
+        tools:
+          type: array
+          description: ElevenLabs declares its system tools here, `end_call` among them (with `reason` required).
+          items: { type: object }
+        elevenlabs_extra_body:
+          type: object
+          description: The browser's `customLlmExtraBody`, passed through on every request.
+          required: [criba_voice_token]
+          properties:
+            criba_voice_token: { type: string, minLength: 1 }
+      additionalProperties: true
+
+    VoiceRequestMessage:
+      type: object
+      required: [role]
+      properties:
+        role: { type: string, enum: [system, user, assistant, tool] }
+        content: { type: [string, 'null'] }
+      additionalProperties: true
+
+    ChatCompletionChunk:
+      type: object
+      description: One streamed frame we produce. Closed.
+      additionalProperties: false
+      required: [id, object, created, model, choices]
+      properties:
+        id: { type: string }
+        object: { type: string, const: chat.completion.chunk }
+        created: { type: integer }
+        model: { type: string }
+        choices:
+          type: array
+          minItems: 1
+          maxItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [index, delta, finish_reason]
+            properties:
+              index: { type: integer, const: 0 }
+              delta: { $ref: '#/components/schemas/ChunkDelta' }
+              finish_reason: { type: [string, 'null'], enum: [stop, tool_calls, null] }
+
+    ChunkDelta:
+      type: object
+      additionalProperties: false
+      properties:
+        role: { type: string, const: assistant }
+        content: { type: string }
+        tool_calls:
+          type: array
+          minItems: 1
+          maxItems: 1
+          items: { $ref: '#/components/schemas/EndCallToolCall' }
+
+    EndCallToolCall:
+      type: object
+      description: |
+        The `end_call` tool call that ends the call after the streamed line (parent R16). `arguments`
+        is a JSON string; ElevenLabs acts on it only when it includes `reason` (probe P8). For a
+        Takeover it is `{"reason": "takeover", "criba_end_reason": "takeover"}`.
+      additionalProperties: false
+      required: [index, id, type, function]
+      properties:
+        index: { type: integer, const: 0 }
+        id: { type: string }
+        type: { type: string, const: function }
+        function:
+          type: object
+          additionalProperties: false
+          required: [name, arguments]
+          properties:
+            name: { type: string, const: end_call }
+            arguments:
+              type: string
+              contentMediaType: application/json
+              contentSchema: { $ref: '#/components/schemas/EndCallArguments' }
+
+    EndCallArguments:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason: { type: string, minLength: 1 }
+        criba_end_reason:
+          type: string
+          enum: [takeover]
+          description: The machine-readable Takeover marker (log decision 20). It does not reach the browser SDK (probe P8).
+
+    PostCallWebhook:
+      type: object
+      description: Sent by ElevenLabs after each call. Extra properties are allowed; no transcript is required.
+      required: [type, event_timestamp, data]
+      properties:
+        type: { type: string }
+        event_timestamp: { type: integer }
+        data:
+          type: object
+          required: [agent_id, conversation_id, metadata]
+          properties:
+            agent_id: { type: string, minLength: 1 }
+            conversation_id: { type: string, minLength: 1 }
+            status: { type: string }
+            metadata:
+              type: object
+              required: [start_time_unix_secs, call_duration_secs]
+              properties:
+                start_time_unix_secs: { type: integer }
+                call_duration_secs: { type: integer }
+                termination_reason: { type: [string, 'null'] }
+                cost: { type: [integer, 'null'] }
+              additionalProperties: true
+          additionalProperties: true
+      additionalProperties: true
+
+    WebhookAck:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status: { type: string, const: received }

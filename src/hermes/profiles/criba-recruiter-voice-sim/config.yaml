@@ -1,0 +1,138 @@
+# criba-recruiter-voice-sim: criba-recruiter-voice pointed at the simulator's stub model server
+# (ADR 0059, as criba-recruiter-sim is to criba-recruiter). Identical to criba-recruiter-voice
+# in every setting except `model`; a test enforces that.
+#
+# Served at /p/criba-recruiter-voice-sim/v1/runs. The backend selects it with
+# CRIBA_HERMES_VOICE_PROFILE=criba-recruiter-voice-sim; the call is the same as for
+# criba-recruiter-voice (session_id = Application id, message id as Idempotency-Key, ADR 0018).
+#
+# Everything here is deliberate. See ADR 0010, ADR 0018, ADR 0019 and ADR 0026.
+# The entrypoint copies this file into the profile home on every start.
+
+# The stub model server (src/tests/sim/stub_llm, lane W1-E) speaks the OpenAI chat completions
+# API. @@NAME@@ placeholders are filled by the entrypoint from CRIBA_SIM_LLM_BASE_URL
+# (default http://stub-llm:8000/v1) and CRIBA_SIM_LLM_MODEL (default stub-model). This profile
+# is never given an OpenRouter key, so a simulator run cannot reach a paid provider.
+model:
+  default: "@@CRIBA_SIM_LLM_MODEL@@"
+  provider: custom
+  base_url: "@@CRIBA_SIM_LLM_BASE_URL@@"
+  api_key: stub-not-a-secret
+
+# --- Lean toolset (spikes 1 and 2) -------------------------------------------------------
+# Hermes's default toolsets cost about 40.6K input tokens per turn; only our tools cost about
+# 7.2K. The agent sees nothing but the criba-tools plugin's toolset.
+platform_toolsets:
+  api_server: [criba-tools]
+
+agent:
+  # Upper bound on model calls in one run. A turn is get_application, a few record_answer
+  # calls and the reply (parallel calls count once); the cap stops a looping run from burning
+  # tokens.
+  max_turns: 20
+  # Fail fast when the model provider is down (ADR 0073). Hermes's defaults retry each model
+  # call 3 times and then wait out up to 5 recovery cycles (15/30/60/60/60 s), so a run hung
+  # past our 60 s timeout; the backend retries the turn itself (owed turns). Keys read at
+  # agent/agent_init.py:1434-1445; the ladder is agent/turn_recovery_autorecover.py.
+  api_max_retries: 2
+  auto_recovery_cycles: 0
+  # Hermes's own prompt blocks that a screening conversation never needs ("finish the job",
+  # "batch your tool calls"). Config keys read at agent/agent_init.py:1417-1422, applied at
+  # agent/system_prompt.py:557-561. Together about 1,400 characters on every call (turn-size.md).
+  task_completion_guidance: false
+  parallel_tool_call_guidance: false
+  # Subtracted last (config.py _get_platform_tools), so these stay off even if a toolset
+  # list above ever grows. Includes memory and session_search (ADR 0010).
+  disabled_toolsets:
+    - memory
+    - session_search
+    - web
+    - browser
+    - terminal
+    - file
+    - code_execution
+    - cronjob
+    - delegation
+    - vision
+    - todo
+    - clarify
+    - skills
+
+tools:
+  # Otherwise tool search defers our tools behind a bridge and the model never sees them
+  # (spike 2, finding 11).
+  tool_search:
+    enabled: "off"
+
+plugins:
+  enabled:
+    - criba-tools
+
+# --- No memory (ADR 0010) ------------------------------------------------------------------
+# On defaults, one Candidate's name and Zone leaked into another Candidate's session through
+# the memory tool (spike 1, verdict 1b). Everything about a person lives in the Application.
+memory:
+  memory_enabled: false
+  user_profile_enabled: false
+
+# --- Auxiliary model calls are pinned --------------------------------------------------------
+# With an OpenRouter key, Hermes runs auxiliary tasks on the main model by default (spike 1,
+# gotcha 6). Pin them so overhead is deliberate and visible in the cost reconciliation, and
+# turn off the ones a screening conversation never needs.
+auxiliary:
+  free_only: false
+  openrouter_model: anthropic/claude-haiku-5.5
+  title_generation:
+    enabled: false
+  background_review:
+    enabled: false
+
+# --- Prompt size (turn-size.md) --------------------------------------------------------------
+# Replaces the built-in api_server hint (about 710 characters, mostly about MEDIA: file
+# delivery, which the Runs API never intercepts). Read at agent/agent_init.py:1431-1432 and
+# applied at agent/system_prompt.py:55-68; a top-level key, not under `agent:`.
+platform_hints:
+  api_server:
+    replace: "Plain text only: no markdown, no MEDIA: tags."
+
+# --- No messaging platforms ----------------------------------------------------------------
+# Only the Runs API is inbound. The root profile disables every adapter and the role profiles
+# repeat it, so each file says the same on its own (spike 2: a platform token in the
+# environment starts that adapter).
+platforms:
+  telegram: {enabled: false}
+  discord: {enabled: false}
+  whatsapp: {enabled: false}
+  whatsapp_cloud: {enabled: false}
+  slack: {enabled: false}
+  signal: {enabled: false}
+  mattermost: {enabled: false}
+  matrix: {enabled: false}
+  email: {enabled: false}
+  sms: {enabled: false}
+  dingtalk: {enabled: false}
+  webhook: {enabled: false}
+  msgraph_webhook: {enabled: false}
+  feishu: {enabled: false}
+  wecom: {enabled: false}
+  wecom_callback: {enabled: false}
+  weixin: {enabled: false}
+  bluebubbles: {enabled: false}
+  qqbot: {enabled: false}
+  yuanbao: {enabled: false}
+  relay: {enabled: false}
+  a2a: {enabled: false}
+  buzz: {enabled: false}
+  google_chat: {enabled: false}
+  irc: {enabled: false}
+  line: {enabled: false}
+  ntfy: {enabled: false}
+  photon: {enabled: false}
+  raft: {enabled: false}
+  simplex: {enabled: false}
+  teams: {enabled: false}
+
+# --- Neutral working directory -------------------------------------------------------------
+# A host path once leaked into a reply (spike 1, gotcha 3).
+terminal:
+  cwd: /opt/data/workspace

@@ -1,0 +1,44 @@
+id: zone_ambiguous_mx
+description: >
+  Mexico, ambiguous place name. "Puebla" matches three Zones (Angelópolis, Centro, La Paz), so
+  the agent offers them as options and the Candidate taps the second. The rest of the flow is a normal Qualified run in
+  es-MX vocabulary ("6 meses" parses to 0.5 years; two availability values).
+quirks: [ambiguous_zone]
+identity:
+  name: Carlos Ramírez
+  phone: "+525500000004"
+  country: MX
+  locale: es-MX
+opening:
+  text: "Hola, vengo por lo del trabajo de repartidor"
+answers:
+  full_name: [{text: Carlos Ramírez, value: Carlos Ramírez}]
+  zone: [{text: Puebla}, {text: "Centro, Puebla", pick_option: 1}]
+  driver_license: [{text: "Sí, tengo licencia de manejo", value: "yes"}]
+  availability: [{text: medio tiempo y fines de semana, value: [part_time, weekends]}]
+  preferred_schedule: [{text: por la mañana, value: [morning]}]
+  experience_years: [{text: 6 meses, value: 0.5}]
+  experience_platforms: [{text: Rappi, value: [rappi]}]
+  start_date: [{text: pasado mañana, value: "+2d"}]
+expect:
+  stage: qualified
+  status: open
+  fields:
+    full_name: {value: Carlos Ramírez}
+    zone: {non_null: true}
+    driver_license: {value: true}
+    availability: {value: [part_time, weekends]}
+    preferred_schedule: {value: [morning]}
+    experience_years: {value: 0.5}
+    experience_platforms: {value: [rappi]}
+    start_date: {non_null: true}
+  field_order:
+    [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+  events: [answer_ambiguous, answer_recorded, screening_finished]
+  event_counts: [{kind: answer_ambiguous, count: 1}]
+  forbidden_events: [knockout, escalation_raised, nudge_sent]
+  tools: [record_answer, finish_screening]
+  nudges: 0
+  forbidden_agent_text: [Criba]
+seed_assumptions:
+  - "\"Puebla\" matches exactly three MX Zones (2 or 3 is what makes the agent offer options; \"Centro\" matches four, so it would be a text re-ask), all inside a Service Area, and the second one offered is Centro."

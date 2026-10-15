@@ -1,0 +1,59 @@
+id: zone_unknown_place_mx
+description: >
+  The demo chat of 2026-10-11 (ADR 0062): a Mexican Candidate answers "Ciudad de Mexico en
+  Tepito". Tepito is not a seeded Zone, so search_zones matches the city only and returns its
+  nine Zones; the agent then asks the Candidate to pick from "el listado" without calling
+  record_answer, as real Haiku did. The search itself offered the city's Zones, so the list is
+  attached to that message and the Candidate taps Roma (in the demo no list came, the
+  Candidate asked "¿Cuál listado?" twice and typed "Centro, ciudad de México" in the end, which
+  is this persona's fallback reply). Reaches Qualified with no miss counted.
+quirks: [ambiguous_zone]
+identity:
+  name: Fernando Fernández
+  phone: "+525500000023"
+  country: MX
+  locale: es-MX
+opening:
+  text: "Hola!"
+answers:
+  full_name: [{text: Fernando Fernández, value: Fernando Fernández}]
+  zone:
+    - {text: "Ciudad de Mexico en Tepito", query: "Tepito, Ciudad de México"}
+    - {text: "Centro, ciudad de México", query: "Centro, Ciudad de México"}
+  driver_license: [{text: "Sí, tengo licencia", value: "yes"}]
+  availability: [{text: Tiempo completo, value: [full_time]}]
+  preferred_schedule: [{text: Noche, value: [evening]}]
+  experience_years: [{text: "10", value: 10}]
+  experience_platforms: [{text: Uber, value: [uber_eats]}]
+  start_date: [{text: el lunes, value: "next:mon"}]
+# The first Zone answer meets the city's list: the driver taps Roma instead of typing again.
+zone_choice: Roma
+expect:
+  stage: qualified
+  status: open
+  fields:
+    full_name: {value: Fernando Fernández}
+    zone: {value: Roma}
+    driver_license: {value: true}
+    availability: {value: [full_time]}
+    preferred_schedule: {value: [evening]}
+    experience_years: {value: 10}
+    experience_platforms: {value: [uber_eats]}
+    start_date: {non_null: true}
+  field_order:
+    [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+  events: [application_started, answer_recorded, answer_ambiguous, answer_recorded, screening_finished]
+  # One answer_ambiguous: the city's list, written by search_zones (the agent never recorded
+  # the ids). Without it the Candidate types the fallback reply and nothing is offered.
+  event_counts:
+    - {kind: screening_finished, count: 1}
+    - {kind: answer_ambiguous, count: 1}
+    - {kind: answer_invalid, count: 0}
+  forbidden_events: [knockout, escalation_raised, nudge_sent]
+  tools: [search_zones, record_answer, finish_screening]
+  forbidden_tools: [raise_escalation, record_backout]
+  nudges: 0
+  forbidden_agent_text: [Criba, Tepito]
+seed_assumptions:
+  - "\"Ciudad de México\" ranks nine Zones of one city (eight covered, plus Milpa Alta); Tepito is not a seeded Zone or alias, so \"Tepito, Ciudad de México\" matches the city only."
+  - "Roma (CDMX) is covered and in the list; \"Centro, Ciudad de México\" names exactly one covered Zone."

@@ -1,0 +1,31 @@
+id: unreadable_name_mx
+description: >
+  Mexico, answers the name question with keyboard mashing three times (the demo chat of
+  2026-10-11). Each unreadable message counts as a miss whether or not the agent calls a tool,
+  and the third hands the conversation to the Recruiters in code (ADR 0063): an `unreadable`
+  Escalation opens, the backend sends a fixed message and the agent does not reply to it. The
+  Application stays open at the name question; nothing is recorded.
+quirks: [unreadable]
+identity:
+  name: Blok Loka
+  phone: "+525500000019"
+  country: MX
+  locale: es-MX
+opening:
+  text: "Hola"
+answers:
+  full_name:
+    - {text: "Blok loka ksks aaa", value: null}
+    - {text: "asd as sssskkk", value: null}
+    - {text: "aksda asdas asassjqw weedyas", value: null}
+expect:
+  stage: greeting
+  status: open
+  fields_unanswered:
+    [full_name, zone, driver_license, availability, preferred_schedule, experience_years, start_date]
+  events: [application_started, answer_invalid, answer_invalid, answer_invalid, escalation_raised]
+  event_counts: [{kind: answer_invalid, count: 3}, {kind: escalation_raised, count: 1}]
+  forbidden_events: [answer_recorded, knockout, rejection, screening_finished]
+  forbidden_agent_text: [Criba]
+seed_assumptions:
+  - "None: nothing is recorded, so no Zone or Location is needed."

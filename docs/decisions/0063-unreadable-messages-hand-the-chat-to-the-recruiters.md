@@ -1,0 +1,45 @@
+# 0063. Unreadable messages are misses, and three in a row hand the chat to the Recruiters, in code
+
+- Status: Accepted, refined by 0076 (the backend also counts a miss for a Zone question the agent left unhandled)
+- Date: 2026-10-11
+- Amends: 0051 (an eighth Jev question, `unreadable`; the step reads back its own stored signals to count a run; a third Escalation reason from the router)
+- Refines: 0020 (a second way the agent stops replying while the Application stays open), 0035 (codes only), 0042 (a miss the backend counts before the agent runs) and Phase 1 section 5.2 (re-ask, then buttons, then an Escalation)
+
+## Context
+In a demo chat on 2026-10-11 (real Haiku, Application `app_01M4NKEASDVTZF5VV1RB5AFRV5`) the Candidate answered the name question with five nonsense messages: "Blok loka ksks aaa", "asd as sssskkk", "la nhets. weh que sdkj me edsiendes", "aksda asdas asassjqw weedyas", "alssda asdasd asd". For the first three the agent re-asked without calling `record_answer`, so no miss was counted; the last two produced `answer_invalid` attempts 1 and 2 (`unresolved`). Nothing escalated, and the agent kept the conversation. Jev read every message (`confused` 0.52 to 0.80, `lang` `unclear` or `other`), but no rule acted on it. "Blok loka ksks aaa" even passes the name check (two to eight words of letters), so a model that had passed it on would have stored it.
+
+Phase 1 section 5.2 says a Candidate who keeps missing gets a re-ask with an example, then buttons, then an Escalation that Recruiters resolve by Takeover or dismiss. The count depended on the agent choosing to call a tool. The owner decided (2026-10-11, "open, humans in control") that code counts unreadable messages and hands the chat to people after three.
+
+## Decision
+
+### Reading
+- **An eighth question in the same request** (`criba.jev.battery`, `unreadable`, a Noul about presence): "Is `latest_candidate_message` unreadable: keyboard mashing, random letters or made-up words that are not a word, an answer or a sentence in any language?", with a focus that a misspelt word, slang, an abbreviation, a name, a place, a number, a short answer or a sentence in any language is readable even when wrong or off topic. It costs no extra call.
+- **Code decides first** (`criba.jev.policy.unreadable_state`): a message with no letter at all (a number, a date, an emoji) is readable whatever Jev says. Otherwise `unreadable` at 0.50 or more is **unreadable**, below 0.20 is **readable**, and in between is **uncertain**, as is a failed call. Fitted on labelled messages (`docs/evidence/jev-calibration.md`, `src/tests/jev_calibration/unreadable.json`): on dev every readable message read 0.09 or less and every mashed one 0.66 or more, except a half-readable one ("la nhets. weh que sdkj me edsiendes", 0.30, uncertain); the holdout separated perfectly. `Thresholds.version` is now `jev-1.13-v3`, one past ADR 0061's `v2` (both questions are in the bundle).
+
+### Counting
+- **Each unreadable typed message is a miss** on the pending question, counted by the backend before the agent runs, whether or not the agent calls a tool: `answer_invalid` with the message id, `reason` `unreadable` and the attempt. **Nothing is recorded from that message:** if the agent then calls `record_answer` while it is the latest one, the call returns `invalid_value` with `reason` `unreadable` and the attempt already counted, and no second miss. (In the first live run Haiku passed "Blok loka ksks aaa" on as the name, which the name check accepts; the recorded answer then ended the run.) Outside Screening (no pending question) nothing is counted as a miss, but the run below still counts. On the third miss the usual `repeated_invalid_answers` Escalation opens, as `record_answer` would raise it; it does not stop the agent.
+- **The run** is the unreadable messages in a row before this one (`criba.jev.store.unreadable_run`): newest first, an unreadable message counts, an uncertain reading or a failed call is passed over, and a readable message, a message with no reading (a tap, a media message, one under a Takeover or the hold) or anything before the last recorded answer, dismissal, Takeover or hand-back ends it.
+
+### Handing over, at the third unreadable message in a row
+- **An Escalation with the new reason `unreadable`** (`repo.hold_for_recruiters`), with a fixed note. One Escalation is open per Application: if another one is already open, it becomes this one (reason `unreadable`, its note kept) and a second `escalation_raised` with `reason` `unreadable` records the change.
+- **A fixed message** from the backend in the Application's language (`criba.channel.copy.unreadable_handover`, SYNTHETIC like the rest of that module): "No logro entender tus mensajes. Una persona del equipo de Grupo Sazón te escribirá por aquí." (es-MX; es-ES and en alike), sent as `system`. **No agent run** for that message.
+- **The Recruiters have the chat while the Escalation is open** (`repo.agent_on_hold`): the router treats it as it treats a Takeover. Later messages are stored, are not read by Jev and start no run; the voice path ends a call; the scheduler sends no nudge. The Application stays open, `control` stays `agent`, and nothing about the Candidate is decided.
+- **Humans give it back.** Dismissing the Escalation resolves the hold and the agent answers the next message. A Takeover from the queue resolves it as `takeover`; a Takeover started from the Application resolves it as `takeover` too, so the hand-back returns the chat to the agent. Either way the run starts over.
+
+### What is stored, and what is not a decision
+- `message_signals` gains `unreadable`, the probability (migration `0013`, an added column; NULL on older rows and failed calls). It is not in `fired` and not in the Recruiter's per-message flags or the communication notes: the Escalation is what the Recruiter sees. The row's `escalation` column stays NULL for this case (its CHECK allows `wants_human` and `abuse` only).
+- **0051 is amended in one respect:** `criba.jev.store` is read back by the router's own step (`criba.jev.turn`) to count the run before raising an Escalation, which 0051 already allows. No Knockout, Rejection, Approval, ranking or booking rule reads the table, and the decision-path guard (`tests/jev/test_not_a_decision_input.py`) is unchanged: `channel/router.py` only reads the step's result.
+- The events hold codes and ids only (0035): `answer_invalid` (`field`, `attempts`, `reason`, `message_id`) and `escalation_raised` (`queue_item_id`, `reason`).
+
+## Alternatives considered
+- **Count only when the agent calls `record_answer`:** the bug. The agent re-asks without a tool call when it cannot read a name, which is reasonable wording and no count.
+- **A new `control` value (`human_pending`):** `control` is `agent` or `human` with a user behind `human` (a CHECK on `applications`); a third value means rebuilding the most-referenced table and teaching every reader of `control`. The open Escalation already names the state, and resolving it is the Recruiter's existing action.
+- **Reuse `repeated_invalid_answers`:** it does not stop the agent, and the Recruiter could not tell "keeps getting it wrong" from "we cannot read them".
+- **A keyword or regex rule:** it misses mashing it was not written for and flags Basque or Polish surnames ("Iñaki Etxeberria", "Wojciech Szczęsny", both read 0.01 and 0.02). The sim stub uses one only to drive the persona.
+- **`confused` as the signal:** it fired on the demo messages only once (0.80) and fires on real questions; it is a hint, not a count.
+
+## Consequences
+- **Contract** (additive): `contracts/schema.sql` `queue_items.reason` gains `unreadable` (migration `0013_unreadable.sql` rebuilds `queue_items` with every row kept, as 0002 did for `events`) and `message_signals` gains `unreadable`; `contracts/api.openapi.yaml` `EscalationReason` gains `unreadable`, with descriptions on it, `EventData_answer_invalid` and `EventData_escalation_raised`. `src/web/src/api/schema.d.ts` was regenerated (`npx openapi-typescript`, 7.13.0); the diff is additive and also picks up `modality` on chat messages, which an earlier change left out. The Review queue labels the reason "Unreadable messages: the agent has stopped replying". `tools.json` is unchanged: the agent never raises this one.
+- **Skill:** unchanged. The agent never sees the third message.
+- **Tests:** `tests/jev/test_unreadable.py`, `tests/api/test_queue.py` (dismiss, Takeover from the queue and from the Application), `tests/db/test_migrate.py`, `tests/jev/test_client.py`; the sim stub's rule (`sim.stub_llm.jev.unreadable`) and persona `unreadable_name_mx`; the live flow `unreadable` (`src/tests/live/flows.py`).
+- **Not done here:** the bias check of 0051 applies (the labelled set is synthetic); the per-message flags and notes do not show unreadable messages; a spoken turn is never counted: on spoken turns Jev runs after the reply and decides nothing about the turn (ADR 0065), and voice is its own flow (ADR 0059).

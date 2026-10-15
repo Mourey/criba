@@ -1,0 +1,47 @@
+# Sim mode (ADR 0017, spec 004, Q39): one switch turns on all three sim settings together.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.sim.yml up -d
+#
+# - starts the stub model server (`stub-llm`), so no real model is ever called;
+# - points the backend at the sim profiles (`criba-recruiter-sim`, and `criba-recruiter-voice-sim`
+#   for spoken turns), whose model is the stub;
+# - sets CRIBA_ENV=sim, which enables the test-only clock endpoints (contracts/webchat.openapi.yaml);
+# - points the Jev router at the stub's /api/alpha/decisions (ADR 0051), so the real service is
+#   never called: the backend refuses a public CRIBA_JEV_URL in sim mode.
+#
+# Never use this file in production. The backend refuses to start if CRIBA_ENV and the
+# Hermes profile disagree (W2-D).
+
+services:
+  stub-llm:
+    build:
+      context: ./src/tests
+      dockerfile: sim/stub_llm/Dockerfile
+      additional_contexts:
+        backend_lock: ./src/backend
+        contracts: ./contracts
+    environment:
+      STUB_LLM_PORT: "8000"
+    networks: [core]
+    restart: unless-stopped
+
+  backend:
+    environment:
+      CRIBA_ENV: sim
+      CRIBA_HERMES_PROFILE: criba-recruiter-sim
+      CRIBA_HERMES_VOICE_PROFILE: criba-recruiter-voice-sim
+      CRIBA_JEV: "on"
+      CRIBA_JEV_URL: http://stub-llm:8000/api/alpha/decisions
+      # Voice on in sim mode, with room for parallel personas (voice log decision 6).
+      CRIBA_VOICE: "on"
+      CRIBA_VOICE_MAX_CONCURRENT: "20"
+      # Synthetic agent ids (the sim's fake ElevenLabs client ignores them; not secrets) and
+      # room in the daily cap for the voice personas (voice log decision 57).
+      CRIBA_VOICE_AGENT_ES: sim-agent-es
+      CRIBA_VOICE_AGENT_MX: sim-agent-mx
+      CRIBA_VOICE_DAILY_MINUTES: "600"
+
+  hermes:
+    depends_on:
+      stub-llm:
+        condition: service_healthy

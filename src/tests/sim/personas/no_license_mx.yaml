@@ -1,0 +1,45 @@
+id: no_license_mx
+description: >
+  Mexico, no driver's license. Name and Zone are collected first (knock-out checks run before the
+  details). "Puebla" alone names three Zones, so the agent asks which one and the Candidate
+  resolves it (Phase 1 section 3). The license answer then ends the Application as a Knockout
+  with the es-MX template. The Candidate then disputes it ("revisión") and a Review is requested.
+quirks: [ambiguous_zone, disputes_knockout]
+identity:
+  name: Luis Hernández
+  phone: "+525500000002"
+  country: MX
+  locale: es-MX
+opening:
+  text: "Hola, quiero trabajar de repartidor"
+answers:
+  full_name: [{text: Luis Hernández, value: Luis Hernández}]
+  zone: [{text: Puebla}, {text: "Centro, Puebla"}]
+  driver_license: [{text: "No, todavía no tengo licencia de manejo", value: "no"}]
+# Buttons: Puebla offers Angelópolis, Centro and La Paz, and the second answer taps the one
+# labelled Centro. Text re-ask for the neighbourhood: the second answer, "Centro, Puebla", is sent.
+zone_choice: Centro
+interrupts:
+  - at: after_knockout
+    say: {text: revisión}
+    then: stop
+expect:
+  stage: driver_license
+  status: closed
+  outcome: knockout
+  knockout_criterion: driver_license
+  knockout_template: es-MX
+  fields:
+    full_name: {value: Luis Hernández}
+    zone: {non_null: true}
+  fields_unanswered: [availability, preferred_schedule, experience_years, start_date]
+  field_order: [full_name, zone, driver_license]
+  events: [application_started, answer_ambiguous, answer_recorded, knockout, review_requested]
+  event_counts: [{kind: answer_ambiguous, count: 1}, {kind: knockout, count: 1}]
+  forbidden_events: [screening_finished, nudge_sent, escalation_raised]
+  tools: [record_answer, request_review]
+  forbidden_tools: [finish_screening]
+  forbidden_agent_text: [Criba]
+seed_assumptions:
+  - "\"Puebla\" matches exactly three MX Zones (Angelópolis, Centro, La Paz), all inside a Service Area, so the agent asks which one."
+  - "\"Centro, Puebla\" names exactly one MX Zone, so only the license fails."

@@ -1,0 +1,596 @@
+# Generic stub Screening Agent. It plays the Screening Agent's loop with no model:
+#   every fresh Candidate message -> get_application -> act on the result.
+# It covers the happy path, Knockouts (sent exactly as the tool returns them), ambiguous Zones,
+# invalid answers, the confirm step, a disputed Knockout (Review), withdrawing and opting out
+# (each confirmed once), and a polite redirect to injection attempts.
+#
+# The agent interprets and the backend verifies (ADR 0042, spec 006b). The stub cannot read
+# words, so it looks them up (sim/stub_llm/interpret.py): every persona reply carries the
+# canonical value a competent agent would send, and the stub sends that, never the raw text.
+#   - {{interpret}} / {{interpret.<field>}}: the value for record_answer; a tapped option id
+#     passes through (in a list for list fields and Zone ids); text no persona says is null;
+#   - the Zone takes two steps: search_zones({{zone_query}}), then record_answer with every id it
+#     returned ({{zone_ids}}), or null when none came back or `more` is true;
+#   - get_application carries {{language}}, left out after a button tap.
+# Two narrow patterns detect a message that answers more than one thing (the value still comes
+# from the interpreter), one record_answer per field and one call per model round, so the
+# backend sees them in collection order:
+#   - several fields in one message: "<name>, vivo en <zone> y tengo carnet|licencia ..." (and
+#     "<name>, I live in <zone> and I have a driver's license");
+#   - corrections at the confirm step: "mi zona es <zone>" / "vivo en <zone>", "mi nombre es
+#     <name>", "mi apellido es <surname>", "puedo empezar <date>".
+#
+# Replies never repeat what the Candidate typed (name, Zone, other answers), so a Candidate fact
+# in another Candidate's reply can only be a leak (session-isolation test, ADR 0010). Four replies
+# relay a tool result, as the Screener skill requires: the Zone funnel's question (ADR 0068), the
+# Knockout text and the Qualified close
+# (sent exactly as returned; the backend writes the first name and Zone into them, in the stored
+# language) and the booked Interview's time and place.
+#
+# After Approval it also plays the Interview booking: the system turn "[system] approved" ->
+# offer_interview_slots; a tapped slot is booked by the backend and arrives as the book_interview
+# result after "[tap result] " (ADR 0050) -> the confirmation; a bare slot_ref -> book_interview;
+# the id "other" -> the booking link.
+#
+# Prose is Spanish or English by a crude guess at the Candidate's language and carries no
+# country variant, except the Zone questions, which follow the stored language as the skill
+# says: es-ES asks for the barrio, es-MX for the colonia. Tests assert state and tool calls,
+# never wording (spec 004), apart from that word.
+#
+# Matching is stateless; see sim/stub_llm/script.py. Tool results are read both as the bare
+# value and as the {ok, value} envelope of contracts/tools.json.
+name: screener
+defaults:
+  models: [stub-model, stub-haiku, stub-sonnet]
+  min_prompt_tokens: 1500   # Hermes sends a large system prompt; keep usage in that range
+  price_per_mtok: {prompt: 1.0, completion: 5.0}
+
+rules:
+  - name: fresh-turn
+    match: {last_role: user, step: 0}
+    respond:
+      tool_calls:
+        - name: get_application
+          arguments: {language: "{{language}}"}
+          omit_empty: [language]   # a button tap carries no language
+
+  # ---- after get_application ------------------------------------------------------------
+  # After Approval the backend starts a run with the fixed system turn "[system] approved"
+  # (Q41). These rules come first because "[system]" also trips injection-redirect below. The
+  # channel attaches the slot buttons from pending_choice, so the intro never lists the slots.
+  - name: approved-offer
+    match:
+      last_tool: get_application
+      user_regex: "^\\s*\\[system\\] approved\\s*$"
+      tool_json: {status: open, control: agent, approved: true}
+      tool_json_absent: [interview]   # no booking yet; the backend leaves out a null key
+    respond:
+      tool_calls: [{name: offer_interview_slots}]
+
+  # A bare slot_ref ("so_" + urlsafe token) the backend did not book (a tap is booked before the
+  # run, ADR 0050, and reaches book-done below as a [tap result]); book it. The confirmation
+  # never says an invite was sent (Screener skill, rule 5).
+  - name: slot-tapped
+    match:
+      last_tool: get_application
+      user_regex: "^so_[A-Za-z0-9_-]{1,61}$"
+      tool_json: {status: open, control: agent, approved: true}
+    respond:
+      tool_calls: [{name: book_interview, arguments: {slot_ref: "{{user}}"}}]
+
+  # "Otro horario" arrives as the id "other": point to the booking link of the earlier offer. Only
+  # once Approved, because "other" is also a platform value for record_answer.
+  - name: other-time-link
+    match:
+      last_tool: get_application
+      user_regex: "^other$"
+      history_tool: offer_interview_slots
+      tool_json: {status: open, control: agent, approved: true}
+    respond:
+      content:
+        es: "Sin problema, aquí puedes elegir el horario que te convenga: {{history.offer_interview_slots.booking_url}}"
+        en: "No problem, you can pick the time that suits you here: {{history.offer_interview_slots.booking_url}}"
+
+  # The offer is gone from the history (new session): ask for it again, the link follows.
+  - name: other-time-reoffer
+    match:
+      last_tool: get_application
+      user_regex: "^other$"
+      tool_json: {status: open, control: agent, approved: true}
+    respond:
+      tool_calls: [{name: offer_interview_slots}]
+
+  - name: closed-knockout-dispute
+    match:
+      last_tool: get_application
+      tool_json: {status: closed, outcome: knockout}
+      user_contains: [revisión, revision, review, una persona]
+    respond:
+      tool_calls: [{name: request_review, arguments: {note: "{{user}}"}}]
+
+  # After a Knockout, a new answer to the failed criterion goes to record_answer (ADR 0033): a
+  # valid one within 30 days reopens the Application; anything else leaves it closed. A new Zone
+  # is searched first, like any Zone.
+  - name: closed-knockout-new-zone
+    match:
+      last_tool: get_application
+      tool_json: {status: closed, outcome: knockout, knockout_criterion: zone}
+      interprets: zone
+    respond:
+      tool_calls: [{name: search_zones, arguments: {query: "{{zone_query}}"}}]
+
+  - name: closed-knockout-new-answer
+    match:
+      last_tool: get_application
+      tool_json: {status: closed, outcome: knockout, knockout_criterion: zone}
+    respond:
+      tool_calls:
+        - name: record_answer
+          arguments: {field: zone, value: "{{interpret.zone}}"}
+
+  - name: closed-knockout-new-license
+    match:
+      last_tool: get_application
+      tool_json: {status: closed, outcome: knockout, knockout_criterion: driver_license}
+    respond:
+      tool_calls:
+        - name: record_answer
+          arguments: {field: driver_license, value: "{{interpret.driver_license}}"}
+
+  - name: closed
+    match: {last_tool: get_application, tool_json: {status: closed}}
+    respond:
+      content:
+        es: "Tu solicitud ya está cerrada. Si algo cambia, escríbenos y la retomamos."
+        en: "Your application is closed. If anything changes, write to us and we will pick it up."
+
+  - name: human-in-control
+    match: {last_tool: get_application, tool_json: {control: human}}
+    respond:
+      content:
+        es: "Un momento, alguien del equipo de Grupo Sazón te atiende."
+        en: "One moment, someone from the Grupo Sazón team will help you."
+
+  # A system turn for an Application that is not Approved, or already has an Interview: offer
+  # nothing, say nothing that is not true.
+  - name: approved-turn-nothing-to-offer
+    match:
+      last_tool: get_application
+      user_regex: "^\\s*\\[system\\] approved\\s*$"
+    respond:
+      content:
+        es: "Tu solicitud sigue en curso; te escribimos por aquí con novedades."
+        en: "Your application is still in progress; we will write to you here with news."
+
+  - name: withdraw-confirmed
+    match:
+      last_tool: get_application
+      prev_assistant_contains: ["retirar tu solicitud", "withdraw your application"]
+      user_regex: "(?i)^\\s*(s[ií]|yes|ok|claro|seguro|confirmo|correct)"
+    respond:
+      tool_calls: [{name: record_backout, arguments: {kind: withdrawn, note: "{{user}}"}}]
+
+  - name: optout-confirmed
+    match:
+      last_tool: get_application
+      prev_assistant_contains: ["dejemos de escribirte", "stop messaging you"]
+      user_regex: "(?i)^\\s*(s[ií]|yes|ok|claro|seguro|confirmo|correct)"
+    respond:
+      tool_calls: [{name: record_backout, arguments: {kind: opted_out, note: "{{user}}"}}]
+
+  - name: withdraw-ask
+    match:
+      last_tool: get_application
+      user_contains: [ya no me interesa, no me interesa, no estoy interesad, no longer interested, not interested]
+    respond:
+      content:
+        es: "Entendido. ¿Confirmas que quieres retirar tu solicitud?"
+        en: "Understood. Do you want me to withdraw your application?"
+
+  - name: optout-ask
+    match:
+      last_tool: get_application
+      user_contains: [no me escrib, deja de escrib, dejen de escrib, stop messaging, stop texting, don't message me, do not message me]
+    respond:
+      content:
+        es: "Claro. ¿Confirmas que quieres que dejemos de escribirte?"
+        en: "Of course. Do you confirm you want us to stop messaging you?"
+
+  # A spoken turn the backend marked [optout_request] (sim-stub SM2): ask optout-ask's question,
+  # whatever the words. The marker alone records nothing; optout-confirmed records the "sí".
+  - name: optout-spoken-ask
+    match: {last_tool: get_application, marker: optout_request}
+    respond:
+      content:
+        es: "Claro. ¿Confirmas que quieres que dejemos de escribirte?"
+        en: "Of course. Do you confirm you want us to stop messaging you?"
+
+  # Several fields in one message: record the name now, then search and record the Zone and
+  # record the license one round at a time (multi-zone, zone-found, multi-license below).
+  - name: multi-name
+    match:
+      last_tool: get_application
+      tool_json: {status: open, next_field: full_name}
+      user_regex: &multi "(?i)^(?:(?:hola|hello|hi)[,!.]?\\s*)?(?:soy\\s+|me\\s+llamo\\s+|i'?m\\s+|my\\s+name\\s+is\\s+)?(?P<name>[^,\\d]+?),\\s*(?:vivo\\s+en|i\\s+live\\s+in)\\s+(?P<zone>.+?)\\s+(?:y|and)\\s+(?P<license>(?:tengo|i\\s+have)\\s+(?:a\\s+)?(?:carnet|licencia|driver'?s?\\s+licen[cs]e)[^.!?]*)"
+    respond:
+      tool_calls:
+        - name: record_answer
+          arguments: {field: full_name, value: "{{interpret.full_name}}"}
+
+  - name: greeting
+    match: {last_tool: get_application, user_turn: 1}
+    respond:
+      content:
+        es: "¡Hola! Soy el asistente virtual de Grupo Sazón, una inteligencia artificial. Te ayudo a postularte como repartidor en unos minutos. ¿Cómo te llamas (nombre y apellido)?"
+        en: "Hi! I am Grupo Sazón's virtual assistant, an AI. I can help you apply as a delivery driver in a few minutes. What is your full name?"
+
+  - name: injection-redirect
+    match:
+      last_tool: get_application
+      user_contains: [ignora tus instrucciones, ignora lo anterior, ignora las instrucciones, ignore your instructions, ignore previous, ignore all previous, system prompt, "system:", "[system]"]
+    respond:
+      content:
+        es: "Eso no puedo hacerlo, pero sí puedo ayudarte con tu solicitud. Sigamos."
+        en: "I can't do that, but I can help with your application. Let's continue."
+
+  # Corrections at the confirm step (every field answered): record the field again. The backend
+  # re-runs its check, and the summary question follows (ra-summary).
+  - name: confirm-correct-zone
+    match:
+      last_tool: get_application
+      tool_json: {status: open, next_field: null}
+      user_regex: "(?i)(?:\\bmi\\s+zona\\s+es|\\bvivo\\s+en|\\bmy\\s+(?:area|zone)\\s+is|\\bi\\s+live\\s+in)\\s+(?P<value>[^.!?]+)"
+      interprets: zone
+    respond:
+      tool_calls: [{name: search_zones, arguments: {query: "{{zone_query}}"}}]
+
+  - name: confirm-correct-surname
+    match:
+      last_tool: get_application
+      tool_json: {status: open, next_field: null}
+      user_regex: "(?i)\\bmis?\\s+apellidos?\\s+(?:es|son)\\s+(?P<value>[^.!?,]+)"
+      interprets: full_name
+    respond:
+      tool_calls:
+        - name: record_answer
+          arguments: {field: full_name, value: "{{interpret.full_name}}"}
+
+  - name: confirm-correct-name
+    match:
+      last_tool: get_application
+      tool_json: {status: open, next_field: null}
+      user_regex: "(?i)(?:\\bmi\\s+nombre\\s+(?:completo\\s+)?es|\\bme\\s+llamo|\\bmy\\s+(?:full\\s+)?name\\s+is)\\s+(?P<value>[^.!?,]+)"
+      interprets: full_name
+    respond:
+      tool_calls:
+        - name: record_answer
+          arguments: {field: full_name, value: "{{interpret.full_name}}"}
+
+  - name: confirm-correct-start-date
+    match:
+      last_tool: get_application
+      tool_json: {status: open, next_field: null}
+      user_regex: "(?i)(?:\\bpuedo\\s+(?:empezar|comenzar)|\\bi\\s+can\\s+start)\\s+(?P<value>[^.!?,]+)"
+      interprets: start_date
+    respond:
+      tool_calls:
+        - name: record_answer
+          arguments: {field: start_date, value: "{{interpret.start_date}}"}
+
+  - name: confirm-yes
+    match:
+      last_tool: get_application
+      tool_json: {next_field: null}
+      user_regex: "(?i)^\\s*(s[ií]|yes|ok|claro|correcto|correct|va|dale|así es|that's right)"
+    respond:
+      tool_calls: [{name: finish_screening}]
+
+  - name: confirm-other
+    match: {last_tool: get_application, tool_json: {next_field: null}}
+    respond:
+      content:
+        es: "Perdona, no te he entendido. ¿Es correcto lo que te resumí? Responde sí, o dime qué cambiar."
+        en: "Sorry, I did not get that. Is the summary right? Reply yes, or tell me what to change."
+
+  # The Zone is searched first, then recorded with the ids found (zone-found below). Text no
+  # persona says, a tapped Zone id and the No tap of a confirmation have nothing to search: they
+  # go to record-next.
+  - name: zone-search
+    match:
+      last_tool: get_application
+      tool_json: {status: open, next_field: zone}
+      interprets: zone
+    respond:
+      tool_calls: [{name: search_zones, arguments: {query: "{{zone_query}}"}}]
+
+  - name: record-next
+    match: {last_tool: get_application}
+    respond:
+      tool_calls:
+        - name: record_answer
+          arguments: {field: "{{tool.next_field}}", value: "{{interpret}}"}
+
+  # ---- after search_zones ---------------------------------------------------------------
+  # Real Haiku in the demo chat of 2026-10-11 (ADR 0062): "Ciudad de Mexico en Tepito" (Tepito is
+  # not a Zone) found the city's Zones, and the agent asked for a pick from "el listado" without
+  # calling record_answer. The line names no list item: the backend attaches whatever list the
+  # search offered (persona zone_unknown_place_mx; no other persona says Tepito).
+  # Nothing matched anywhere (ADR 0068): the backend asked, once, which of our cities the Candidate
+  # can work in (the cities and "none of these" are the pending list) and gives the question in
+  # `message`. The agent sends it as given (persona zone_texas_funnel_en; no other persona names
+  # a place with no Zone).
+  - name: zone-funnel-asked
+    match:
+      last_tool: search_zones
+      tool_json: {options_attached: true}
+      tool_json_contains: {message: ["?"]}
+    respond:
+      content: "{{tool.message}}"
+
+  - name: zone-found-ask-without-recording
+    match: {last_tool: search_zones, user_contains: [tepito]}
+    respond:
+      content:
+        es: "Del listado de zonas de tu ciudad, ¿cuál te queda más cerca?"
+        en: "From the list of areas in your city, which one is closest to you?"
+
+  # Every id found, for the backend to apply its rules (one covered: accepted; one uncovered:
+  # a Sí/No confirmation; two or three: buttons; a city's Zones: a list). None or `more` is null.
+  - name: zone-found
+    match: {last_tool: search_zones}
+    respond:
+      tool_calls:
+        - name: record_answer
+          arguments: {field: zone, value: "{{zone_ids}}"}
+
+  # ---- after record_answer --------------------------------------------------------------
+  - name: ra-knockout
+    match: {last_tool: record_answer, tool_json: {status: knockout}}
+    respond:
+      content: "{{tool.message}}"
+
+  # One uncovered Zone found by the agent: Sí/No buttons, the Zone's id for Sí (decision 3). The
+  # line names no place, so it echoes nothing the Candidate said.
+  - name: ra-zone-confirm
+    match:
+      last_tool: record_answer
+      tool_json: {status: needs_choice}
+      tool_json_contains: {confirm: ["zone_"]}
+    respond:
+      content:
+        es: "¿Vives en esa zona? Responde con los botones."
+        en: "Do you live in that area? Use the buttons."
+
+  # A null Zone while the funnel has not been asked: the same question, sent as given.
+  - name: ra-zone-funnel
+    match:
+      last_tool: record_answer
+      tool_json: {ok: false}
+      tool_json_contains: {reason: ["zone_funnel"]}
+    respond:
+      content: "{{tool.message}}"
+
+  # The No tap: no miss, the buttons are gone, and the Zone is asked again.
+  - name: ra-zone-not-confirmed
+    match:
+      last_tool: record_answer
+      tool_json: {ok: false}
+      tool_json_contains: {reason: ["zone_not_confirmed"]}
+    respond:
+      content:
+        es-ES: "Entendido. ¿En qué zona vives? Dime el barrio y la ciudad."
+        es-MX: "Entendido. ¿En qué zona vives? Dime la colonia y la ciudad."
+        es: "Entendido. ¿En qué zona vives? Dime el barrio y la ciudad."
+        en: "Understood. Which area do you live in? Tell me the neighbourhood and the city."
+
+  # Two start dates the words fit ("el próximo domingo", ADR 0054): the backend attaches both
+  # dates as buttons, so the line asks which one and never retypes them.
+  - name: ra-needs-choice-start-date
+    match: {last_tool: record_answer, tool_json: {status: needs_choice, field: start_date}}
+    respond:
+      content:
+        es: "¿Te refieres a este o al de la semana siguiente? Elige una de las opciones."
+        en: "Do you mean this one or the one the week after? Pick one of the options."
+
+  - name: ra-needs-choice
+    match: {last_tool: record_answer, tool_json: {status: needs_choice}}
+    respond:
+      content:
+        es: "Hay varias zonas con ese nombre. ¿Cuál es la tuya? Elige una de las opciones."
+        en: "There are a few areas with that name. Which one is yours? Pick one of the options."
+
+  # A tool error that carries Zone options (a known city without a single Zone, Q45): the channel
+  # attaches the list to this message, so the line asks for a pick and never retypes the options.
+  - name: ra-zone-list
+    match:
+      last_tool: record_answer
+      tool_json: {ok: false}
+      tool_json_contains: {"options.0.id": ["zone_"]}
+    respond:
+      content:
+        es: "¿Cuál es tu zona? Elígela en la lista."
+        en: "Which one is your area? Please pick it from the list."
+
+  # The hint says the city is known but not the neighbourhood, and there is no list to offer.
+  - name: ra-city-recognised
+    match:
+      last_tool: record_answer
+      tool_json: {ok: false}
+      tool_json_contains: {hint: ["City recognised"]}
+    respond:
+      content:
+        es-ES: "Reconozco la ciudad, pero no el barrio. ¿En qué barrio vives?"
+        es-MX: "Reconozco la ciudad, pero no la colonia. ¿En qué colonia vives?"
+        es: "Reconozco la ciudad, pero no el barrio. ¿En qué barrio vives?"
+        en: "I recognise the city, but not the neighbourhood. Which neighbourhood do you live in?"
+
+  - name: ra-invalid
+    match: {last_tool: record_answer, tool_json: {ok: false}}
+    respond:
+      content:
+        es: "No me ha quedado claro. ¿Me lo dices de otra forma, con un ejemplo?"
+        en: "I did not quite get that. Could you say it another way, with an example?"
+
+  # The rest of a several-fields message (multi-name above). The same Candidate message is still
+  # the latest, so the pattern still matches; each step runs once the previous one is accepted.
+  - name: multi-zone
+    match:
+      last_tool: record_answer
+      tool_json: {status: accepted, next_field: zone}
+      user_regex: *multi
+    respond:
+      tool_calls: [{name: search_zones, arguments: {query: "{{zone_query}}"}}]
+
+  - name: multi-license
+    match:
+      last_tool: record_answer
+      tool_json: {status: accepted, next_field: driver_license}
+      user_regex: *multi
+    respond:
+      tool_calls:
+        - name: record_answer
+          arguments: {field: driver_license, value: "{{interpret.driver_license}}"}
+
+  # A several-fields opening skipped the greeting, so this first reply still discloses the AI.
+  - name: multi-greeting-availability
+    match:
+      last_tool: record_answer
+      user_turn: 1
+      tool_json: {status: accepted, next_field: availability}
+    respond:
+      content:
+        es: "¡Hola! Soy el asistente virtual de Grupo Sazón, una inteligencia artificial. Gracias, ya tengo esos datos. ¿Qué disponibilidad tienes: tiempo completo, medio tiempo o fines de semana?"
+        en: "Hi! I am Grupo Sazón's virtual assistant, an AI. Thanks, I have those details. What is your availability: full-time, part-time or weekends?"
+
+  - name: ra-next-full-name
+    match: {last_tool: record_answer, tool_json: {status: accepted, next_field: full_name}}
+    respond:
+      content: {es: "¿Me dices tu nombre y apellido?", en: "Could you tell me your full name?"}
+
+  - name: ra-next-zone
+    match: {last_tool: record_answer, tool_json: {status: accepted, next_field: zone}}
+    respond:
+      content:
+        es-ES: "Gracias. ¿En qué zona o ciudad vives? Dime el barrio y la ciudad."
+        es-MX: "Gracias. ¿En qué zona o ciudad vives? Dime la colonia y la ciudad."
+        es: "Gracias. ¿En qué zona o ciudad vives? Dime el barrio y la ciudad."
+        en: "Thanks. Which area or city do you live in? Tell me the neighbourhood and the city."
+
+  - name: ra-next-driver-license
+    match: {last_tool: record_answer, tool_json: {status: accepted, next_field: driver_license}}
+    respond:
+      content: {es: "¿Tienes licencia de conducir vigente?", en: "Do you have a valid driver's license?"}
+
+  - name: ra-next-availability
+    match: {last_tool: record_answer, tool_json: {status: accepted, next_field: availability}}
+    respond:
+      content:
+        es: "¿Qué disponibilidad tienes: tiempo completo, medio tiempo o fines de semana?"
+        en: "What is your availability: full-time, part-time or weekends?"
+
+  - name: ra-next-preferred-schedule
+    match: {last_tool: record_answer, tool_json: {status: accepted, next_field: preferred_schedule}}
+    respond:
+      content:
+        es: "¿Qué horario prefieres: mañana, tarde, noche o flexible?"
+        en: "Which schedule do you prefer: morning, afternoon, evening or flexible?"
+
+  - name: ra-next-experience-years
+    match: {last_tool: record_answer, tool_json: {status: accepted, next_field: experience_years}}
+    respond:
+      content:
+        es: "¿Cuánta experiencia tienes como repartidor?"
+        en: "How much experience do you have as a delivery driver?"
+
+  - name: ra-next-experience-platforms
+    match: {last_tool: record_answer, tool_json: {status: accepted, next_field: experience_platforms}}
+    respond:
+      content: {es: "¿En qué plataformas has repartido?", en: "Which platforms have you delivered for?"}
+
+  - name: ra-next-start-date
+    match: {last_tool: record_answer, tool_json: {status: accepted, next_field: start_date}}
+    respond:
+      content: {es: "¿Cuándo podrías empezar?", en: "When could you start?"}
+
+  - name: ra-summary
+    match: {last_tool: record_answer, tool_json: {status: accepted, next_field: null}}
+    respond:
+      content:
+        es: "Ya tengo todas tus respuestas. ¿Es correcto lo que me has contado? Responde sí, o dime qué cambiar."
+        en: "I have all your answers. Is everything right? Reply yes, or tell me what to change."
+
+  # ---- after the other tools ------------------------------------------------------------
+  # The Qualified close is the backend's, in the stored language: sent as given, like a Knockout.
+  - name: finish-done
+    match: {last_tool: finish_screening, tool_json: {stage: qualified}}
+    respond:
+      content: "{{tool.message}}"
+
+  # "Otro horario" is answered by the backend with the booking link and its message (ADR 0064):
+  # sent as given, like a Knockout.
+  - name: booking-link-done
+    match: {last_tool: booking_link}
+    respond:
+      content: "{{tool.message}}"
+
+  - name: offer-failed
+    match: {last_tool: offer_interview_slots, tool_json: {ok: false}}
+    respond:
+      content:
+        es: "Ahora mismo no tengo horarios abiertos; alguien del equipo te escribe pronto con opciones."
+        en: "I have no open times right now; someone from the team will write to you soon with options."
+
+  - name: offer-other-link
+    match:
+      last_tool: offer_interview_slots
+      user_regex: "^other$"
+    respond:
+      content:
+        es: "Sin problema, aquí puedes elegir el horario que te convenga: {{tool.booking_url}}"
+        en: "No problem, you can pick the time that suits you here: {{tool.booking_url}}"
+
+  - name: offer-intro
+    match: {last_tool: offer_interview_slots}
+    respond:
+      content:
+        es: "¡Buenas noticias, tu solicitud está aprobada! Elige el horario de tu entrevista."
+        en: "Good news, your application is approved! Pick a time for your interview."
+
+  # The slot was taken or the offer expired: offer fresh slots (the intro rule above follows).
+  - name: book-failed
+    match: {last_tool: book_interview, tool_json: {ok: false}}
+    respond:
+      tool_calls: [{name: offer_interview_slots}]
+
+  - name: book-done
+    match: {last_tool: book_interview, tool_json: {stage: interview_booked}}
+    respond:
+      content:
+        es: "Listo, tu entrevista es el {{tool.interview.local_label}} en {{tool.interview.location_name}}, {{tool.interview.address}}."
+        en: "All set, your interview is on {{tool.interview.local_label}} at {{tool.interview.location_name}}, {{tool.interview.address}}."
+
+  - name: review-done
+    match: {last_tool: request_review}
+    respond:
+      content:
+        es: "Hecho: una persona del equipo de Grupo Sazón revisará la decisión."
+        en: "Done: someone from the Grupo Sazón team will review the decision."
+
+  - name: backout-done
+    match: {last_tool: record_backout}
+    respond:
+      content:
+        es: "Hecho. Gracias por tu tiempo y mucho éxito."
+        en: "Done. Thanks for your time, and good luck."
+
+  - name: escalation-done
+    match: {last_tool: raise_escalation}
+    respond:
+      content:
+        es: "Alguien del equipo te lo confirma en cuanto pueda."
+        en: "Someone from the team will confirm that as soon as they can."
+
+fallback:
+  content:
+    es: "Perdona, ¿me lo repites?"
+    en: "Sorry, could you say that again?"

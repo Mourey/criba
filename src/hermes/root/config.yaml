@@ -1,0 +1,95 @@
+# Root (default) profile of the Criba Hermes gateway.
+#
+# The gateway process runs the root profile and serves the role profiles under
+# /p/<profile>/ on the one listener (multiplexing). Nobody calls the root profile itself:
+# the backend talks to /p/criba-recruiter/v1/runs. The entrypoint copies this file to
+# $HERMES_HOME/config.yaml on every start, so edit it here, not in the container.
+#
+# No ${VAR} in this file: Hermes does not expand it in key fields (spike 1, gotcha 4). Secrets
+# are written to each profile's env file by src/docker/hermes/entrypoint.sh.
+
+model:
+  default: anthropic/claude-haiku-5.5
+  provider: openrouter
+
+gateway:
+  # Serve every profile under /p/<profile>/ from this one process.
+  multiplex_profiles: true
+  api_server:
+    # Concurrent runs across all profiles; the 11th gets HTTP 429 at the default of 10
+    # (api-server.md:738). Starting value for the load runs of spec 004, to be tuned there.
+    max_concurrent_runs: 32
+
+# The root profile has no job. If its own routes were ever reached with the root key, the
+# agent behind them must still have no tools (the image's default is a full terminal).
+platform_toolsets:
+  api_server: []
+
+agent:
+  max_turns: 4
+  disabled_toolsets:
+    - memory
+    - session_search
+    - web
+    - browser
+    - terminal
+    - file
+    - code_execution
+    - cronjob
+    - delegation
+    - vision
+    - todo
+    - clarify
+    - skills
+
+# The Runs API is the only inbound surface. API_SERVER_ENABLED/HOST/PORT/KEY come from the env
+# file the entrypoint writes. Every messaging platform is disabled explicitly: spike 2 found
+# that a platform token in the environment starts that adapter (messaging/index.md:772), and
+# `platforms.<name>.enabled: false` stops it. Defence in depth: Compose never forwards the
+# host environment either.
+platforms:
+  telegram: {enabled: false}
+  discord: {enabled: false}
+  whatsapp: {enabled: false}
+  whatsapp_cloud: {enabled: false}
+  slack: {enabled: false}
+  signal: {enabled: false}
+  mattermost: {enabled: false}
+  matrix: {enabled: false}
+  email: {enabled: false}
+  sms: {enabled: false}
+  dingtalk: {enabled: false}
+  webhook: {enabled: false}
+  msgraph_webhook: {enabled: false}
+  feishu: {enabled: false}
+  wecom: {enabled: false}
+  wecom_callback: {enabled: false}
+  weixin: {enabled: false}
+  bluebubbles: {enabled: false}
+  qqbot: {enabled: false}
+  yuanbao: {enabled: false}
+  relay: {enabled: false}
+  a2a: {enabled: false}
+  buzz: {enabled: false}
+  google_chat: {enabled: false}
+  irc: {enabled: false}
+  line: {enabled: false}
+  ntfy: {enabled: false}
+  photon: {enabled: false}
+  raft: {enabled: false}
+  simplex: {enabled: false}
+  teams: {enabled: false}
+
+# Same hygiene as the role profiles: no memory, no host paths in the prompt.
+memory:
+  memory_enabled: false
+  user_profile_enabled: false
+
+terminal:
+  cwd: /opt/data/workspace
+
+auxiliary:
+  free_only: false
+  openrouter_model: anthropic/claude-haiku-5.5
+  title_generation: {enabled: false}
+  background_review: {enabled: false}

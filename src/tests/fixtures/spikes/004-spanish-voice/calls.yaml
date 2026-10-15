@@ -1,0 +1,393 @@
+# Scripted Candidate turns for spike 4. Each turn is one utterance (one TTS clip). `text` is what the
+# synthetic Candidate says: numbers are written as spoken words so the voice says them the way a
+# person would, and `checks` hold the screening value that must be recoverable from the transcript.
+#
+# Check kinds (scored by spike.py):
+#   name    every token of the name appears (accents and case ignored)
+#   digits  the digit string appears in a run of numbers ("veintiocho cero diez" -> 28010)
+#   yesno   the yes/no reading of the transcript equals `expect`
+#   choice  the set of canonical options found in `group` equals `expect`
+#   number  `expect` is among the numbers read ("año y medio" -> 1.5, "seis meses" -> 0.5)
+#   tokens  every token appears; "a|b" means either
+#   optout  an opt-out cue is present; also records whether optout.py's whole-message rule fires
+#   withdraw  a withdrawal cue is present
+# Age is never asked (Screener skill, "Never"); calls es08 and mx08 have a Candidate volunteer it,
+# which exercises numbers only.
+calls:
+  # ------------------------------------------------------------------ Spain
+  - id: es01
+    country: ES
+    voice: es_c01
+    scenario: Qualified path, Madrid
+    turns:
+      - text: "Hola, sí, soy Lucía Fernández Gil."
+        checks: [{kind: name, field: full_name, expect: "Lucía Fernández Gil"}]
+      - text: "Vivo en Madrid, en Chamberí. El código postal es el veintiocho cero diez."
+        checks:
+          - {kind: tokens, field: zone, expect: [chamberi]}
+          - {kind: digits, field: postcode, expect: "28010"}
+      - text: "Sí, claro, tengo el carné B desde hace años."
+        checks: [{kind: yesno, field: driver_license, expect: "yes"}]
+      - text: "Con moto, una de ciento veinticinco."
+        checks:
+          - {kind: choice, group: vehicle, field: vehicle, expect: [moto]}
+          - {kind: number, field: engine_cc, expect: 125}
+      - text: "Jornada completa."
+        checks: [{kind: choice, group: availability, field: availability, expect: [full_time]}]
+      - text: "Por las tardes, mejor."
+        checks: [{kind: choice, group: schedule, field: preferred_schedule, expect: [afternoon]}]
+      - text: "Tres años, primero con Glovo y luego con Uber Eats."
+        checks:
+          - {kind: number, field: experience_years, expect: 3}
+          - {kind: choice, group: platform, field: experience_platforms, expect: [glovo, uber_eats]}
+      - text: "Puedo empezar el lunes que viene."
+        checks: [{kind: tokens, field: start_date, expect: [lunes]}]
+      - text: "Sí, todo correcto."
+        checks: [{kind: yesno, field: confirm, expect: "yes"}]
+
+  - id: es02
+    country: ES
+    voice: es_c02
+    scenario: Knockout, no driving licence
+    turns:
+      - text: "Me llamo Javier Moreno Ruiz."
+        checks: [{kind: name, field: full_name, expect: "Javier Moreno Ruiz"}]
+      - text: "En Vallecas. Veintiocho cero treinta y ocho."
+        checks:
+          - {kind: tokens, field: zone, expect: [vallecas]}
+          - {kind: digits, field: postcode, expect: "28038"}
+      - text: "Qué va, no tengo carné todavía. Me lo estoy sacando."
+        checks: [{kind: yesno, field: driver_license, expect: "no"}]
+      - text: "Vale, vale. Pues os escribo cuando lo tenga, gracias."
+        checks: []
+
+  - id: es03
+    country: ES
+    voice: es_c03
+    scenario: Booking an Interview by spoken date and time (Seville, Andalusian voice)
+    turns:
+      - text: "Hola, soy Rocío Jiménez Vega."
+        checks: [{kind: name, field: full_name, expect: "Rocío Jiménez Vega"}]
+      - text: "En Triana, en Sevilla. Cuarenta y uno cero diez."
+        checks:
+          - {kind: tokens, field: zone, expect: [triana, sevilla]}
+          - {kind: digits, field: postcode, expect: "41010"}
+      - text: "El jueves a las diez de la mañana me viene genial."
+        checks: [{kind: tokens, field: slot, expect: [jueves, "10"]}]
+      - text: "Uy, no, espera. Mejor el viernes dieciséis a las cinco y media de la tarde."
+        checks: [{kind: tokens, field: slot, expect: [viernes, "16", "5|17", "media|30"]}]
+      - text: "Sí, perfecto, ahí estaré."
+        checks: [{kind: yesno, field: confirm, expect: "yes"}]
+
+  - id: es04
+    country: ES
+    voice: es_c04
+    scenario: Corrected postcode
+    turns:
+      - text: "Soy Andrés Navarro Prieto."
+        checks: [{kind: name, field: full_name, expect: "Andrés Navarro Prieto"}]
+      - text: "Vivo en Arganzuela, el veintiocho cero cero cinco."
+        checks:
+          - {kind: tokens, field: zone, expect: [arganzuela]}
+          - {kind: digits, field: postcode, expect: "28005"}
+      - text: "No, perdona, es el veintiocho cero cero siete."
+        checks:
+          - {kind: digits, field: postcode, expect: "28007"}
+          - {kind: tokens, field: correction_cue, expect: ["perdona|perdon"]}
+      - text: "Sí, tengo carné de conducir."
+        checks: [{kind: yesno, field: driver_license, expect: "yes"}]
+      - text: "Media jornada, por las mañanas."
+        checks:
+          - {kind: choice, group: availability, field: availability, expect: [part_time]}
+          - {kind: choice, group: schedule, field: preferred_schedule, expect: [morning]}
+
+  - id: es05
+    country: ES
+    voice: es_c05
+    scenario: Spoken opt-out
+    turns:
+      - text: "Sí, dime. Soy Marcos Díaz."
+        checks: [{kind: name, field: full_name, expect: "Marcos Díaz"}]
+      - text: "Baja."
+        checks: [{kind: optout, field: opt_out, expect: true}]
+      - text: "Que no me llaméis más, por favor."
+        checks: [{kind: optout, field: opt_out, expect: true}]
+      - text: "Stop."
+        checks: [{kind: optout, field: opt_out, expect: true}]
+
+  - id: es06
+    country: ES
+    voice: es_c06
+    scenario: Filler and code-switching, Barcelona
+    turns:
+      - text: "Eh, pues... me llamo Kevin, bueno, Kevin Smith López."
+        checks: [{kind: name, field: full_name, expect: "Kevin Smith López"}]
+      - text: "Vivo en Gràcia, en Barcelona, o sea, en el cero ocho cero uno dos."
+        checks:
+          - {kind: tokens, field: zone, expect: ["gracia", barcelona]}
+          - {kind: digits, field: postcode, expect: "08012"}
+      - text: "Yes, I mean... sí, sí, tengo carné."
+        checks: [{kind: yesno, field: driver_license, expect: "yes"}]
+      - text: "Part-time, media jornada, vamos."
+        checks: [{kind: choice, group: availability, field: availability, expect: [part_time]}]
+      - text: "Mmm, weekends mostly. Los fines de semana."
+        checks: [{kind: choice, group: availability, field: availability, expect: [weekends]}]
+      - text: "Eh... con la bici, que es eléctrica."
+        checks: [{kind: choice, group: vehicle, field: vehicle, expect: [bike]}]
+
+  - id: es07
+    country: ES
+    voice: es_c07
+    scenario: Postcodes and zones, some outside Madrid
+    turns:
+      - text: "Mi nombre es Álvaro Ortega Cano."
+        checks: [{kind: name, field: full_name, expect: "Álvaro Ortega Cano"}]
+      - text: "Ahora vivo en Alcalá de Henares, el veintiocho ochocientos uno."
+        checks:
+          - {kind: tokens, field: zone, expect: [alcala, henares]}
+          - {kind: digits, field: postcode, expect: "28801"}
+      - text: "Pero me mudo a Valencia, a Ruzafa, cuarenta y seis cero cero seis."
+        checks:
+          - {kind: tokens, field: zone, expect: [valencia, "ruzafa|russafa"]}
+          - {kind: digits, field: postcode, expect: "46006"}
+      - text: "Y si no, en Getafe, veintiocho novecientos uno."
+        checks:
+          - {kind: tokens, field: zone, expect: [getafe]}
+          - {kind: digits, field: postcode, expect: "28901"}
+
+  - id: es08
+    country: ES
+    voice: es_c08
+    scenario: Ages and numbers
+    turns:
+      - text: "Soy Nerea Castillo. Tengo diecinueve años, recién cumplidos."
+        checks:
+          - {kind: name, field: full_name, expect: "Nerea Castillo"}
+          - {kind: number, field: volunteered_age, expect: 19}
+      - text: "Llevo año y medio repartiendo con Just Eat."
+        checks:
+          - {kind: number, field: experience_years, expect: 1.5}
+          - {kind: choice, group: platform, field: experience_platforms, expect: [just_eat]}
+      - text: "Podría empezar el uno de noviembre."
+        checks: [{kind: tokens, field: start_date, expect: ["1", noviembre]}]
+      - text: "Tengo un coche, un Seat Ibiza del dos mil quince."
+        checks:
+          - {kind: choice, group: vehicle, field: vehicle, expect: [car]}
+          - {kind: number, field: vehicle_year, expect: 2015}
+      - text: "Flexible, me da igual el turno."
+        checks: [{kind: choice, group: schedule, field: preferred_schedule, expect: [flexible]}]
+
+  - id: es09
+    country: ES
+    voice: es_c09
+    scenario: Yes/no variants and vehicle types
+    turns:
+      - text: "Por supuesto, tengo el carné de moto y el de coche."
+        checks:
+          - {kind: yesno, field: driver_license, expect: "yes"}
+          - {kind: choice, group: vehicle, field: vehicle, expect: [moto, car]}
+      - text: "Que no, que no he trabajado nunca de repartidor."
+        checks: [{kind: yesno, field: has_experience, expect: "no"}]
+      - text: "Vale."
+        checks: [{kind: yesno, field: confirm, expect: "yes"}]
+      - text: "Para nada, no me importa trabajar de noche."
+        checks:
+          - {kind: yesno, field: objection, expect: "no"}
+          - {kind: choice, group: schedule, field: preferred_schedule, expect: [evening]}
+      - text: "Con un patinete eléctrico."
+        checks: [{kind: choice, group: vehicle, field: vehicle, expect: [e_scooter]}]
+
+  - id: es10
+    country: ES
+    voice: es_c10
+    scenario: Withdrawn, then opt-out
+    turns:
+      - text: "Hola. Soy Paula Romero."
+        checks: [{kind: name, field: full_name, expect: "Paula Romero"}]
+      - text: "Mira, ya no me interesa, he encontrado otro curro."
+        checks: [{kind: withdraw, field: withdrawn, expect: true}]
+      - text: "Dadme de baja, porfa."
+        checks: [{kind: optout, field: opt_out, expect: true}]
+
+  # ------------------------------------------------------------------ Mexico
+  - id: mx01
+    country: MX
+    voice: mx_c01
+    scenario: Qualified path, Mexico City
+    turns:
+      - text: "Buenas tardes, soy Guadalupe Ramírez Torres."
+        checks: [{kind: name, field: full_name, expect: "Guadalupe Ramírez Torres"}]
+      - text: "En Coyoacán. El código postal es cero cuatro uno cero cero."
+        checks:
+          - {kind: tokens, field: zone, expect: [coyoacan]}
+          - {kind: digits, field: postcode, expect: "04100"}
+      - text: "Sí, tengo licencia de manejo."
+        checks: [{kind: yesno, field: driver_license, expect: "yes"}]
+      - text: "En motoneta, tengo una Italika."
+        checks: [{kind: choice, group: vehicle, field: vehicle, expect: [moto]}]
+      - text: "Tiempo completo."
+        checks: [{kind: choice, group: availability, field: availability, expect: [full_time]}]
+      - text: "En la mañana."
+        checks: [{kind: choice, group: schedule, field: preferred_schedule, expect: [morning]}]
+      - text: "Dos años con Rappi y DiDi Food."
+        checks:
+          - {kind: number, field: experience_years, expect: 2}
+          - {kind: choice, group: platform, field: experience_platforms, expect: [rappi, didi]}
+      - text: "El próximo lunes."
+        checks: [{kind: tokens, field: start_date, expect: [lunes]}]
+      - text: "Sí, está todo bien."
+        checks: [{kind: yesno, field: confirm, expect: "yes"}]
+
+  - id: mx02
+    country: MX
+    voice: mx_c02
+    scenario: Knockout, no driving licence
+    turns:
+      - text: "Me llamo Luis Hernández Cruz."
+        checks: [{kind: name, field: full_name, expect: "Luis Hernández Cruz"}]
+      - text: "En Iztapalapa."
+        checks: [{kind: tokens, field: zone, expect: [iztapalapa]}]
+      - text: "No, no tengo licencia. Nomás manejo la bici."
+        checks:
+          - {kind: yesno, field: driver_license, expect: "no"}
+          - {kind: choice, group: vehicle, field: vehicle, expect: [bike]}
+      - text: "Ah, órale. Bueno, gracias."
+        checks: []
+
+  - id: mx03
+    country: MX
+    voice: mx_c03
+    scenario: Booking an Interview by spoken date and time (norteño voice)
+    turns:
+      - text: "Qué tal, soy Jesús Garza Treviño."
+        checks: [{kind: name, field: full_name, expect: "Jesús Garza Treviño"}]
+      - text: "En San Nicolás de los Garza, Nuevo León."
+        checks: [{kind: tokens, field: zone, expect: [nicolas, garza]}]
+      - text: "El martes a las once, ese me queda."
+        checks: [{kind: tokens, field: slot, expect: [martes, "11"]}]
+      - text: "No, mejor el miércoles catorce a las cuatro de la tarde."
+        checks: [{kind: tokens, field: slot, expect: [miercoles, "14", "4|16"]}]
+      - text: "Sí, ándale, ahí nos vemos."
+        checks: [{kind: yesno, field: confirm, expect: "yes"}]
+
+  - id: mx04
+    country: MX
+    voice: mx_c04
+    scenario: Corrected postcode, mixed grouping
+    turns:
+      - text: "Soy Karla Domínguez."
+        checks: [{kind: name, field: full_name, expect: "Karla Domínguez"}]
+      - text: "En Iztapalapa, el cero nueve cero cero cero."
+        checks:
+          - {kind: tokens, field: zone, expect: [iztapalapa]}
+          - {kind: digits, field: postcode, expect: "09000"}
+      - text: "No, perdón, es el cero nueve, dos treinta."
+        checks:
+          - {kind: digits, field: postcode, expect: "09230"}
+          - {kind: tokens, field: correction_cue, expect: ["perdon"]}
+      - text: "Sí tengo licencia, la de motociclista."
+        checks:
+          - {kind: yesno, field: driver_license, expect: "yes"}
+          - {kind: choice, group: vehicle, field: vehicle, expect: [moto]}
+      - text: "En la Juárez también puedo, cero seis, seiscientos."
+        checks:
+          - {kind: tokens, field: zone, expect: [juarez]}
+          - {kind: digits, field: postcode, expect: "06600"}
+
+  - id: mx05
+    country: MX
+    voice: mx_c05
+    scenario: Spoken opt-out
+    turns:
+      - text: "Bueno, sí. Soy Ramiro Salinas."
+        checks: [{kind: name, field: full_name, expect: "Ramiro Salinas"}]
+      - text: "Ya no me llamen, por favor."
+        checks: [{kind: optout, field: opt_out, expect: true}]
+      - text: "Baja."
+        checks: [{kind: optout, field: opt_out, expect: true}]
+      - text: "Stop."
+        checks: [{kind: optout, field: opt_out, expect: true}]
+
+  - id: mx06
+    country: MX
+    voice: mx_c06
+    scenario: Filler and code-switching
+    turns:
+      - text: "Este... pues, mi nombre es Brayan Hernández."
+        checks: [{kind: name, field: full_name, expect: "Brayan Hernández"}]
+      - text: "Ah, okay, sí, tengo license... la licencia, sí."
+        checks: [{kind: yesno, field: driver_license, expect: "yes"}]
+      - text: "Part time, medio tiempo."
+        checks: [{kind: choice, group: availability, field: availability, expect: [part_time]}]
+      - text: "Ehh... Uber Eats, como un año."
+        checks:
+          - {kind: number, field: experience_years, expect: 1}
+          - {kind: choice, group: platform, field: experience_platforms, expect: [uber_eats]}
+      - text: "En la noche, after school, ¿sabes?"
+        checks: [{kind: choice, group: schedule, field: preferred_schedule, expect: [evening]}]
+
+  - id: mx07
+    country: MX
+    voice: mx_c07
+    scenario: Postcodes and zones in several cities
+    turns:
+      - text: "Mi nombre es Fernando Aguilar Mendoza."
+        checks: [{kind: name, field: full_name, expect: "Fernando Aguilar Mendoza"}]
+      - text: "Vivo en Zapopan, Guadalajara. Código postal cuatro cinco uno cero cero."
+        checks:
+          - {kind: tokens, field: zone, expect: [zapopan, guadalajara]}
+          - {kind: digits, field: postcode, expect: "45100"}
+      - text: "Antes vivía en Puebla, en Angelópolis."
+        checks: [{kind: tokens, field: zone, expect: [puebla, angelopolis]}]
+      - text: "Y también puedo en Ecatepec, Estado de México, cincuenta y cinco cero cero cero."
+        checks:
+          - {kind: tokens, field: zone, expect: [ecatepec]}
+          - {kind: digits, field: postcode, expect: "55000"}
+
+  - id: mx08
+    country: MX
+    voice: mx_c08
+    scenario: Ages and numbers
+    turns:
+      - text: "Soy Ximena Ochoa. Tengo diecisiete años."
+        checks:
+          - {kind: name, field: full_name, expect: "Ximena Ochoa"}
+          - {kind: number, field: volunteered_age, expect: 17}
+      - text: "Como seis meses con DiDi."
+        checks:
+          - {kind: number, field: experience_years, expect: 0.5}
+          - {kind: choice, group: platform, field: experience_platforms, expect: [didi]}
+      - text: "Puedo empezar el quince de noviembre."
+        checks: [{kind: tokens, field: start_date, expect: ["15", noviembre]}]
+      - text: "Mi moto es del dos mil diecinueve."
+        checks:
+          - {kind: choice, group: vehicle, field: vehicle, expect: [moto]}
+          - {kind: number, field: vehicle_year, expect: 2019}
+
+  - id: mx09
+    country: MX
+    voice: mx_c09
+    scenario: Yes/no variants and vehicle types
+    turns:
+      - text: "Simón, sí tengo licencia."
+        checks: [{kind: yesno, field: driver_license, expect: "yes"}]
+      - text: "Nel, nunca he trabajado de repartidora."
+        checks: [{kind: yesno, field: has_experience, expect: "no"}]
+      - text: "Sí, cómo no."
+        checks: [{kind: yesno, field: confirm, expect: "yes"}]
+      - text: "Tengo carro, un Tsuru."
+        checks: [{kind: choice, group: vehicle, field: vehicle, expect: [car]}]
+      - text: "Fines de semana nomás."
+        checks: [{kind: choice, group: availability, field: availability, expect: [weekends]}]
+
+  - id: mx10
+    country: MX
+    voice: mx_c10
+    scenario: Withdrawn, then opt-out
+    turns:
+      - text: "Hola, soy Diego Fuentes."
+        checks: [{kind: name, field: full_name, expect: "Diego Fuentes"}]
+      - text: "Fíjate que ya encontré otro jale, gracias."
+        checks: [{kind: withdraw, field: withdrawn, expect: true}]
+      - text: "Bórrenme de su lista, ya no me marquen."
+        checks: [{kind: optout, field: opt_out, expect: true}]

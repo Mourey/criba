@@ -1,0 +1,45 @@
+id: withdrawn_mx
+description: >
+  Mexico, changes their mind mid-screening ("ya no me interesa"). The agent confirms once, the
+  Candidate confirms, and the Application ends as Withdrawn. Three days of simulated silence
+  then produce no nudge and no Abandoned.
+quirks: [withdraws]
+identity:
+  name: Sofía Torres
+  phone: "+525500000007"
+  country: MX
+  locale: es-MX
+opening:
+  text: "Hola, vi el anuncio de repartidor"
+answers:
+  full_name: [{text: Sofía Torres, value: Sofía Torres}]
+  zone: [{text: "Centro, Puebla"}]
+  driver_license: [{text: "Sí, tengo licencia", value: "yes"}]
+  availability: [{text: tiempo completo, value: [full_time]}]
+interrupts:
+  - at: preferred_schedule
+    say: {text: "Mejor ya no me interesa, encontré otro trabajo"}
+  - at: after_backout_prompt
+    say: {text: "Sí, seguro"}
+    advance: [3d]
+    then: stop
+expect:
+  stage: preferred_schedule
+  status: closed
+  outcome: withdrawn
+  fields:
+    full_name: {value: Sofía Torres}
+    zone: {non_null: true}
+    driver_license: {value: true}
+    availability: {value: [full_time]}
+  fields_unanswered: [preferred_schedule, experience_years, start_date]
+  field_order: [full_name, zone, driver_license, availability]
+  events: [application_started, answer_recorded, withdrawn]
+  event_counts: [{kind: withdrawn, count: 1}]
+  forbidden_events: [nudge_sent, abandoned, screening_finished, knockout]
+  tools: [record_backout]
+  forbidden_tools: [finish_screening]
+  nudges: 0
+  forbidden_agent_text: [Criba]
+seed_assumptions:
+  - "\"Centro, Puebla\" names exactly one MX Zone (name and city), inside a Service Area."

@@ -1,0 +1,481 @@
+/* today surface styles: token-only (DESIGN.md). Imported only by this surface's components. */
+
+.today {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* One column by default. Above 1024px two independent stacks: Approvals alone on the left, then Takeovers,
+   Interviews and Recently Qualified on the right. The DOM order is the reading and tab order; nothing here reorders it. */
+.today-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-5);
+}
+
+.today-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+@media (min-width: 1025px) {
+  .today-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Section: the Card's look, with a heading that can take focus */
+
+.today-section__head {
+  min-width: 0;
+}
+
+.today-section__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.today-section__heading:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.today-status {
+  margin: 0;
+  color: var(--ink-strong);
+  font: var(--weight-medium) var(--text-sm) / var(--leading-snug) var(--font);
+}
+
+.today-status:not(:empty) {
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--seam);
+  background: var(--live-soft);
+}
+
+.today-state {
+  padding: var(--space-4);
+}
+
+.today-empty,
+.today-more {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--ink-muted);
+  font: var(--weight-regular) var(--text-sm) / var(--leading-body) var(--font);
+}
+
+.today-more {
+  border-top: 1px solid var(--seam-soft);
+}
+
+/* Rows */
+
+.today-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: calc(var(--space-7) + var(--space-3));
+  color: var(--ink-strong);
+  font-weight: var(--weight-semibold);
+}
+
+.today-link:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.today-sub {
+  display: block;
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+/* Locations: the first name truncates with an ellipsis, +N stays on the same line. */
+.today-loc {
+  max-width: 24ch;
+}
+
+.today-loc__text {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.today-loc__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.today-loc__more {
+  flex: none;
+  padding-inline-start: var(--space-1);
+  white-space: nowrap;
+}
+
+.today-cell-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.today-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.today-action .ui-btn {
+  min-height: calc(var(--space-7) + var(--space-3));
+}
+
+.today-row-error {
+  max-width: 100%;
+  margin: 0;
+  color: var(--danger);
+  font: var(--weight-medium) var(--text-sm) / var(--leading-snug) var(--font);
+  text-align: end;
+}
+
+/* Status emphasis: a Stage that changes on a refetch is marked once, with token durations. */
+
+.today-emphasis {
+  display: inline-flex;
+  border-radius: var(--radius-2);
+  animation: today-emphasis var(--motion-slow) var(--ease-out) 1;
+}
+
+@keyframes today-emphasis {
+  from {
+    background-color: var(--live);
+  }
+
+  to {
+    background-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .today-emphasis {
+    animation: none;
+  }
+}
+
+/* Application page (pages/ApplicationDetail.tsx shares this stylesheet) */
+
+.detail-state {
+  padding: var(--space-4);
+}
+
+.detail-actions:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.detail-block {
+  margin-top: var(--space-3);
+}
+
+.detail-block--wide {
+  margin-top: var(--space-4);
+}
+
+.detail-dl,
+.detail-dd {
+  margin: 0;
+}
+
+.detail-muted {
+  color: var(--ink-muted);
+}
+
+.detail-actions__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-6);
+}
+
+.detail-actions__group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.detail-actions__status {
+  margin: 0;
+  color: var(--ink-strong);
+  font: var(--weight-medium) var(--text-sm) / var(--leading-snug) var(--font);
+}
+
+.detail-actions__status:not(:empty) {
+  margin-top: var(--space-3);
+}
+
+.detail-timeline__meta {
+  display: block;
+}
+
+/* Application page layout (UI6): the strip, then the columns in reading order. Below 1280px everything
+   stacks at its natural height and the document scrolls; from 1280px the route takes the window's height
+   and each column scrolls on its own, so the page itself does not scroll. */
+
+.detail-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3) var(--space-4);
+}
+
+.detail-strip > .page-head {
+  flex: 1 1 28rem;
+  margin: 0;
+}
+
+.detail-strip h1 {
+  margin: 0;
+}
+
+.detail-strip .page-head p {
+  margin: 0;
+}
+
+.detail-strip > .notice {
+  flex: 1 1 100%;
+  margin: 0;
+}
+
+.detail-strip > .detail-actions {
+  flex: 1 1 36rem;
+}
+
+.detail-strip__toggle {
+  flex: none;
+}
+
+/* The toggle shows its state with the treatment of the navigation's current item. */
+.detail-strip__toggle[aria-expanded="true"] {
+  border-color: var(--live-edge);
+  background: var(--live-soft);
+  box-shadow: inset 0 0 0 1px var(--live-edge);
+  color: var(--ink-strong);
+}
+
+.detail-actions__claim {
+  min-width: 0;
+}
+
+/* The Locations line keeps one line; the full list is in title. */
+.detail-actions__where {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+/* Positioned, so absolutely placed content (a table's visually hidden caption) stays inside the
+   column's scroll box instead of lengthening the document. */
+.detail-col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.detail-col:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Tables in a column fit its width and wrap, so they never scroll sideways inside a narrow column. */
+.detail-col .ui-table {
+  table-layout: fixed;
+}
+
+.detail-col .ui-table__th,
+.detail-col .ui-table__cell {
+  padding-inline: var(--space-2);
+  overflow-wrap: break-word;
+}
+
+.detail-col .ui-table__th {
+  overflow: hidden;
+  overflow-wrap: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The Answers table (the one with four columns): fixed room for the Field and Validation columns;
+   the Answer and the Candidate's words share what is left (the words truncate). */
+.detail-col .ui-table:has(.ui-table__th:nth-child(4)) .ui-table__th:nth-child(1) {
+  width: 30%;
+}
+
+.detail-col .ui-table:has(.ui-table__th:nth-child(4)) .ui-table__th:nth-child(3) {
+  width: 6.5rem;
+}
+
+/* The Candidate's words keep one line; the full text is in title. */
+.detail-words {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 1280px) {
+  .shell-main:has(.detail-page) {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .detail-page {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .detail-strip {
+    flex: none;
+  }
+
+  /* One row: the head takes what its content needs (up to a cap), the Actions card the rest. */
+  .detail-strip > .page-head {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 40rem;
+  }
+
+  .detail-strip > .detail-actions {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .detail-actions__claim {
+    flex: 1 1 12rem;
+  }
+
+  .detail-columns {
+    flex: 1 1 auto;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 0.9fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .detail-columns--panel {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 0.9fr) minmax(16rem, 0.9fr);
+  }
+
+  .detail-col {
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
+/* 1280 to 1439px with the panel open: more room for Answers and the Transcript, less for the Timeline. */
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .detail-columns--panel {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr) minmax(15rem, 0.85fr);
+  }
+}
+
+/* Up to 1599px (the navigation may be open) the Stage, flags and time in stage go under the phone
+   line, so the Actions card keeps one row of buttons. Wider, the head keeps them beside the name. */
+@media (min-width: 1280px) and (max-width: 1599px) {
+  .detail-strip > .page-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+}
+
+@media (min-width: 1600px) {
+  .detail-strip > .page-head {
+    max-width: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  /* Column 2: the Transcript's log fills the column and scrolls; the Takeover panel stays below it. */
+  .detail-col--transcript > .ui-card {
+    flex: 1 1 auto;
+    min-height: 12rem;
+  }
+
+  .detail-col--transcript > .ui-card > .ui-card__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .detail-page .chat {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  .detail-col--transcript > .rp-takeover {
+    flex: none;
+  }
+}
+
+/* Compact Timeline (UI7): one line per event. The detail truncates first (its full text is in title),
+   then the label and the meta; the order stays label, detail, "actor · time". */
+.detail-timeline__toggle {
+  align-self: flex-start;
+  margin-bottom: var(--space-2);
+}
+
+.detail-timeline .detail-timeline__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+  padding-bottom: var(--space-2);
+  white-space: nowrap;
+}
+
+.detail-timeline__item > b,
+.detail-timeline__detail,
+.detail-timeline__item > .detail-timeline__meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detail-timeline__item > b {
+  flex: 0 0 auto;
+  max-width: 45%;
+}
+
+.detail-timeline__detail {
+  flex: 0 100 auto;
+}
+
+.detail-timeline__item > .detail-timeline__meta {
+  flex: 0 1 auto;
+  margin-inline-start: auto;
+}
+
+/* The message chosen with "Show in Transcript" in the Operator panel. */
+.detail-page .bubble[data-selected] {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}

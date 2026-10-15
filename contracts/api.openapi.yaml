@@ -1,0 +1,2865 @@
+openapi: 3.1.0
+info:
+  title: Criba web app API
+  version: 0.1.0-phase2
+  summary: REST API behind the Recruiter and Operator web app (spec 003).
+  description: |
+    Owner after wave 0: lane D (web app and REST API). Frozen by spec 005; change only
+    through lane D, in a separate commit listed in the wave merge notes.
+
+    Vocabulary follows `CONTEXT.md`. Answer fields and canonical values follow
+    `docs/case/phase-1-detailed-spec.md` section 3 and `contracts/tools.json`.
+
+    **Auth.** `POST /api/auth/login` sets an HttpOnly session cookie (`criba_session`).
+    Every other `/api` route needs it, except `/api/public/*`, which is reached by a signed,
+    expiring booking token and exposes nothing but open slots.
+
+    **Roles.** Each operation lists the roles allowed in `x-roles`. Recruiters are scoped to
+    their own Locations: an Application is visible when any of its covering Locations is in
+    the Recruiter's scope; anything else returns 404. Operators see every Location.
+
+    **Cost fields.** Properties marked `x-roles: [operator]` are Operator-only. The server
+    removes them for Recruiters (they are absent from the JSON, not null). The UI must not be
+    the only guard.
+
+    **Live updates** use server-sent events (`text/event-stream`), never WebSockets.
+
+    **Errors** always use the `Error` schema.
+  contact:
+    name: Criba lane D
+servers:
+  - url: http://localhost:8080
+    description: nginx in Compose (proxies /api to the backend)
+  - url: http://localhost:4010
+    description: Prism mock (`npx @stoplight/prism-cli mock contracts/api.openapi.yaml -p 4010`)
+security:
+  - sessionCookie: []
+tags:
+  - name: auth
+  - name: locations
+  - name: applications
+  - name: claims
+  - name: queue
+  - name: takeover
+  - name: slots
+  - name: public-booking
+  - name: conversations
+  - name: metrics
+
+# Shared example fixtures, reused through YAML anchors so examples stay consistent.
+x-fixtures:
+  app_summary_qualified: &app_summary_qualified
+    id: app_01JA2B3C4D5E6F7G8H9J0K
+    candidate: { id: cand_01JA2B, full_name: Luis Hernández, phone: '+525512345678', country: MX, language: es-MX, opted_out: false }
+    channel: webchat
+    status: open
+    stage: qualified
+    outcome: null
+    knockout_criterion: null
+    rejection_reason: null
+    zone: { id: zone_mx_puebla_centro, name: Centro, city: Puebla, country: MX }
+    locations:
+      - { id: loc_mx_puebla_centro, name: Sazón Puebla Centro, country: MX, city: Puebla }
+    claim: null
+    control: agent
+    control_user_id: null
+    control_user_name: null
+    flags: []
+    created_at: '2026-10-09T10:00:00Z'
+    updated_at: '2026-10-09T10:04:00Z'
+    closed_at: null
+    time_in_stage_seconds: 60
+    total_seconds: 240
+    stage_durations_seconds: { greeting: 20, name: 15, zone: 30, driver_license: 10, availability: 25, preferred_schedule: 20, experience: 30, start_date: 20, confirm: 10 }
+  app_summary_rejected: &app_summary_rejected
+    id: app_01JA2B3C4D5E6F7G8H9J0K
+    candidate: { id: cand_01JA2B, full_name: Luis Hernández, phone: '+525512345678', country: MX, language: es-MX, opted_out: false }
+    channel: webchat
+    status: closed
+    stage: interview_booked
+    outcome: rejection
+    knockout_criterion: null
+    rejection_reason: no_show
+    zone: { id: zone_mx_puebla_centro, name: Centro, city: Puebla, country: MX }
+    locations:
+      - { id: loc_mx_puebla_centro, name: Sazón Puebla Centro, country: MX, city: Puebla }
+    claim: { user_id: usr_rec_puebla, user_name: Ana Torres, claimed_at: '2026-10-09T10:00:00Z', last_action_at: '2026-10-15T09:00:00Z', idle: false }
+    control: agent
+    control_user_id: null
+    control_user_name: null
+    flags: []
+    created_at: '2026-10-09T10:00:00Z'
+    updated_at: '2026-10-15T09:00:00Z'
+    closed_at: '2026-10-15T09:00:00Z'
+    time_in_stage_seconds: 0
+    total_seconds: 515000
+  app_export_qualified: &app_export_qualified
+    application_id: app_01JA2B3C4D5E6F7G8H9J0K
+    candidate_id: cand_01JA2B
+    channel: webchat
+    country: MX
+    language: es-MX
+    status: open
+    stage: qualified
+    outcome: null
+    knockout_criterion: null
+    rejection_reason: null
+    answers:
+      full_name: Luis Hernández
+      zone: { id: zone_mx_puebla_centro, name: Centro, city: Puebla, country: MX }
+      driver_license: true
+      availability: [full_time]
+      preferred_schedule: [morning, afternoon]
+      experience_years: 2
+      experience_platforms: [rappi, didi_food]
+      start_date: '2026-10-12'
+    start_date_far: false
+    locations: [loc_mx_puebla_centro]
+    created_at: '2026-10-09T10:00:00Z'
+    updated_at: '2026-10-09T10:04:00Z'
+    qualified_at: '2026-10-09T10:04:00Z'
+    approved_at: null
+    closed_at: null
+    interview: null
+    summary: null
+  slot_open: &slot_open
+    id: slot_8x2
+    location_id: loc_mx_puebla_centro
+    location_name: Sazón Puebla Centro
+    starts_at: '2026-10-14T16:00:00Z'
+    ends_at: '2026-10-14T16:30:00Z'
+    local_label: 'mié 14 · 10:00'
+    status: open
+    booking: null
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: Log in with a seeded user; sets the session cookie
+      security: []
+      x-roles: [public]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+            example: { email: recruiter.puebla@gruposazon.example, password: demo-password }
+      responses:
+        '200':
+          description: Logged in
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+              example: criba_session=abc123; HttpOnly; SameSite=Lax; Path=/
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Me' }
+              example:
+                user: { id: usr_rec_puebla, name: Ana Torres, email: recruiter.puebla@gruposazon.example, role: recruiter }
+                locations:
+                  - { id: loc_mx_puebla_centro, name: Sazón Puebla Centro, country: MX, city: Puebla }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: End the session
+      x-roles: [recruiter, operator]
+      responses:
+        '204': { description: Logged out; cookie cleared }
+
+  /api/auth/me:
+    get:
+      tags: [auth]
+      operationId: getMe
+      summary: Current user, role and Location scope
+      x-roles: [recruiter, operator]
+      responses:
+        '200':
+          description: Current session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Me' }
+              example:
+                user: { id: usr_op_1, name: Alex Moreno, email: operator@criba.example, role: operator }
+                locations: []
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/locations:
+    get:
+      tags: [locations]
+      operationId: listLocations
+      summary: Locations in the caller's scope (all for Operators)
+      x-roles: [recruiter, operator]
+      parameters:
+        - { name: country, in: query, schema: { $ref: '#/components/schemas/Country' } }
+      responses:
+        '200':
+          description: Locations
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Location' } }
+              example:
+                items:
+                  - { id: loc_mx_puebla_centro, name: Sazón Puebla Centro, country: MX, city: Puebla, timezone: America/Mexico_City }
+                  - { id: loc_es_madrid_chamberi, name: Sazón Chamberí, country: ES, city: Madrid, timezone: Europe/Madrid }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/applications:
+    get:
+      tags: [applications]
+      operationId: listApplications
+      summary: List and filter Applications
+      x-roles: [recruiter, operator]
+      parameters:
+        - { name: location_id, in: query, schema: { type: string } }
+        - { name: country, in: query, schema: { $ref: '#/components/schemas/Country' } }
+        - { name: status, in: query, schema: { type: string, enum: [open, closed] } }
+        - name: stage
+          in: query
+          style: form
+          explode: true
+          schema: { type: array, items: { $ref: '#/components/schemas/Stage' } }
+        - name: outcome
+          in: query
+          style: form
+          explode: true
+          schema: { type: array, items: { $ref: '#/components/schemas/Outcome' } }
+        - name: flag
+          in: query
+          style: form
+          explode: true
+          schema: { type: array, items: { $ref: '#/components/schemas/Flag' } }
+        - { name: claimed_by, in: query, description: "A user id, or `me`, or `none`.", schema: { type: string } }
+        - { name: created_from, in: query, schema: { type: string, format: date } }
+        - { name: created_to, in: query, schema: { type: string, format: date } }
+        - { name: q, in: query, description: Search the Candidate's name or phone., schema: { type: string } }
+        - { name: sort, in: query, schema: { type: string, enum: [-updated_at, updated_at, -created_at, created_at, -time_in_stage], default: -updated_at } }
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: A page of Applications
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApplicationList' }
+              example:
+                items:
+                  - *app_summary_qualified
+                next_cursor: null
+                total: 1
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/applications/{application_id}:
+    parameters:
+      - { $ref: '#/components/parameters/ApplicationId' }
+    get:
+      tags: [applications]
+      operationId: getApplication
+      summary: Application detail (transcript, answers, timeline, summary, other Applications)
+      description: The `cost` object is present for Operators only.
+      x-roles: [recruiter, operator]
+      responses:
+        '200':
+          description: Application detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApplicationDetail' }
+              examples:
+                qualified: { $ref: '#/components/examples/ApplicationDetailQualified' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/applications/{application_id}/jev-readings:
+    parameters:
+      - { $ref: '#/components/parameters/ApplicationId' }
+    get:
+      tags: [applications]
+      operationId: getJevReadings
+      summary: Every typed Candidate message's stored Jev reading, with the thresholds (Operators only)
+      description: >-
+        What the Jev router stored for each typed Candidate message on the Application (ADR 0051,
+        ADR 0066), oldest first: one entry per typed text message, calm and unreadable ones
+        included. Taps, spoken messages, system turns and blank messages have no entry. Read-only,
+        for calibration and incident review; display only, never an input to a Knockout, Rejection
+        or Approval. Ids, codes and numbers only: no message text. Recruiters get 403, whatever the
+        Application's Location.
+        `status` is `ok`, `error` or `timeout` as stored; `expired` when there is no row and the
+        message is older than the retention period (`CRIBA_SIGNALS_RETENTION_DAYS`, default 180);
+        `not_read` when there is no row otherwise (Jev off, a Takeover, an opt-out or a failed
+        read, which the stored data cannot tell apart). `reading` is present only when `status`
+        is `ok`; `stage` is null when there is no row.
+        Bar-to-threshold mapping for a panel that draws the probabilities as bars. Switch gets
+        `switch_noul`; frustrated gets `frustrated`; confused gets `confused`; wants-human gets
+        two markers, `wants_human_hint` (labelled "hint") and `wants_human_escalate` (labelled
+        "Escalation"); abusive gets `abusive_escalate`. The language confidence is read against
+        `first_confidence` or `switch_confidence`, not as a bar. Each reading carries its stored
+        `policy_version`; a consumer may draw a threshold marker only when that version equals
+        `thresholds.version`. A threshold value drives nothing but the drawing.
+        `ask_confidence` (the explicit language request, ADR 0061), `readable` and `unreadable`
+        (ADR 0063) are in `thresholds` but draw no bar: no probability bar carries them.
+      x-roles: [operator]
+      x-operator-only: true
+      responses:
+        '200':
+          description: The Application's readings and the current thresholds
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/JevReadings' }
+              example:
+                application_id: app_01JA2B3C4D5E6F7G8H9J0K
+                thresholds:
+                  version: jev-1.13-v1
+                  first_confidence: 0.7
+                  switch_confidence: 0.6
+                  switch_noul: 0.85
+                  frustrated: 0.8
+                  confused: 0.75
+                  wants_human_hint: 0.7
+                  wants_human_escalate: 0.85
+                  abusive_escalate: 0.85
+                  ask_confidence: 0.8
+                  readable: 0.2
+                  unreadable: 0.5
+                readings:
+                  - message_id: 41
+                    at: '2026-10-11T09:31:00Z'
+                    stage: greeting
+                    status: ok
+                    reading:
+                      lang: es
+                      lang_confidence: 0.99
+                      switch: 0.02
+                      frustrated: 0.03
+                      confused: 0.03
+                      wants_human: 0.02
+                      abusive: 0.01
+                      fired: []
+                      hint: null
+                      escalation: null
+                      model: typesafe/jev-1.13-20260917
+                      policy_version: jev-1.13-v1
+                      first_message: true
+                      language_set: es-MX
+                  - { message_id: 43, at: '2026-10-11T09:33:10Z', stage: start_date, status: timeout, reading: null }
+                  - { message_id: 45, at: '2026-10-11T09:35:40Z', stage: null, status: not_read, reading: null }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/applications/{application_id}/export:
+    parameters:
+      - { $ref: '#/components/parameters/ApplicationId' }
+    get:
+      tags: [applications]
+      operationId: exportApplication
+      summary: The Application's structured JSON (every screening field, Phase 2 requirements)
+      x-roles: [recruiter, operator]
+      responses:
+        '200':
+          description: Application JSON export
+          headers:
+            Content-Disposition:
+              schema: { type: string }
+              example: attachment; filename="app_01JA2B3C4D5E6F7G8H9J0K.json"
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApplicationExport' }
+              example: *app_export_qualified
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/applications/{application_id}/tool-calls:
+    parameters:
+      - { $ref: '#/components/parameters/ApplicationId' }
+    get:
+      tags: [applications]
+      operationId: getToolCalls
+      summary: The agent's tool calls on an Application, grouped by run (Operators only)
+      description: >-
+        One group per agent run, oldest first, then a final group with a null `run_id` for the
+        calls no run claimed (a run that never returned, or a call that came after its run
+        ended). Each run carries its tokens, cost, latency and status from its usage row and the
+        ids of the reply messages it produced; those fields are null for a run with no usage
+        row and for the unlinked group. A call holds its tool, start time, duration, outcome and
+        error code, and its arguments as field names with canonical values only: a free-text
+        argument keeps its name and a null value (ADR 0035, ADR 0069). Never a tool's result,
+        a hint or message text.
+      x-roles: [operator]
+      x-operator-only: true
+      responses:
+        '200':
+          description: The tool calls, by run
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ToolCallTrace' }
+              example:
+                application_id: app_01JA2B3C4D5E6F7G8H9J0K
+                runs:
+                  - run_id: run_01
+                    status: ok
+                    input_tokens: 7200
+                    output_tokens: 410
+                    cost_usd: 0.0031
+                    latency_ms: 1700
+                    reply_message_ids: [12]
+                    calls:
+                      - { tool: get_application, started_at: '2026-10-11T09:31:01Z', duration_ms: 6, outcome: ok, error: null, args: {} }
+                      - { tool: record_answer, started_at: '2026-10-11T09:31:02Z', duration_ms: 9, outcome: ok, error: null, args: { field: driver_license, value: 'yes' } }
+                  - run_id: null
+                    status: null
+                    input_tokens: null
+                    output_tokens: null
+                    cost_usd: null
+                    latency_ms: null
+                    reply_message_ids: []
+                    calls:
+                      - { tool: record_answer, started_at: '2026-10-11T09:40:00Z', duration_ms: 7, outcome: invalid, error: invalid_value, args: { field: start_date, value: null } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/applications/{application_id}/booking/invite.ics:
+    parameters:
+      - { $ref: '#/components/parameters/ApplicationId' }
+    get:
+      tags: [slots]
+      operationId: downloadApplicationInvite
+      summary: Download the Application's booked Interview as .ics (the Recruiter's copy of the invite)
+      description: The same iCalendar file, with the same UID, that the Candidate gets from the public booking page, so both calendars hold one event. 404 when the Application has no active booking (none made, or released). Criba never writes to an external calendar (ADR 0012); this download is how the invite reaches the Recruiter.
+      x-roles: [recruiter, operator]
+      responses:
+        '200':
+          description: iCalendar invite
+          headers:
+            Content-Disposition:
+              schema: { type: string }
+              example: attachment; filename="entrevista.ics"
+          content:
+            text/calendar:
+              schema: { type: string }
+              example: |
+                BEGIN:VCALENDAR
+                VERSION:2.0
+                PRODID:-//Criba//Screening//EN
+                BEGIN:VEVENT
+                UID:bk_01JA@criba
+                DTSTART:20261014T160000Z
+                DTEND:20261014T163000Z
+                SUMMARY:Entrevista Grupo Sazón
+                LOCATION:Av. Reforma 123, Centro, Puebla
+                END:VEVENT
+                END:VCALENDAR
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/applications/{application_id}/claim:
+    parameters:
+      - { $ref: '#/components/parameters/ApplicationId' }
+    post:
+      tags: [claims]
+      operationId: claimApplication
+      summary: Take a Claim on the Application
+      description: Atomic. Fails with 409 `already_claimed` if another Recruiter holds it (use the take-over route for a Claimed, idle Application).
+      x-roles: [recruiter, operator]
+      responses:
+        '200':
+          description: Claimed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Claim' }
+              example: { user_id: usr_rec_puebla, user_name: Ana Torres, claimed_at: '2026-10-09T10:00:00Z', last_action_at: '2026-10-09T10:00:00Z', idle: false }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [claims]
+      operationId: releaseClaim
+      summary: Release the caller's Claim
+      x-roles: [recruiter, operator]
+      responses:
+        '204': { description: Released }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/applications/{application_id}/claim/takeover:
+    parameters:
+      - { $ref: '#/components/parameters/ApplicationId' }
+    post:
+      tags: [claims]
+      operationId: takeOverIdleClaim
+      summary: Take over a Claimed, idle Claim (no action for 7 days)
+      x-roles: [recruiter, operator]
+      responses:
+        '200':
+          description: Claim moved to the caller
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Claim' }
+              example: { user_id: usr_rec_puebla, user_name: Ana Torres, claimed_at: '2026-10-16T10:00:00Z', last_action_at: '2026-10-16T10:00:00Z', idle: false }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/applications/{application_id}/rejection:
+    parameters:
+      - { $ref: '#/components/parameters/ApplicationId' }
+    post:
+      tags: [queue]
+      operationId: rejectApplication
+      summary: End the Application with a Rejection, at any stage
+      description: Confirming sends the client-approved Rejection template to the Candidate.
+      x-roles: [recruiter, operator]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RejectionRequest' }
+            example: { reason: no_show, note: No se presentó a la entrevista del miércoles. }
+      responses:
+        '200':
+          description: Rejected
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApplicationSummary' }
+              example: *app_summary_rejected
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/queue:
+    get:
+      tags: [queue]
+      operationId: listQueue
+      summary: Review queue (Approvals, Reviews, Escalations)
+      x-roles: [recruiter, operator]
+      parameters:
+        - name: kind
+          in: query
+          style: form
+          explode: true
+          schema: { type: array, items: { $ref: '#/components/schemas/QueueKind' } }
+        - { name: status, in: query, schema: { type: string, enum: [open, resolved], default: open } }
+        - { name: location_id, in: query, schema: { type: string } }
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: Queue items, oldest first
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QueueList' }
+              example:
+                items:
+                  - id: qi_approval_1
+                    kind: approval
+                    status: open
+                    reason: null
+                    note: null
+                    created_at: '2026-10-09T10:05:00Z'
+                    application: *app_summary_qualified
+                  - id: qi_esc_7
+                    kind: escalation
+                    status: open
+                    reason: unanswered_question
+                    note: Asks whether the motorbike is provided.
+                    created_at: '2026-10-09T11:00:00Z'
+                    application: *app_summary_qualified
+                next_cursor: null
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/queue/stream:
+    get:
+      tags: [queue]
+      operationId: streamQueue
+      summary: Server-sent events for queue changes in the caller's scope
+      x-roles: [recruiter, operator]
+      responses:
+        '200':
+          description: 'Event stream. Each `data:` line is a JSON `StreamEvent` with type `queue`.'
+          content:
+            text/event-stream:
+              schema: { type: string }
+              example: |
+                event: queue
+                data: {"type":"queue","at":"2026-10-09T11:00:00Z","data":{"item_id":"qi_esc_7","kind":"escalation","status":"open","application_id":"app_01JA2B3C4D5E6F7G8H9J0K"}}
+
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/queue/approvals/{item_id}:
+    parameters:
+      - { $ref: '#/components/parameters/ItemId' }
+    post:
+      tags: [queue]
+      operationId: resolveApproval
+      summary: Resolve an Approval (Approved, or Rejection with a reason)
+      description: On Approved, the Screening Agent writes at once and offers 3 Interview slots (ADR 0030).
+      x-roles: [recruiter, operator]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApprovalDecision' }
+            examples:
+              approved: { value: { decision: approved } }
+              rejected: { value: { decision: rejected, reason: role_filled, note: null } }
+      responses:
+        '200': { $ref: '#/components/responses/QueueItemResolved' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/queue/reviews/{item_id}:
+    parameters:
+      - { $ref: '#/components/parameters/ItemId' }
+    post:
+      tags: [queue]
+      operationId: resolveReview
+      summary: Resolve a Review of a Knockout (Upheld or Overturned)
+      description: Overturned reopens the Application and Screening continues.
+      x-roles: [recruiter, operator]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewDecision' }
+            example: { decision: overturned, note: El candidato tiene licencia; la respuesta se entendió mal. }
+      responses:
+        '200': { $ref: '#/components/responses/QueueItemResolved' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/queue/escalations/{item_id}:
+    parameters:
+      - { $ref: '#/components/parameters/ItemId' }
+    post:
+      tags: [queue]
+      operationId: resolveEscalation
+      summary: Resolve an Escalation (dismiss, or start a Takeover)
+      x-roles: [recruiter, operator]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EscalationDecision' }
+            example: { decision: takeover }
+      responses:
+        '200': { $ref: '#/components/responses/QueueItemResolved' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/applications/{application_id}/takeover:
+    parameters:
+      - { $ref: '#/components/parameters/ApplicationId' }
+    post:
+      tags: [takeover]
+      operationId: startTakeover
+      summary: Start a Takeover (pause the agent, tell the Candidate a team member joined)
+      x-roles: [recruiter, operator]
+      responses:
+        '200':
+          description: Caller now holds the chat
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TakeoverState' }
+              example: { control: human, user_id: usr_rec_puebla, user_name: Ana Torres, since: '2026-10-09T11:02:00Z' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/applications/{application_id}/takeover/messages:
+    parameters:
+      - { $ref: '#/components/parameters/ApplicationId' }
+    post:
+      tags: [takeover]
+      operationId: sendTakeoverMessage
+      summary: Send a message to the Candidate as the team member holding the chat
+      description: |
+        A message typed by a person during a Takeover is a human reply: quiet hours do not hold
+        it. On WhatsApp, outside the 24-hour window since the Candidate's last message, only an
+        approved template may go out, so free text is refused with 409 `outside_whatsapp_window`
+        and nothing is sent. The automated "a team member has joined" notice follows the same
+        rule as the replies it goes with.
+      x-roles: [recruiter, operator]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TakeoverMessageRequest' }
+            example: { text: 'Hola Luis, soy Ana del equipo de Grupo Sazón. Sí, la motoneta la pone la empresa.' }
+      responses:
+        '201':
+          description: Sent and logged
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example:
+                id: 42
+                direction: outbound
+                sender: human
+                sender_name: Ana Torres
+                content_type: text
+                body: 'Hola Luis, soy Ana del equipo de Grupo Sazón. Sí, la motoneta la pone la empresa.'
+                interactive: null
+                created_at: '2026-10-09T11:03:00Z'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Outside WhatsApp's 24-hour window; only an approved template may be sent
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: outside_whatsapp_window, message: 'The Candidate last wrote more than 24 hours ago, so WhatsApp allows only an approved template now. The message was not sent; it can go once the Candidate writes again.' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/applications/{application_id}/takeover/handback:
+    parameters:
+      - { $ref: '#/components/parameters/ApplicationId' }
+    post:
+      tags: [takeover]
+      operationId: handBack
+      summary: Hand the chat back to the Screening Agent
+      description: The next agent run receives `summary` (or a generated one) of what was said during the Takeover.
+      x-roles: [recruiter, operator]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HandBackRequest' }
+            example: { summary: Confirmed the company provides the motorbike. Continue with availability. }
+      responses:
+        '200':
+          description: Agent holds the chat again
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TakeoverState' }
+              example: { control: agent, user_id: null, user_name: null, since: '2026-10-09T11:10:00Z' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/applications/{application_id}/stream:
+    parameters:
+      - { $ref: '#/components/parameters/ApplicationId' }
+    get:
+      tags: [takeover]
+      operationId: streamApplication
+      summary: Server-sent events for one Application (live relay during a Takeover)
+      description: Emits `message` (new inbound or outbound message), `control` (Takeover started or handed back) and `event` (timeline entry). Supports `Last-Event-ID`, which is the message or event id.
+      x-roles: [recruiter, operator]
+      parameters:
+        - { name: Last-Event-ID, in: header, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: 'Event stream. Each `data:` line is a JSON `StreamEvent`.'
+          content:
+            text/event-stream:
+              schema: { type: string }
+              example: |
+                id: m-43
+                event: message
+                data: {"type":"message","at":"2026-10-09T11:04:00Z","data":{"id":43,"direction":"inbound","sender":"candidate","sender_name":null,"content_type":"text","body":"¡Perfecto, gracias!","interactive":null,"created_at":"2026-10-09T11:04:00Z"}}
+
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/applications/{application_id}/booking-link:
+    parameters:
+      - { $ref: '#/components/parameters/ApplicationId' }
+    post:
+      tags: [slots]
+      operationId: createBookingLink
+      summary: Create a signed, expiring booking link for an Approved Application
+      x-roles: [recruiter, operator]
+      responses:
+        '201':
+          description: Booking link
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookingLink' }
+              example: { url: 'https://empleo.gruposazon.example/book/eyJhcHAiOiJ...', token: eyJhcHAiOiJ..., expires_at: '2026-10-16T10:00:00Z' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/slots:
+    get:
+      tags: [slots]
+      operationId: listSlots
+      summary: Interview slots at Locations in scope
+      x-roles: [recruiter, operator]
+      parameters:
+        - { name: location_id, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string, format: date-time } }
+        - { name: to, in: query, schema: { type: string, format: date-time } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/SlotStatus' } }
+      responses:
+        '200':
+          description: Slots
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Slot' } }
+              example:
+                items:
+                  - *slot_open
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [slots]
+      operationId: createSlots
+      summary: Publish one or more Interview slots for a Location
+      x-roles: [recruiter, operator]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SlotCreateRequest' }
+            example:
+              location_id: loc_mx_puebla_centro
+              slots:
+                - { starts_at: '2026-10-14T16:00:00Z', ends_at: '2026-10-14T16:30:00Z' }
+                - { starts_at: '2026-10-14T22:00:00Z', ends_at: '2026-10-14T22:30:00Z' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Slot' } }
+              example:
+                items:
+                  - *slot_open
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/slots/{slot_id}:
+    parameters:
+      - { $ref: '#/components/parameters/SlotId' }
+    patch:
+      tags: [slots]
+      operationId: updateSlot
+      summary: Move an unbooked slot
+      x-roles: [recruiter, operator]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SlotUpdate' }
+            example: { starts_at: '2026-10-14T17:00:00Z', ends_at: '2026-10-14T17:30:00Z' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Slot' }
+              example: *slot_open
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      tags: [slots]
+      operationId: cancelSlot
+      summary: Cancel a slot (409 if booked; reject or reschedule the booking first)
+      x-roles: [recruiter, operator]
+      responses:
+        '204': { description: Cancelled }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/public/booking/{token}:
+    parameters:
+      - { $ref: '#/components/parameters/BookingToken' }
+    get:
+      tags: [public-booking]
+      operationId: getBookingPage
+      summary: Open slots for the covering Locations (public, signed token)
+      description: Exposes no Candidate data beyond the first name and language. Expired or invalid tokens return 410 or 404.
+      security: []
+      x-roles: [public]
+      responses:
+        '200':
+          description: Booking page data
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicBookingPage' }
+              example:
+                first_name: Luis
+                language: es-MX
+                expires_at: '2026-10-16T10:00:00Z'
+                current_booking: null
+                slots:
+                  - { slot_id: slot_8x2, starts_at: '2026-10-14T16:00:00Z', ends_at: '2026-10-14T16:30:00Z', local_label: 'mié 14 · 10:00', location_name: Sazón Puebla Centro, address: 'Av. Reforma 123, Centro, Puebla' }
+                  - { slot_id: slot_8x3, starts_at: '2026-10-15T17:00:00Z', ends_at: '2026-10-15T17:30:00Z', local_label: 'jue 15 · 11:00', location_name: Sazón Puebla Centro, address: 'Av. Reforma 123, Centro, Puebla' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '410': { $ref: '#/components/responses/Gone' }
+    post:
+      tags: [public-booking]
+      operationId: bookFromPage
+      summary: Book one slot (public, signed token); returns a link to download the .ics
+      security: []
+      x-roles: [public]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PublicBookingRequest' }
+            example: { slot_id: slot_8x2 }
+      responses:
+        '201':
+          description: Booked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicBookingConfirmation' }
+              example:
+                interview: { starts_at: '2026-10-14T16:00:00Z', ends_at: '2026-10-14T16:30:00Z', local_label: 'mié 14 · 10:00', location_name: Sazón Puebla Centro, address: 'Av. Reforma 123, Centro, Puebla' }
+                ics_url: /api/public/booking/eyJhcHAiOiJ.../invite.ics
+                message: '¡Listo, Luis! Tu entrevista quedó para el miércoles 14 a las 10:00 en Sazón Puebla Centro. Descarga la invitación para tu calendario.'
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '410': { $ref: '#/components/responses/Gone' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/public/booking/{token}/invite.ics:
+    parameters:
+      - { $ref: '#/components/parameters/BookingToken' }
+    get:
+      tags: [public-booking]
+      operationId: downloadInvite
+      summary: Download the booked Interview as .ics
+      security: []
+      x-roles: [public]
+      responses:
+        '200':
+          description: iCalendar invite
+          content:
+            text/calendar:
+              schema: { type: string }
+              example: |
+                BEGIN:VCALENDAR
+                VERSION:2.0
+                PRODID:-//Criba//Interview//ES
+                BEGIN:VEVENT
+                UID:bk_01JA@criba
+                DTSTART:20261014T160000Z
+                DTEND:20261014T163000Z
+                SUMMARY:Entrevista Grupo Sazón
+                LOCATION:Av. Reforma 123, Centro, Puebla
+                END:VEVENT
+                END:VCALENDAR
+        '404': { $ref: '#/components/responses/NotFound' }
+        '410': { $ref: '#/components/responses/Gone' }
+
+  /api/conversations:
+    get:
+      tags: [conversations]
+      operationId: listConversations
+      summary: List Test chat and Demo stage conversations, typed and spoken (Operators only)
+      description: >-
+        Web chat and voice conversations whose recorded `client` is `test_chat` or `demo`, newest
+        first by creation time; `channel` tells a typed conversation (`webchat`) from a spoken one
+        (`voice`). Conversations started before the origin was recorded, simulator runs and
+        WhatsApp identities are not listed. A `conversation_id` is a bearer secret for the public
+        web chat API: it is handed only to Operators.
+      x-roles: [operator]
+      x-operator-only: true
+      parameters:
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: A page of conversations
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConversationList' }
+              example:
+                items:
+                  - conversation_id: wc_0f3a9c2d4b6e48a1b7c5d9e1f2a3b4c5
+                    channel: webchat
+                    client: demo
+                    persona_id: diego_es
+                    phone: null
+                    created_at: '2026-10-11T09:30:00Z'
+                    shared_phone: false
+                    last_message_at: '2026-10-11T09:34:12Z'
+                    application: { id: app_01JA2B3C4D5E6F7G8H9J0K, stage: zone, outcome: null, status: open }
+                next_cursor: null
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/conversations/{conversation_id}:
+    parameters:
+      - name: conversation_id
+        in: path
+        required: true
+        description: The conversation id (`wc_` for web chat or `wv_` for voice, then 32 hex characters). A bearer secret.
+        schema: { type: string }
+    get:
+      tags: [conversations]
+      operationId: getConversation
+      summary: Read one Test chat or Demo stage conversation, typed or spoken (Operators only)
+      description: >-
+        The conversation with the Candidate's messages on its own channel, oldest first: the typed
+        messages of a `webchat` conversation, the spoken transcript of a `voice` one (each message
+        carries its `modality`; no audio is stored). Messages are stored per Candidate and channel,
+        so two conversations of one channel that share a phone share their messages. Read-only:
+        no other method is allowed on this path. An unknown id, and one whose `client` is null or
+        `simulator`, answers 404.
+      x-roles: [operator]
+      x-operator-only: true
+      responses:
+        '200':
+          description: The conversation and its messages
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConversationDetail' }
+              example:
+                conversation_id: wc_0f3a9c2d4b6e48a1b7c5d9e1f2a3b4c5
+                channel: webchat
+                client: test_chat
+                persona_id: null
+                phone: '+525512345678'
+                created_at: '2026-10-11T09:30:00Z'
+                shared_phone: false
+                last_message_at: '2026-10-11T09:31:02Z'
+                application: { id: app_01JA2B3C4D5E6F7G8H9J0K, stage: greeting, outcome: null, status: open }
+                messages:
+                  - { id: 1, direction: inbound, sender: candidate, content_type: text, body: Hola, created_at: '2026-10-11T09:31:00Z' }
+                  - { id: 2, direction: outbound, sender: agent, content_type: text, body: 'Hola, soy el asistente de Sazón.', created_at: '2026-10-11T09:31:02Z' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/metrics/results:
+    get:
+      tags: [metrics]
+      operationId: getResults
+      summary: Results dashboard aggregates (Client view, no cost data)
+      x-roles: [recruiter, operator]
+      parameters:
+        - { $ref: '#/components/parameters/From' }
+        - { $ref: '#/components/parameters/To' }
+        - { name: location_id, in: query, schema: { type: string } }
+        - { name: country, in: query, schema: { $ref: '#/components/schemas/Country' } }
+      responses:
+        '200':
+          description: Results
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResultsMetrics' }
+              example:
+                from: '2026-10-01'
+                to: '2026-10-09'
+                applications: 1000
+                funnel:
+                  open_by_stage: { greeting: 12, name: 8, zone: 6, driver_license: 4, availability: 3, preferred_schedule: 2, experience: 2, start_date: 1, confirm: 1, qualified: 40, approved: 15, interview_booked: 22 }
+                  outcomes: { knockout: 420, rejection: 30, abandoned: 380, withdrawn: 54 }
+                time_to_qualify_seconds: { p50: 240, p95: 900 }
+                knockouts_by_criterion: { zone: 160, driver_license: 260 }
+                reviews: { requested: 21, upheld: 15, overturned: 6, overturn_rate: 0.2857 }
+                dropoff_by_stage: { greeting: 120, name: 60, zone: 50, driver_license: 40, availability: 30, preferred_schedule: 25, experience: 20, start_date: 20, confirm: 15 }
+                qualified_waiting: 3
+                takeovers: 18
+                escalations: 25
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/metrics/conversation-signals:
+    get:
+      tags: [metrics]
+      operationId: getConversationSignals
+      summary: Per-stage counts of the tone and language signals the Jev router read (ADR 0051)
+      description: >-
+        For improving the bot, in the caller's Location scope. Counts and shares per screening
+        stage only; no Candidate, Application or message appears in it. A signal is conversation
+        context, never a score about a person and never an input to a decision.
+      x-roles: [recruiter, operator]
+      parameters:
+        - { $ref: '#/components/parameters/From' }
+        - { $ref: '#/components/parameters/To' }
+      responses:
+        '200':
+          description: Signals by stage
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConversationSignals' }
+              example:
+                period: { from: '2026-10-01', to: '2026-10-09' }
+                by_stage:
+                  - stage: start_date
+                    messages: 120
+                    unread: 2
+                    frustrated: 9
+                    confused: 14
+                    wants_human: 3
+                    abusive: 0
+                    language_switches: 4
+                    shares: { frustrated: 0.075, confused: 0.1167, wants_human: 0.025, abusive: 0.0, language_switches: 0.0333 }
+                totals: { messages: 120, unread: 2, frustrated: 9, confused: 14, wants_human: 3, abusive: 0, language_switches: 4 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/metrics/economics:
+    get:
+      tags: [metrics]
+      operationId: getEconomics
+      summary: Economics dashboard aggregates (Operators only)
+      x-roles: [operator]
+      x-operator-only: true
+      parameters:
+        - { $ref: '#/components/parameters/From' }
+        - { $ref: '#/components/parameters/To' }
+        - { name: environment, in: query, schema: { type: string, enum: [prod, sim, test] } }
+        - { name: source, in: query, schema: { type: string, enum: [live, replay], default: live } }
+        - { name: dataset, in: query, description: 'Comparison dataset name, when source is replay.', schema: { type: string } }
+      responses:
+        '200':
+          description: Economics
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EconomicsMetrics' }
+              example:
+                from: '2026-10-01'
+                to: '2026-10-09'
+                conversations: 1000
+                cost_usd: { total: 3.1, per_conversation: 0.0031, per_qualified: 0.0402, per_interview: 0.1409 }
+                tokens: { input: 7200000, output: 410000, cache_read: 5100000, cache_write: 900000, per_turn_input: 7223, cache_hit_rate: 0.71 }
+                latency_ms: { p50: 1700, p95: 3900 }
+                model_mix:
+                  - { model: anthropic/claude-haiku-5.5, kind: run, calls: 9800, share: 0.95, cost_usd: 2.7 }
+                  - { model: anthropic/claude-sonnet-5.5, kind: auxiliary, calls: 420, share: 0.04, cost_usd: 0.35 }
+                  - { model: jev-1, kind: jev, calls: 9800, share: 0.01, cost_usd: 0.05 }
+                errors: { count: 12, rate: 0.0012, retries: 9 }
+                spend_by_environment: { prod: 3.1, sim: 1.4, test: 0.0 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/metrics/comparison:
+    get:
+      tags: [metrics]
+      operationId: getModelComparison
+      summary: Haiku vs Sonnet comparison dataset replay (Operators only)
+      x-roles: [operator]
+      x-operator-only: true
+      parameters:
+        - { name: dataset, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Per-model comparison
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ModelComparison' }
+              example:
+                dataset: compare-2026-10-12
+                personas: 50
+                models:
+                  - { model: anthropic/claude-haiku-5.5, runs: 50, latency_ms: { p50: 1700, p95: 3900 }, cost_per_screening_usd: 0.003, validation_failures: 4, escalations: 2, outcome_accuracy: 0.96 }
+                  - { model: anthropic/claude-sonnet-5.5, runs: 50, latency_ms: { p50: 3100, p95: 6800 }, cost_per_screening_usd: 0.011, validation_failures: 2, escalations: 1, outcome_accuracy: 0.98 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: criba_session
+
+  parameters:
+    ApplicationId:
+      name: application_id
+      in: path
+      required: true
+      schema: { type: string }
+      example: app_01JA2B3C4D5E6F7G8H9J0K
+    ItemId:
+      name: item_id
+      in: path
+      required: true
+      schema: { type: string }
+      example: qi_approval_1
+    SlotId:
+      name: slot_id
+      in: path
+      required: true
+      schema: { type: string }
+      example: slot_8x2
+    BookingToken:
+      name: token
+      in: path
+      required: true
+      description: Signed, expiring token (HMAC over application id and expiry).
+      schema: { type: string }
+      example: eyJhcHAiOiJ...
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+    From:
+      name: from
+      in: query
+      schema: { type: string, format: date }
+    To:
+      name: to
+      in: query
+      schema: { type: string, format: date }
+
+  responses:
+    Unauthorized:
+      description: Not logged in, or the session expired
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: unauthorized, message: Log in to continue. }
+    Forbidden:
+      description: Role or Location scope does not allow this
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: forbidden, message: Operators only. }
+    NotFound:
+      description: Not found, or outside the caller's Location scope
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: not_found, message: Application not found. }
+    Conflict:
+      description: State conflict (already claimed, already resolved, slot taken, control held by someone else)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: already_claimed, message: Ana Torres already holds the Claim. }
+    Gone:
+      description: The booking link expired
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: link_expired, message: 'Este enlace ya caducó. Escríbenos por el chat y te mandamos uno nuevo.' }
+    ValidationError:
+      description: Request body or parameters failed validation
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: validation_error, message: A note is required when the reason is other., details: [{ field: note, message: required }] }
+    QueueItemResolved:
+      description: Resolved
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/QueueItem' }
+          example:
+            id: qi_approval_1
+            kind: approval
+            status: resolved
+            reason: null
+            note: null
+            resolution: approved
+            resolution_note: null
+            resolved_by: usr_rec_puebla
+            resolved_at: '2026-10-09T12:00:00Z'
+            created_at: '2026-10-09T10:05:00Z'
+            application: *app_summary_qualified
+
+  schemas:
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          enum:
+            - unauthorized
+            - forbidden
+            - not_found
+            - validation_error
+            - already_claimed
+            - not_claim_holder
+            - already_resolved
+            - wrong_stage
+            - application_closed
+            - control_held
+            - not_in_control
+            - slot_taken
+            - slot_booked
+            - link_expired
+            - outside_whatsapp_window
+            - internal
+        message: { type: string }
+        details:
+          type: array
+          items:
+            type: object
+            required: [field, message]
+            properties:
+              field: { type: string }
+              message: { type: string }
+
+    Role: { type: string, enum: [recruiter, operator] }
+    Country: { type: string, enum: [ES, MX] }
+    Language: { type: string, enum: [es-ES, es-MX, en] }
+    Channel: { type: string, enum: [webchat, whatsapp, voice] }
+    Stage:
+      type: string
+      description: Screening substages in Phase 1 order, then qualified (waiting for Approval), approved, interview_booked.
+      enum: [greeting, name, zone, driver_license, availability, preferred_schedule, experience, start_date, confirm, qualified, approved, interview_booked]
+    Outcome: { type: string, enum: [knockout, rejection, abandoned, withdrawn] }
+    Flag:
+      type: string
+      enum: [review_requested, escalation, stalled, takeover, qualified_waiting, claimed_idle, start_date_far, opted_out]
+    RejectionReason:
+      type: string
+      description: Default list (Phase 1 section 5). `other` needs a note.
+      enum: [no_show, failed_call, role_filled, other]
+    QueueKind: { type: string, enum: [approval, review, escalation] }
+    EscalationReason:
+      type: string
+      description: >-
+        `unreadable` (ADR 0063) is raised in code at the third unreadable message in a row: while
+        it is open the agent does not reply, as under a Takeover. Dismissing it, or a Takeover
+        and its hand-back, gives the conversation back to the agent.
+      enum: [repeated_invalid_answers, abuse, unanswered_question, wants_human, frustrated, technical_error, other, unreadable]
+    SlotStatus: { type: string, enum: [open, booked, cancelled, past] }
+
+    User:
+      type: object
+      required: [id, name, email, role]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/Role' }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 1 }
+    Me:
+      type: object
+      required: [user, locations]
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        locations:
+          description: The Recruiter's Location scope. Empty for Operators, who see every Location.
+          type: array
+          items: { $ref: '#/components/schemas/LocationRef' }
+
+    LocationRef:
+      type: object
+      required: [id, name, country, city]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        country: { $ref: '#/components/schemas/Country' }
+        city: { type: string }
+    Location:
+      allOf:
+        - $ref: '#/components/schemas/LocationRef'
+        - type: object
+          required: [timezone]
+          properties:
+            timezone: { type: string }
+            address: { type: [string, 'null'] }
+
+    Claim:
+      type: object
+      required: [user_id, user_name, claimed_at, last_action_at, idle]
+      properties:
+        user_id: { type: string }
+        user_name: { type: string }
+        claimed_at: { type: string, format: date-time }
+        last_action_at: { type: string, format: date-time }
+        idle: { type: boolean, description: 'Claimed, idle: no action for 7 days.' }
+
+    CandidateRef:
+      type: object
+      required: [id, full_name, country, opted_out]
+      properties:
+        id: { type: string }
+        full_name: { type: [string, 'null'] }
+        phone: { type: [string, 'null'] }
+        country: { oneOf: [{ $ref: '#/components/schemas/Country' }, { type: 'null' }] }
+        language: { oneOf: [{ $ref: '#/components/schemas/Language' }, { type: 'null' }] }
+        opted_out: { type: boolean }
+
+    ApplicationSummary:
+      type: object
+      required: [id, candidate, channel, status, stage, outcome, locations, claim, control, flags, created_at, updated_at, time_in_stage_seconds, total_seconds]
+      properties:
+        id: { type: string }
+        candidate: { $ref: '#/components/schemas/CandidateRef' }
+        channel: { $ref: '#/components/schemas/Channel' }
+        status: { type: string, enum: [open, closed] }
+        stage: { $ref: '#/components/schemas/Stage' }
+        outcome: { oneOf: [{ $ref: '#/components/schemas/Outcome' }, { type: 'null' }] }
+        knockout_criterion: { type: [string, 'null'], enum: [zone, driver_license, null] }
+        rejection_reason: { oneOf: [{ $ref: '#/components/schemas/RejectionReason' }, { type: 'null' }] }
+        rejection_note: { type: [string, 'null'], description: "The Recruiter's note on a Rejection; required when the reason is other." }
+        zone: { oneOf: [{ $ref: '#/components/schemas/ZoneRef' }, { type: 'null' }] }
+        locations: { type: array, items: { $ref: '#/components/schemas/LocationRef' }, description: Every covering Location (ADR 0021). }
+        claim: { oneOf: [{ $ref: '#/components/schemas/Claim' }, { type: 'null' }] }
+        control: { type: string, enum: [agent, human] }
+        control_user_id: { type: [string, 'null'], description: "Holder of the Takeover, set exactly when control is human. Compare this, not the name." }
+        control_user_name: { type: [string, 'null'] }
+        flags: { type: array, items: { $ref: '#/components/schemas/Flag' } }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        closed_at: { type: [string, 'null'], format: date-time }
+        time_in_stage_seconds: { type: integer, minimum: 0 }
+        total_seconds: { type: integer, minimum: 0 }
+        stage_durations_seconds:
+          type: object
+          description: Time spent per stage, keyed by Stage.
+          additionalProperties: { type: integer, minimum: 0 }
+
+    ApplicationList:
+      type: object
+      required: [items, next_cursor, total]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ApplicationSummary' } }
+        next_cursor: { type: [string, 'null'] }
+        total: { type: integer, minimum: 0 }
+
+    ZoneRef:
+      type: object
+      required: [id, name, city, country]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        city: { type: string }
+        country: { $ref: '#/components/schemas/Country' }
+
+    Answers:
+      description: Canonical answers (Phase 1 section 3; same shape as tools.json `answers`, plus zone id).
+      type: object
+      required: [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+      properties:
+        full_name: { type: [string, 'null'] }
+        zone: { oneOf: [{ $ref: '#/components/schemas/ZoneRef' }, { type: 'null' }] }
+        driver_license: { type: [boolean, 'null'] }
+        availability:
+          type: [array, 'null']
+          items: { type: string, enum: [full_time, part_time, weekends] }
+        preferred_schedule:
+          type: [array, 'null']
+          items: { type: string, enum: [morning, afternoon, evening, flexible] }
+        experience_years: { type: [number, 'null'], minimum: 0 }
+        experience_platforms:
+          type: [array, 'null']
+          items: { type: string, enum: [glovo, uber_eats, just_eat, rappi, didi_food, other] }
+        start_date: { type: [string, 'null'], format: date }
+
+    AnswerStatus:
+      type: object
+      required: [field, status]
+      properties:
+        field: { type: string, enum: [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date] }
+        status: { type: string, enum: [valid, pending, invalid, flagged, knockout] }
+        raw_input: { type: [string, 'null'], description: "The Candidate's own words." }
+        attempts: { type: integer, minimum: 0 }
+        recorded_at: { type: [string, 'null'], format: date-time }
+        note: { type: [string, 'null'], description: 'For example "more than 60 days out".' }
+
+    Message:
+      type: object
+      required: [id, direction, sender, content_type, body, created_at]
+      properties:
+        id: { type: integer }
+        direction: { type: string, enum: [inbound, outbound] }
+        sender: { type: string, enum: [candidate, agent, human, system] }
+        sender_name: { type: [string, 'null'], description: Team member's name when sender is human. }
+        content_type: { type: string, enum: [text, interactive, button_reply, media, template] }
+        body: { type: string }
+        interactive:
+          oneOf:
+            - type: 'null'
+            - type: object
+              required: [style, options]
+              properties:
+                style: { type: string, enum: [buttons, list] }
+                options:
+                  type: array
+                  items:
+                    type: object
+                    required: [id, label]
+                    properties:
+                      id: { type: string }
+                      label: { type: string }
+        reply_option_id: { type: [string, 'null'] }
+        template_name: { type: [string, 'null'] }
+        media_type: { type: [string, 'null'], enum: [audio, image, video, document, sticker, null] }
+        created_at: { type: string, format: date-time }
+        modality:
+          type: string
+          enum: [typed, spoken]
+          readOnly: true
+          description: Whether the message was typed or spoken on a voice call (replies to spoken turns are spoken).
+
+    ConversationApplication:
+      description: The Application of the Candidate's latest message on the conversation's channel.
+      type: object
+      required: [id, stage, outcome, status]
+      properties:
+        id: { type: string }
+        stage: { $ref: '#/components/schemas/Stage' }
+        outcome: { oneOf: [{ $ref: '#/components/schemas/Outcome' }, { type: 'null' }] }
+        status: { type: string, enum: [open, closed] }
+
+    Conversation:
+      description: >-
+        A web chat or voice conversation started from Test chat, the Voice page or the Demo stage.
+        `channel`, `persona_id` and `client` are codes, never free text.
+      type: object
+      required: [conversation_id, channel, client, persona_id, phone, created_at, shared_phone, last_message_at, application]
+      properties:
+        conversation_id: { type: string, description: A bearer secret for the public web chat API. }
+        channel:
+          type: string
+          enum: [webchat, voice]
+          description: '`webchat` for a typed conversation (`wc_` id), `voice` for a spoken one (`wv_` id, ADR 0059).'
+        client: { type: string, enum: [test_chat, demo] }
+        persona_id: { type: [string, 'null'], pattern: '^[a-z0-9_]{1,64}$', description: The Demo stage persona's id, or null. }
+        phone: { type: [string, 'null'], description: The Candidate's phone, or null. }
+        created_at: { type: string, format: date-time }
+        shared_phone:
+          type: boolean
+          description: True when the Candidate has more than one conversation on this channel, so its messages mix conversations.
+        last_message_at: { type: [string, 'null'], format: date-time, description: The Candidate's latest message on this channel, or null when there is none. }
+        application:
+          oneOf:
+            - { $ref: '#/components/schemas/ConversationApplication' }
+            - { type: 'null' }
+
+    ConversationDetail:
+      allOf:
+        - { $ref: '#/components/schemas/Conversation' }
+        - type: object
+          required: [messages]
+          properties:
+            messages:
+              type: array
+              description: The Candidate's messages on the conversation's channel, oldest first.
+              items: { $ref: '#/components/schemas/Message' }
+
+    ConversationList:
+      type: object
+      required: [items, next_cursor]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Conversation' } }
+        next_cursor: { type: [string, 'null'] }
+
+    ToolCall:
+      description: >-
+        One agent tool call through `/internal/tools`. `args` holds the argument names the tool
+        was called with; a value is a code, id, date or number, or null for free text and for
+        any value the call did not get accepted with.
+      type: object
+      additionalProperties: false
+      required: [tool, started_at, duration_ms, outcome, error, args]
+      properties:
+        tool: { type: string }
+        started_at: { type: string, format: date-time }
+        duration_ms: { type: integer, minimum: 0 }
+        outcome:
+          type: string
+          enum: [ok, invalid, knockout, error]
+          description: '`ok` an accepted call; `invalid` a rejected argument or value; `knockout` an accepted answer that ended the Application; `error` any other failure.'
+        error: { type: [string, 'null'], description: The tool error code for `invalid` and `error`, else null. }
+        args:
+          type: object
+          description: >-
+            Argument names with canonical values or null, never free text: an enum code, a
+            boolean, a number, or a list of codes (`record_answer.value`).
+          additionalProperties:
+            anyOf:
+              - { type: string }
+              - { type: number }
+              - { type: boolean }
+              - { type: array, items: { type: string } }
+              - { type: 'null' }
+
+    ToolCallRun:
+      description: >-
+        One run's tool calls with the run's own numbers. The final group has a null `run_id`,
+        null numbers and no reply messages.
+      type: object
+      additionalProperties: false
+      required: [run_id, status, input_tokens, output_tokens, cost_usd, latency_ms, reply_message_ids, calls]
+      properties:
+        run_id: { type: [string, 'null'] }
+        status: { type: [string, 'null'], enum: [ok, error, timeout, null], description: The run's usage status, or null when it has no usage row. }
+        input_tokens: { type: [integer, 'null'], minimum: 0 }
+        output_tokens: { type: [integer, 'null'], minimum: 0 }
+        cost_usd: { type: [number, 'null'], minimum: 0, description: The run's estimated cost. }
+        latency_ms: { type: [integer, 'null'], minimum: 0 }
+        at: { type: [string, 'null'], format: date-time, description: "The run's usage time (ADR 0075, Agent activity), null when it has no usage row. Absent from an older backend." }
+        hermes_profile: { type: [string, 'null'], description: "The Hermes profile that ran it, from its usage row, e.g. criba-recruiter; null when unknown. Absent from an older backend." }
+        model: { type: [string, 'null'], description: "The model that served the run, from its usage row; null when unknown. Absent from an older backend." }
+        reply_message_ids:
+          type: array
+          description: The agent's reply messages that carry this run id.
+          items: { type: integer }
+        calls:
+          type: array
+          description: The run's tool calls, oldest first.
+          items: { $ref: '#/components/schemas/ToolCall' }
+
+    ToolCallTrace:
+      type: object
+      additionalProperties: false
+      required: [application_id, runs]
+      properties:
+        application_id: { type: string }
+        runs:
+          type: array
+          description: Runs oldest first, then the group with a null `run_id`, when it has calls.
+          items: { $ref: '#/components/schemas/ToolCallRun' }
+        jev_calls:
+          type: array
+          description: >-
+            The Application's Jev calls from the usage ledger (kind `jev`), oldest first, for the
+            Demo stage's Agent activity (ADR 0075): when, which model, how long and whether it
+            answered. No reading, no score and no text. Absent from an older backend.
+          items: { $ref: '#/components/schemas/TraceJevCall' }
+
+    TraceJevCall:
+      type: object
+      additionalProperties: false
+      required: [at, model, latency_ms, status]
+      properties:
+        at: { type: string, format: date-time }
+        model: { type: string }
+        latency_ms: { type: [integer, 'null'], minimum: 0 }
+        status: { type: string, enum: [ok, error, timeout] }
+
+    Event:
+      type: object
+      required: [id, kind, actor, created_at, data]
+      properties:
+        id: { type: integer }
+        kind:
+          type: string
+          description: Same closed set as `events.kind` in contracts/schema.sql.
+          enum: [application_started, stage_changed, reopened, answer_recorded, answer_invalid, answer_ambiguous, screening_finished, summary_written, knockout, rejection, abandoned, withdrawn, review_requested, review_upheld, review_overturned, escalation_raised, escalation_dismissed, approval_requested, approved, claim_taken, claim_released, claim_taken_over, takeover_started, takeover_handed_back, stalled, nudge_sent, flag_qualified_waiting, flag_claimed_idle, slots_offered, booking_link_sent, interview_booked, interview_rescheduled, interview_slot_released, outreach_sent, import_unresponsive, opted_out, opt_out_lifted, erasure_requested, tone_hint, run_error, template_sent, system_turn]
+        actor: { type: string, enum: [agent, system, candidate, user] }
+        user_name: { type: [string, 'null'] }
+        data:
+          type: object
+          additionalProperties: true
+          description: >-
+            Small payload of ids, codes and canonical values for this kind (for example
+            stage_changed has from and to). Never Candidate free text: the Candidate's own
+            words stay in messages, so an Erasure request never has to scrub the event log.
+            The payload for each kind is the schema `EventData_<kind>` that
+            `x-event-payloads` maps the sibling `kind` to. Each payload schema is open
+            (`additionalProperties: true`), so a lane can add a field without breaking
+            readers. Storage holds exactly what the API shows: free text is referenced by
+            id, never copied (`message_id` for a message, `queue_item_id` for a queue
+            item's note, `handback_id` for a hand-back summary). Agent-written notes on a
+            withdrawal or an Erasure request are not kept.
+          x-event-payloads:
+            application_started: '#/components/schemas/EventData_application_started'
+            stage_changed: '#/components/schemas/EventData_stage_changed'
+            reopened: '#/components/schemas/EventData_reopened'
+            answer_recorded: '#/components/schemas/EventData_answer_recorded'
+            answer_invalid: '#/components/schemas/EventData_answer_invalid'
+            answer_ambiguous: '#/components/schemas/EventData_answer_ambiguous'
+            screening_finished: '#/components/schemas/EventData_screening_finished'
+            summary_written: '#/components/schemas/EventData_summary_written'
+            knockout: '#/components/schemas/EventData_knockout'
+            rejection: '#/components/schemas/EventData_rejection'
+            abandoned: '#/components/schemas/EventData_abandoned'
+            withdrawn: '#/components/schemas/EventData_withdrawn'
+            review_requested: '#/components/schemas/EventData_review_requested'
+            review_upheld: '#/components/schemas/EventData_review_upheld'
+            review_overturned: '#/components/schemas/EventData_review_overturned'
+            escalation_raised: '#/components/schemas/EventData_escalation_raised'
+            escalation_dismissed: '#/components/schemas/EventData_escalation_dismissed'
+            approval_requested: '#/components/schemas/EventData_approval_requested'
+            approved: '#/components/schemas/EventData_approved'
+            claim_taken: '#/components/schemas/EventData_claim_taken'
+            claim_released: '#/components/schemas/EventData_claim_released'
+            claim_taken_over: '#/components/schemas/EventData_claim_taken_over'
+            takeover_started: '#/components/schemas/EventData_takeover_started'
+            takeover_handed_back: '#/components/schemas/EventData_takeover_handed_back'
+            stalled: '#/components/schemas/EventData_stalled'
+            nudge_sent: '#/components/schemas/EventData_nudge_sent'
+            flag_qualified_waiting: '#/components/schemas/EventData_flag_qualified_waiting'
+            flag_claimed_idle: '#/components/schemas/EventData_flag_claimed_idle'
+            slots_offered: '#/components/schemas/EventData_slots_offered'
+            booking_link_sent: '#/components/schemas/EventData_booking_link_sent'
+            interview_booked: '#/components/schemas/EventData_interview_booked'
+            interview_rescheduled: '#/components/schemas/EventData_interview_rescheduled'
+            interview_slot_released: '#/components/schemas/EventData_interview_slot_released'
+            outreach_sent: '#/components/schemas/EventData_outreach_sent'
+            import_unresponsive: '#/components/schemas/EventData_import_unresponsive'
+            opted_out: '#/components/schemas/EventData_opted_out'
+            opt_out_lifted: '#/components/schemas/EventData_opt_out_lifted'
+            erasure_requested: '#/components/schemas/EventData_erasure_requested'
+            tone_hint: '#/components/schemas/EventData_tone_hint'
+            run_error: '#/components/schemas/EventData_run_error'
+            template_sent: '#/components/schemas/EventData_template_sent'
+            system_turn: '#/components/schemas/EventData_system_turn'
+        created_at: { type: string, format: date-time }
+
+    # -------------------------------------------------------------------------
+    # Event payloads, one per Event.kind (mapped by Event.data x-event-payloads)
+    # -------------------------------------------------------------------------
+
+    AnswerField:
+      type: string
+      enum: [full_name, zone, driver_license, availability, preferred_schedule, experience_years, experience_platforms, start_date]
+    KnockoutCriterion: { type: string, enum: [zone, driver_license] }
+    ChoiceOption:
+      type: object
+      required: [id, label]
+      properties:
+        id: { type: string }
+        label: { type: string }
+
+    EventData_application_started:
+      type: object
+      additionalProperties: true
+      required: [channel]
+      properties:
+        channel: { $ref: '#/components/schemas/Channel' }
+    EventData_stage_changed:
+      type: object
+      additionalProperties: true
+      required: [from, to]
+      properties:
+        from: { $ref: '#/components/schemas/Stage' }
+        to: { $ref: '#/components/schemas/Stage' }
+    EventData_reopened:
+      description: >-
+        A Knockout or Abandoned Application reopened. After a Knockout, `criterion` is the
+        failed check (asked again) and `previous_value` the answer it cleared: a zone id
+        for `zone`, a boolean for `driver_license`.
+      type: object
+      additionalProperties: true
+      required: [previous_outcome, via]
+      properties:
+        previous_outcome: { type: string, enum: [knockout, abandoned] }
+        via: { type: string, enum: [candidate, review_overturned] }
+        criterion: { $ref: '#/components/schemas/KnockoutCriterion' }
+        previous_value: { type: [string, boolean, 'null'] }
+    EventData_answer_recorded:
+      description: >-
+        A validated answer. `field` gives the order fields were recorded in (the simulator
+        checks it). `value` is the canonical value (a zone id, a boolean, a number, an ISO
+        date or a list of codes). It is absent for free-text fields, today only
+        `full_name`: the event says the name was recorded, and the name itself is only on
+        the Application and the Candidate (`ApplicationDetail.answers.full_name`), so an
+        Erasure request never has to scrub the event log. `locations` is set for `zone`:
+        the covering Location ids. `message_id` is the Candidate's latest inbound message
+        when the answer was recorded (absent when there was none); the Candidate's own
+        words stay in that message and, for zone and driver_license, in
+        `AnswerStatus.raw_input`, which is copied from that message, never from the
+        agent's structured value (ADR 0042). `country_changed` is set for `zone` when the
+        Zone is in another country than the Application was: the Application took the
+        Zone's country, and `language_changed` is set when its Spanish variant followed
+        (ADR 0057). Both carry codes only.
+      type: object
+      additionalProperties: true
+      required: [field]
+      properties:
+        field: { $ref: '#/components/schemas/AnswerField' }
+        value: {}
+        locations: { type: array, items: { type: string } }
+        message_id: { type: integer }
+        country_changed:
+          type: object
+          additionalProperties: false
+          required: [from, to]
+          properties:
+            from: { $ref: '#/components/schemas/Country' }
+            to: { $ref: '#/components/schemas/Country' }
+        language_changed:
+          type: object
+          additionalProperties: false
+          required: [from, to]
+          properties:
+            from: { $ref: '#/components/schemas/Language' }
+            to: { $ref: '#/components/schemas/Language' }
+    EventData_answer_invalid:
+      description: >-
+        A miss on the pending question. `message_id` is the Candidate's latest inbound
+        message (the words that missed), absent when there was none. `reason` is the rule
+        that failed (ADR 0042), for example `unresolved` (the agent could not map the
+        answer to a value), `invalid_name`, `past_start_date`, `out_of_range` or
+        `ambiguous_zone`, or `unreadable` when the backend counted an unreadable message
+        before the agent ran (ADR 0063); misses written before ADR 0042 have none.
+      type: object
+      additionalProperties: true
+      required: [field, attempts]
+      properties:
+        field: { $ref: '#/components/schemas/AnswerField' }
+        attempts: { type: integer, minimum: 1 }
+        reason: { type: string, pattern: '^[a-z_]+$' }
+        options: { type: array, items: { $ref: '#/components/schemas/ChoiceOption' } }
+        message_id: { type: integer }
+    EventData_answer_ambiguous:
+      description: >-
+        The answer matched several options (for example Zones); the Candidate is asked to
+        choose. Not counted as a miss. `message_id` is the Candidate's latest inbound
+        message, absent when there was none. `confirm` is set when one Zone outside every
+        Service Area is confirmed before a Knockout (ADR 0042): the options are that Zone's
+        id and `no`. Empty `options` close a pending choice (the Candidate tapped No).
+        `funnel` is true for the Zone funnel (ADR 0068), asked once per Application when the
+        Candidate's place matches no Zone: the options are the cities that have a Service Area
+        in the Application's country, then `city_none` ("none of these").
+      type: object
+      additionalProperties: true
+      required: [field, options]
+      properties:
+        field: { $ref: '#/components/schemas/AnswerField' }
+        options: { type: array, items: { $ref: '#/components/schemas/ChoiceOption' } }
+        confirm: { type: string }
+        funnel: { type: boolean, const: true }
+        attempts: { type: integer, minimum: 1 }
+        message_id: { type: integer }
+    EventData_screening_finished:
+      type: object
+      additionalProperties: true
+      required: [result]
+      properties:
+        result: { type: string, enum: [qualified, knockout, abandoned, withdrawn] }
+    EventData_summary_written:
+      description: No fields today.
+      type: object
+      additionalProperties: true
+    EventData_knockout:
+      description: >-
+        Which Knock-out Criterion failed is `criterion` (not `field`). The agent's path
+        also sets `reason` (a machine code) and `template`
+        (`knockout_<criterion>[_<reason>].<locale>`). `message_id` is the agent message
+        that carried the Knockout text to the Candidate, set once the agent's reply is
+        sent (absent before, or when no reply went out); the text itself is never copied
+        here.
+      type: object
+      additionalProperties: true
+      required: [criterion, stage]
+      properties:
+        criterion: { $ref: '#/components/schemas/KnockoutCriterion' }
+        stage: { $ref: '#/components/schemas/Stage' }
+        reason: { type: string, enum: [outside_service_areas, 'no', expired, suspended, pending] }
+        template: { type: string }
+        message_id: { type: integer }
+    EventData_rejection:
+      type: object
+      additionalProperties: true
+      required: [reason, stage]
+      properties:
+        reason: { $ref: '#/components/schemas/RejectionReason' }
+        note: { type: string, description: The Recruiter's note. }
+        stage: { $ref: '#/components/schemas/Stage' }
+    EventData_abandoned:
+      type: object
+      additionalProperties: true
+      required: [stage, nudges_sent]
+      properties:
+        stage: { $ref: '#/components/schemas/Stage' }
+        nudges_sent: { type: integer, minimum: 0 }
+    EventData_withdrawn:
+      type: object
+      additionalProperties: true
+      required: [stage]
+      properties:
+        stage: { $ref: '#/components/schemas/Stage' }
+    EventData_review_requested:
+      description: The Candidate's note stays on the queue item that `queue_item_id` names.
+      type: object
+      additionalProperties: true
+      required: [queue_item_id]
+      properties:
+        queue_item_id: { type: string }
+        reason: { type: 'null' }
+    EventData_review_upheld:
+      type: object
+      additionalProperties: true
+      required: [queue_item_id]
+      properties:
+        queue_item_id: { type: string }
+    EventData_review_overturned:
+      type: object
+      additionalProperties: true
+      required: [queue_item_id]
+      properties:
+        queue_item_id: { type: string }
+    EventData_escalation_raised:
+      description: >-
+        The note stays on the queue item that `queue_item_id` names. An `unreadable` hold that
+        finds another Escalation open turns that one into the hold (ADR 0063) and writes a second
+        `escalation_raised` for the same `queue_item_id` with `reason` `unreadable`.
+      type: object
+      additionalProperties: true
+      required: [queue_item_id, reason]
+      properties:
+        queue_item_id: { type: string }
+        reason: { $ref: '#/components/schemas/EscalationReason' }
+    EventData_escalation_dismissed:
+      type: object
+      additionalProperties: true
+      required: [queue_item_id]
+      properties:
+        queue_item_id: { type: string }
+    EventData_approval_requested:
+      type: object
+      additionalProperties: true
+      required: [queue_item_id]
+      properties:
+        queue_item_id: { type: string }
+        reason: { type: 'null' }
+    EventData_approved:
+      type: object
+      additionalProperties: true
+      properties:
+        note: { type: string, description: The Recruiter's note. }
+    EventData_claim_taken:
+      description: No fields; the Recruiter is the event's user.
+      type: object
+      additionalProperties: true
+    EventData_claim_released:
+      description: >-
+        `user_id` is the Claim's holder. `reason` is `application_closed` when closing the
+        Application ended the Claim; absent when a user released it.
+      type: object
+      additionalProperties: true
+      required: [user_id]
+      properties:
+        user_id: { type: string }
+        reason: { type: string, enum: [application_closed] }
+    EventData_claim_taken_over:
+      type: object
+      additionalProperties: true
+      required: [previous_user_id]
+      properties:
+        previous_user_id: { type: string }
+    EventData_takeover_started:
+      description: '`queue_item_id` is set when the Takeover resolved an Escalation.'
+      type: object
+      additionalProperties: true
+      properties:
+        queue_item_id: { type: string }
+    EventData_takeover_handed_back:
+      description: >-
+        `held_by` is the user who held the chat. A hand-back carries `handback_id`, the
+        stored summary the agent reads on its next turn (the team member's, or a recap
+        generated from the transcript when `generated`); the summary text is never copied
+        here. A Rejection that ends the Takeover carries `reason: application_closed`
+        instead.
+      type: object
+      additionalProperties: true
+      required: [held_by]
+      properties:
+        held_by: { type: [string, 'null'] }
+        handback_id: { type: integer }
+        generated: { type: boolean }
+        reason: { type: string, enum: [application_closed] }
+    EventData_stalled:
+      type: object
+      additionalProperties: true
+      required: [stage]
+      properties:
+        stage: { $ref: '#/components/schemas/Stage' }
+    EventData_nudge_sent:
+      type: object
+      additionalProperties: true
+      required: [step, kind, stage]
+      properties:
+        step: { type: integer, minimum: 1, maximum: 3 }
+        kind: { type: string, enum: [nudge, last_nudge, template] }
+        stage: { $ref: '#/components/schemas/Stage' }
+    EventData_flag_qualified_waiting:
+      type: object
+      additionalProperties: true
+      required: [qualified_at]
+      properties:
+        qualified_at: { type: string, format: date-time }
+    EventData_flag_claimed_idle:
+      type: object
+      additionalProperties: true
+      required: [user_id, last_action_at]
+      properties:
+        user_id: { type: string }
+        last_action_at: { type: string, format: date-time }
+    EventData_slots_offered:
+      type: object
+      additionalProperties: true
+      required: [slot_refs, slot_ids, reschedule, expires_at]
+      properties:
+        slot_refs: { type: array, items: { type: string } }
+        slot_ids: { type: array, items: { type: string } }
+        reschedule: { type: boolean }
+        expires_at: { type: string, format: date-time }
+    EventData_booking_link_sent:
+      type: object
+      additionalProperties: true
+      required: [expires_at]
+      properties:
+        expires_at: { type: string, format: date-time }
+    EventData_interview_booked:
+      description: >-
+        `invite_after_message` is set on the web chat: the .ics invite goes with the first
+        agent message after that message id.
+      type: object
+      additionalProperties: true
+      required: [booking_id, slot_id, location_id, starts_at, via, ics_uid]
+      properties:
+        booking_id: { type: string }
+        slot_id: { type: string }
+        location_id: { type: string }
+        starts_at: { type: string, format: date-time }
+        via: { type: string, enum: [chat, booking_page] }
+        ics_uid: { type: string }
+        invite_after_message: { type: integer }
+    EventData_interview_rescheduled:
+      allOf:
+        - { $ref: '#/components/schemas/EventData_interview_booked' }
+        - type: object
+          additionalProperties: true
+          required: [previous_slot_id]
+          properties:
+            previous_slot_id: { type: string }
+    EventData_interview_slot_released:
+      type: object
+      additionalProperties: true
+      required: [booking_id, slot_id, reason]
+      properties:
+        booking_id: { type: string }
+        slot_id: { type: string }
+        reason: { type: string, enum: [application_closed, rescheduled] }
+    EventData_outreach_sent:
+      description: Not written by the backend yet (outreach is not built).
+      type: object
+      additionalProperties: true
+    EventData_import_unresponsive:
+      description: Not written by the backend yet (import is not built).
+      type: object
+      additionalProperties: true
+    EventData_opted_out:
+      description: No fields today.
+      type: object
+      additionalProperties: true
+    EventData_opt_out_lifted:
+      description: No fields today.
+      type: object
+      additionalProperties: true
+    EventData_erasure_requested:
+      description: No fields today; `candidates.erasure_requested_at` flags the request.
+      type: object
+      additionalProperties: true
+    EventData_tone_hint:
+      description: >-
+        Written by the Jev router before an agent run, for that turn only (ADR 0029, 0051): a
+        `code` for the hint, the `signals` that fired and the Candidate message that caused it.
+        Codes and an id only (ADR 0035); no Candidate text and no score. `get_application`
+        renders the text from the code. An older event may carry `hint` (or `tone_hint`, or
+        `text`) instead, which it still reads.
+      type: object
+      additionalProperties: true
+      properties:
+        code: { type: string, enum: [apologise, simpler, offer_person, escalated, calm] }
+        signals:
+          type: array
+          items: { type: string, enum: [frustrated, confused, wants_human, abusive] }
+        message_id: { type: integer }
+        hint: { type: string }
+    EventData_run_error:
+      type: object
+      additionalProperties: true
+      required: [kind, run_id, system_turn]
+      properties:
+        kind: { type: string, enum: [error, timeout] }
+        run_id: { type: [string, 'null'] }
+        system_turn: { type: boolean }
+    EventData_template_sent:
+      type: object
+      additionalProperties: true
+      required: [template, message_id]
+      properties:
+        template: { type: string }
+        message_id: { type: integer }
+    EventData_system_turn:
+      description: The system turn's text (written by code, never the Candidate), kept out of the transcript.
+      type: object
+      additionalProperties: true
+      required: [turn]
+      properties:
+        turn: { type: string }
+
+    Summary:
+      type: object
+      required: [structured, prose, written_at]
+      properties:
+        structured: { $ref: '#/components/schemas/SummaryStructured' }
+        prose: { type: [string, 'null'], description: 3-5 sentences by Sonnet 5.5. }
+        written_at: { type: string, format: date-time }
+
+    SummaryStructured:
+      description: >-
+        Structured part of the summary, built by code when Screening ends and rebuilt on
+        Reopen (Q26). Open so the summary writer can add fields; the listed ones are always present.
+      type: object
+      additionalProperties: true
+      required: [answers, stage, outcome, language, durations_seconds, nudges, escalations, flags]
+      properties:
+        answers: { $ref: '#/components/schemas/Answers' }
+        stage: { $ref: '#/components/schemas/Stage' }
+        outcome:
+          description: Null when the Application is Qualified (Qualified is not an Outcome).
+          oneOf: [{ $ref: '#/components/schemas/Outcome' }, { type: 'null' }]
+        language: { $ref: '#/components/schemas/Language' }
+        durations_seconds:
+          type: object
+          required: [total]
+          properties:
+            total: { type: integer, minimum: 0 }
+            by_stage: { type: object, additionalProperties: { type: integer, minimum: 0 } }
+        nudges: { type: integer, minimum: 0 }
+        escalations: { type: integer, minimum: 0 }
+        flags: { type: array, items: { $ref: '#/components/schemas/Flag' } }
+
+    Interview:
+      type: object
+      required: [starts_at, ends_at, local_label, location_name]
+      properties:
+        starts_at: { type: string, format: date-time }
+        ends_at: { type: string, format: date-time }
+        local_label: { type: string }
+        location_name: { type: string }
+        address: { type: [string, 'null'] }
+
+    ApplicationCost:
+      type: object
+      x-roles: [operator]
+      description: Operator-only. Absent for Recruiters.
+      required: [est_cost_usd, runs, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens]
+      properties:
+        est_cost_usd: { type: number, minimum: 0 }
+        reconciled_cost_usd: { type: [number, 'null'], minimum: 0 }
+        runs: { type: integer, minimum: 0 }
+        input_tokens: { type: integer, minimum: 0 }
+        output_tokens: { type: integer, minimum: 0 }
+        cache_read_tokens: { type: integer, minimum: 0 }
+        cache_write_tokens: { type: integer, minimum: 0 }
+        p50_latency_ms: { type: [integer, 'null'] }
+        models: { type: array, items: { type: string } }
+
+    ConversationSignals:
+      type: object
+      required: [period, by_stage, totals]
+      properties:
+        period:
+          type: object
+          required: [from, to]
+          properties:
+            from: { type: string, format: date }
+            to: { type: string, format: date }
+        by_stage:
+          type: array
+          items:
+            type: object
+            required: [stage, messages, unread, frustrated, confused, wants_human, abusive, language_switches, shares]
+            properties:
+              stage: { oneOf: [{ $ref: '#/components/schemas/Stage' }, { type: 'null' }] }
+              messages: { type: integer, minimum: 0, description: Typed messages Jev read at this stage. }
+              unread: { type: integer, minimum: 0, description: Messages Jev could not read (timeout or error). They are not counted as calm. }
+              frustrated: { type: integer, minimum: 0 }
+              confused: { type: integer, minimum: 0 }
+              wants_human: { type: integer, minimum: 0 }
+              abusive: { type: integer, minimum: 0 }
+              language_switches: { type: integer, minimum: 0 }
+              shares:
+                type: object
+                description: Each count over `messages`; null when no message was read.
+                additionalProperties: { type: [number, 'null'], minimum: 0, maximum: 1 }
+        totals:
+          type: object
+          additionalProperties: { type: integer, minimum: 0 }
+
+    CommunicationNote:
+      type: object
+      description: >-
+        One note about how the conversation went and how to approach the Candidate, in the
+        Application's language. Conversation context and advice, never a score or a trait, and
+        never an assessment of fitness for the job. Show it with the label "Communication notes
+        from the conversation, not an assessment of the Candidate".
+      required: [kind, text, stage, at, message_id]
+      properties:
+        kind: { type: string, enum: [writes_in, asked_for_person, impatient, unsure, harsh_language, language_switch] }
+        text: { type: string }
+        stage: { oneOf: [{ $ref: '#/components/schemas/Stage' }, { type: 'null' }] }
+        at: { type: string, format: date-time }
+        message_id: { type: integer }
+
+    MessageSignal:
+      type: object
+      description: >-
+        A typed Candidate message on which a tone signal fired or the language changed (ADR
+        0051), for a marker beside the message. Flags only, no probability. Messages that read as
+        calm have no entry.
+      required: [message_id, stage, at, fired, language_changed, escalated]
+      properties:
+        message_id: { type: integer }
+        stage: { oneOf: [{ $ref: '#/components/schemas/Stage' }, { type: 'null' }] }
+        at: { type: string, format: date-time }
+        fired: { type: array, items: { type: string, enum: [frustrated, confused, wants_human, abusive] } }
+        language_changed: { type: boolean }
+        escalated: { type: boolean }
+
+    MessageLabel:
+      type: object
+      description: >-
+        Jev's labels for one typed Candidate message it read (ADR 0075, refining 0051 and 0066),
+        served to every role on the Application detail: the detected language, the signals that
+        fired, the intent and the tone hint applied, as codes. Never a probability, a confidence,
+        a threshold or a Manipulation score, and never Candidate text. A message Jev could not
+        read, a spoken turn and a message with no reading have no entry. The `abusive` signal and
+        the `steering` intent are never sent here, because they would read as a judgement of the
+        person. Display only: never an input to a Knockout, Rejection, Approval, ranking, routing
+        or booking.
+      additionalProperties: false
+      required: [message_id, stage, at, language, fired, intent, tone_hint, language_set, language_reason]
+      properties:
+        message_id: { type: integer }
+        stage: { oneOf: [{ $ref: '#/components/schemas/Stage' }, { type: 'null' }] }
+        at: { type: string, format: date-time }
+        language:
+          description: The language Jev detected in the message.
+          type: string
+          enum: [es, en, other, unclear]
+        fired:
+          type: array
+          items: { type: string, enum: [frustrated, confused, wants_human] }
+        intent:
+          description: What the message is trying to do (ADR 0071), null when Jev gave none or the reading is withheld.
+          type: [string, 'null']
+          enum: [answering, asking, off_topic, wants_to_stop, other, null]
+        tone_hint:
+          description: The tone hint the agent was given for its reply, null when none.
+          type: [string, 'null']
+          enum: [apologise, simpler, offer_person, escalated, calm, null]
+        language_set:
+          description: The reply language this message set, null when it changed none.
+          type: [string, 'null']
+          enum: [es-ES, es-MX, en, null]
+        language_reason:
+          description: Why the language was set (`request` when the Candidate asked for it), null when none was set.
+          type: [string, 'null']
+          enum: [first_message, switch, request, variant, null]
+
+    JevThresholds:
+      type: object
+      description: >-
+        The current Jev policy bundle (`criba/jev/policy.py`), the one the router applies today.
+        Only the drawing of a threshold marker may read it; see `getJevReadings` for the mapping
+        of each bar to its fields. `ask_confidence`, `readable` and `unreadable` draw no bar.
+        Closed and in step with the bundle: a field added to the policy fails conformance until
+        it is added here.
+      additionalProperties: false
+      required: [version, first_confidence, switch_confidence, switch_noul, frustrated, confused, wants_human_hint, wants_human_escalate, abusive_escalate, ask_confidence, readable, unreadable]
+      properties:
+        version: { type: string }
+        first_confidence: { type: number }
+        switch_confidence: { type: number }
+        switch_noul: { type: number }
+        frustrated: { type: number }
+        confused: { type: number }
+        wants_human_hint: { type: number }
+        wants_human_escalate: { type: number }
+        abusive_escalate: { type: number }
+        ask_confidence: { type: number }
+        readable: { type: number }
+        unreadable: { type: number }
+
+    JevReading:
+      type: object
+      description: >-
+        What Jev read from one typed Candidate message, as stored. Closed: a field is added only
+        through the contract. `intent` and `malice` (`jev-intent`, ADR 0071) stay optional so a
+        consumer built against the reserved fields keeps working; the server always sends both on
+        an `ok` reading, `null` when the row holds no value.
+      additionalProperties: false
+      required: [lang, lang_confidence, switch, frustrated, confused, wants_human, abusive, fired, hint, escalation, model, policy_version, first_message, language_set]
+      properties:
+        lang: { type: string, enum: [es, en, other, unclear] }
+        lang_confidence: { type: number, minimum: 0, maximum: 1 }
+        switch: { type: number, minimum: 0, maximum: 1 }
+        frustrated: { type: number, minimum: 0, maximum: 1 }
+        confused: { type: number, minimum: 0, maximum: 1 }
+        wants_human: { type: number, minimum: 0, maximum: 1 }
+        abusive: { type: number, minimum: 0, maximum: 1 }
+        fired: { type: array, items: { type: string, enum: [frustrated, confused, wants_human, abusive] } }
+        hint: { type: [string, 'null'], enum: [apologise, simpler, offer_person, escalated, calm, null], description: The tone hint code given to the agent for this turn, if any. }
+        escalation: { type: [string, 'null'], enum: [wants_human, abuse, null], description: The Escalation reason this message raised, if any. }
+        model: { type: [string, 'null'], description: The model that served the call. }
+        policy_version: { type: [string, 'null'], description: The policy version the router applied; compare it with `thresholds.version` before drawing a marker. }
+        first_message: { type: boolean, description: True when this was the Application's first typed message. }
+        language_set: { type: [string, 'null'], enum: [es-ES, es-MX, en, null], description: The language this message stored, if it changed one. }
+        intent:
+          type: [object, 'null']
+          description: >-
+            Added by `jev-intent` (ADR 0071): what the message is mainly trying to do, as Jev read
+            it, with the Choice's confidence. Display only, never an input to a decision. `null`
+            when not read: a spoken turn, rows stored before the reading existed, or an answer
+            Jev did not give.
+          additionalProperties: false
+          required: [choice, confidence]
+          properties:
+            choice: { enum: [answering, asking, off_topic, wants_to_stop, steering, other] }
+            confidence: { type: number, minimum: 0, maximum: 1 }
+        malice:
+          type: [number, 'null']
+          minimum: 0
+          maximum: 1
+          description: >-
+            Added by `jev-intent` (ADR 0071): the probability that the message tries to manipulate
+            the assistant, shown to Operators as Manipulation. Display only, never an input to a
+            decision. `null` when not read: a spoken turn, rows stored before the reading existed,
+            or an answer Jev did not give.
+
+    JevReadingEntry:
+      type: object
+      description: One typed Candidate message and what Jev stored for it. No message text.
+      required: [message_id, at, stage, status, reading]
+      properties:
+        message_id: { type: integer }
+        at: { type: string, format: date-time, description: The message's `created_at`. }
+        stage: { oneOf: [{ $ref: '#/components/schemas/Stage' }, { type: 'null' }], description: The Application's stage when the message arrived, from the stored row; null when there is no row. }
+        status:
+          type: string
+          enum: [ok, error, timeout, expired, not_read]
+          description: >-
+            `ok`, `error` or `timeout` as stored. `expired`: no row, and the message is older than the
+            retention period. `not_read`: no row otherwise (Jev off, a Takeover, an opt-out or a
+            failed read; the stored data cannot tell them apart).
+        reading: { oneOf: [{ $ref: '#/components/schemas/JevReading' }, { type: 'null' }], description: Present only when `status` is `ok`. }
+
+    JevReadings:
+      type: object
+      required: [application_id, thresholds, readings]
+      properties:
+        application_id: { type: string }
+        thresholds: { $ref: '#/components/schemas/JevThresholds' }
+        readings:
+          type: array
+          description: One entry per typed Candidate message, sorted by message id.
+          items: { $ref: '#/components/schemas/JevReadingEntry' }
+
+    ApplicationDetail:
+      allOf:
+        - $ref: '#/components/schemas/ApplicationSummary'
+        - type: object
+          required: [answers, answer_status, messages, events, summary, files, other_applications, open_queue_items, interview]
+          properties:
+            answers: { $ref: '#/components/schemas/Answers' }
+            answer_status: { type: array, items: { $ref: '#/components/schemas/AnswerStatus' } }
+            messages: { type: array, items: { $ref: '#/components/schemas/Message' } }
+            events: { type: array, items: { $ref: '#/components/schemas/Event' } }
+            summary: { oneOf: [{ $ref: '#/components/schemas/Summary' }, { type: 'null' }] }
+            files:
+              type: array
+              description: Files delivered by the Candidate. Always empty in Phase 2 (no documents collected).
+              items:
+                type: object
+                required: [name, url]
+                properties:
+                  name: { type: string }
+                  url: { type: string }
+            other_applications:
+              type: array
+              description: "The Candidate's other Applications, newest first."
+              items:
+                type: object
+                required: [id, status, stage, outcome, created_at]
+                properties:
+                  id: { type: string }
+                  status: { type: string, enum: [open, closed] }
+                  stage: { $ref: '#/components/schemas/Stage' }
+                  outcome: { oneOf: [{ $ref: '#/components/schemas/Outcome' }, { type: 'null' }] }
+                  created_at: { type: string, format: date-time }
+            open_queue_items: { type: array, items: { $ref: '#/components/schemas/QueueItemRef' } }
+            interview: { oneOf: [{ $ref: '#/components/schemas/Interview' }, { type: 'null' }] }
+            message_signals:
+              type: array
+              description: Messages on which a signal fired (ADR 0051). Absent from an older backend.
+              items: { $ref: '#/components/schemas/MessageSignal' }
+            communication_notes:
+              type: array
+              description: How the conversation went and how to approach the Candidate (ADR 0051). Empty when no signal was stored. Absent from an older backend.
+              items: { $ref: '#/components/schemas/CommunicationNote' }
+            message_labels:
+              type: array
+              description: Jev's labels for each typed Candidate message it read, oldest first, the same for every role (ADR 0075). Codes only, no scores. Absent from an older backend.
+              items: { $ref: '#/components/schemas/MessageLabel' }
+            cost:
+              $ref: '#/components/schemas/ApplicationCost'
+              x-roles: [operator]
+              description: Operator-only. Absent for Recruiters.
+
+    ApplicationExport:
+      description: The Application's structured JSON (Phase 2 field list). Contains no cost data.
+      type: object
+      required: [application_id, candidate_id, channel, country, language, status, stage, outcome, knockout_criterion, rejection_reason, answers, locations, created_at, updated_at, qualified_at, approved_at, closed_at, interview, summary]
+      properties:
+        application_id: { type: string }
+        candidate_id: { type: string }
+        channel: { $ref: '#/components/schemas/Channel' }
+        country: { oneOf: [{ $ref: '#/components/schemas/Country' }, { type: 'null' }] }
+        language: { oneOf: [{ $ref: '#/components/schemas/Language' }, { type: 'null' }] }
+        status: { type: string, enum: [open, closed] }
+        stage: { $ref: '#/components/schemas/Stage' }
+        outcome: { oneOf: [{ $ref: '#/components/schemas/Outcome' }, { type: 'null' }] }
+        knockout_criterion: { type: [string, 'null'], enum: [zone, driver_license, null] }
+        rejection_reason: { oneOf: [{ $ref: '#/components/schemas/RejectionReason' }, { type: 'null' }] }
+        answers: { $ref: '#/components/schemas/Answers' }
+        start_date_far: { type: boolean }
+        locations: { type: array, items: { type: string } }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        qualified_at: { type: [string, 'null'], format: date-time }
+        approved_at: { type: [string, 'null'], format: date-time }
+        closed_at: { type: [string, 'null'], format: date-time }
+        interview: { oneOf: [{ $ref: '#/components/schemas/Interview' }, { type: 'null' }] }
+        summary: { oneOf: [{ $ref: '#/components/schemas/Summary' }, { type: 'null' }] }
+
+    QueueItemRef:
+      type: object
+      required: [id, kind, status, created_at]
+      properties:
+        id: { type: string }
+        kind: { $ref: '#/components/schemas/QueueKind' }
+        status: { type: string, enum: [open, resolved] }
+        reason: { oneOf: [{ $ref: '#/components/schemas/EscalationReason' }, { type: 'null' }] }
+        note: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+
+    QueueItem:
+      allOf:
+        - $ref: '#/components/schemas/QueueItemRef'
+        - type: object
+          required: [application]
+          properties:
+            application: { $ref: '#/components/schemas/ApplicationSummary' }
+            resolution: { type: [string, 'null'], enum: [approved, rejected, upheld, overturned, dismissed, takeover, null] }
+            resolution_note: { type: [string, 'null'] }
+            resolved_by: { type: [string, 'null'] }
+            resolved_at: { type: [string, 'null'], format: date-time }
+
+    QueueList:
+      type: object
+      required: [items, next_cursor]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/QueueItem' } }
+        next_cursor: { type: [string, 'null'] }
+
+    ApprovalDecision:
+      oneOf:
+        - type: object
+          required: [decision]
+          additionalProperties: false
+          properties:
+            decision: { const: approved }
+            note: { type: [string, 'null'] }
+        - type: object
+          required: [decision, reason]
+          additionalProperties: false
+          properties:
+            decision: { const: rejected }
+            reason: { $ref: '#/components/schemas/RejectionReason' }
+            note: { type: [string, 'null'], description: Required when reason is other. }
+
+    ReviewDecision:
+      type: object
+      required: [decision]
+      additionalProperties: false
+      properties:
+        decision: { type: string, enum: [upheld, overturned] }
+        note: { type: [string, 'null'] }
+
+    EscalationDecision:
+      type: object
+      required: [decision]
+      additionalProperties: false
+      properties:
+        decision: { type: string, enum: [dismissed, takeover], description: takeover also starts a Takeover for the caller. }
+        note: { type: [string, 'null'] }
+
+    RejectionRequest:
+      type: object
+      required: [reason]
+      additionalProperties: false
+      properties:
+        reason: { $ref: '#/components/schemas/RejectionReason' }
+        note: { type: [string, 'null'], description: Required when reason is other. }
+
+    TakeoverState:
+      type: object
+      required: [control, user_id, user_name, since]
+      properties:
+        control: { type: string, enum: [agent, human] }
+        user_id: { type: [string, 'null'] }
+        user_name: { type: [string, 'null'] }
+        since: { type: string, format: date-time }
+
+    TakeoverMessageRequest:
+      type: object
+      required: [text]
+      additionalProperties: false
+      properties:
+        text: { type: string, minLength: 1, maxLength: 4000 }
+
+    HandBackRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        summary: { type: [string, 'null'], maxLength: 2000, description: What was said, for the agent. Generated from the transcript when omitted. }
+
+    StreamEvent:
+      description: Payload of each SSE `data:` line.
+      type: object
+      required: [type, at, data]
+      properties:
+        type: { type: string, enum: [message, control, event, queue] }
+        at: { type: string, format: date-time }
+        data:
+          description: A Message, a TakeoverState, an Event, or a queue change, according to type.
+          type: object
+
+    Slot:
+      type: object
+      required: [id, location_id, starts_at, ends_at, status]
+      properties:
+        id: { type: string }
+        location_id: { type: string }
+        location_name: { type: string }
+        starts_at: { type: string, format: date-time }
+        ends_at: { type: string, format: date-time }
+        local_label: { type: string }
+        status: { $ref: '#/components/schemas/SlotStatus' }
+        booking:
+          oneOf:
+            - type: 'null'
+            - type: object
+              required: [application_id, candidate_name, booked_via, booked_at]
+              properties:
+                application_id: { type: string }
+                candidate_name: { type: [string, 'null'] }
+                booked_via: { type: string, enum: [chat, booking_page] }
+                booked_at: { type: string, format: date-time }
+
+    SlotTimes:
+      type: object
+      required: [starts_at, ends_at]
+      properties:
+        starts_at: { type: string, format: date-time }
+        ends_at: { type: string, format: date-time }
+
+    SlotCreateRequest:
+      type: object
+      required: [location_id, slots]
+      additionalProperties: false
+      properties:
+        location_id: { type: string }
+        slots: { type: array, minItems: 1, maxItems: 100, items: { $ref: '#/components/schemas/SlotTimes' } }
+
+    SlotUpdate:
+      $ref: '#/components/schemas/SlotTimes'
+
+    BookingLink:
+      type: object
+      required: [url, token, expires_at]
+      properties:
+        url: { type: string, format: uri }
+        token: { type: string }
+        expires_at: { type: string, format: date-time }
+
+    PublicSlot:
+      type: object
+      required: [slot_id, starts_at, ends_at, local_label, location_name]
+      properties:
+        slot_id: { type: string }
+        starts_at: { type: string, format: date-time }
+        ends_at: { type: string, format: date-time }
+        local_label: { type: string }
+        location_name: { type: string }
+        address: { type: [string, 'null'] }
+
+    PublicBookingPage:
+      type: object
+      required: [first_name, language, expires_at, slots, current_booking]
+      properties:
+        first_name: { type: [string, 'null'] }
+        language: { $ref: '#/components/schemas/Language' }
+        expires_at: { type: string, format: date-time }
+        current_booking: { oneOf: [{ $ref: '#/components/schemas/Interview' }, { type: 'null' }] }
+        slots: { type: array, items: { $ref: '#/components/schemas/PublicSlot' } }
+
+    PublicBookingRequest:
+      type: object
+      required: [slot_id]
+      additionalProperties: false
+      properties:
+        slot_id: { type: string }
+
+    PublicBookingConfirmation:
+      type: object
+      required: [interview, ics_url, message]
+      properties:
+        interview: { $ref: '#/components/schemas/Interview' }
+        ics_url: { type: string }
+        message: { type: string, description: "Confirmation in the Candidate's language." }
+
+    Percentiles:
+      type: object
+      required: [p50, p95]
+      properties:
+        p50: { type: [number, 'null'] }
+        p95: { type: [number, 'null'] }
+        p99: { type: [number, 'null'] }
+
+    ResultsMetrics:
+      type: object
+      required: [from, to, applications, funnel, time_to_qualify_seconds, knockouts_by_criterion, reviews, dropoff_by_stage, qualified_waiting, takeovers, escalations]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        applications: { type: integer, minimum: 0 }
+        funnel:
+          type: object
+          required: [open_by_stage, outcomes]
+          properties:
+            open_by_stage: { type: object, additionalProperties: { type: integer, minimum: 0 }, description: Keyed by Stage. }
+            outcomes:
+              type: object
+              required: [knockout, rejection, abandoned, withdrawn]
+              properties:
+                knockout: { type: integer, minimum: 0 }
+                rejection: { type: integer, minimum: 0 }
+                abandoned: { type: integer, minimum: 0 }
+                withdrawn: { type: integer, minimum: 0 }
+        time_to_qualify_seconds: { $ref: '#/components/schemas/Percentiles' }
+        knockouts_by_criterion:
+          type: object
+          required: [zone, driver_license]
+          properties:
+            zone: { type: integer, minimum: 0 }
+            driver_license: { type: integer, minimum: 0 }
+        reviews:
+          type: object
+          required: [requested, upheld, overturned, overturn_rate]
+          properties:
+            requested: { type: integer, minimum: 0 }
+            upheld: { type: integer, minimum: 0 }
+            overturned: { type: integer, minimum: 0 }
+            overturn_rate: { type: [number, 'null'], minimum: 0, maximum: 1 }
+        dropoff_by_stage: { type: object, additionalProperties: { type: integer, minimum: 0 }, description: Abandoned and Stalled Applications by the stage they stopped at. }
+        qualified_waiting: { type: integer, minimum: 0 }
+        takeovers: { type: integer, minimum: 0 }
+        escalations: { type: integer, minimum: 0 }
+        by_location:
+          type: array
+          items:
+            type: object
+            required: [location_id, applications, qualified, knockouts]
+            properties:
+              location_id: { type: string }
+              applications: { type: integer }
+              qualified: { type: integer }
+              knockouts: { type: integer }
+
+    EconomicsMetrics:
+      type: object
+      x-roles: [operator]
+      description: Operator-only.
+      required: [from, to, conversations, cost_usd, tokens, latency_ms, model_mix, errors, spend_by_environment]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        conversations: { type: integer, minimum: 0 }
+        cost_usd:
+          type: object
+          required: [total, per_conversation, per_qualified, per_interview]
+          properties:
+            total: { type: number }
+            per_conversation: { type: [number, 'null'] }
+            per_qualified: { type: [number, 'null'] }
+            per_interview: { type: [number, 'null'] }
+        tokens:
+          type: object
+          required: [input, output, cache_read, cache_write, per_turn_input, cache_hit_rate]
+          properties:
+            input: { type: integer }
+            output: { type: integer }
+            cache_read: { type: integer }
+            cache_write: { type: integer }
+            per_turn_input: { type: [number, 'null'] }
+            cache_hit_rate: { type: [number, 'null'], minimum: 0, maximum: 1 }
+        latency_ms: { $ref: '#/components/schemas/Percentiles' }
+        model_mix:
+          type: array
+          items:
+            type: object
+            required: [model, kind, calls, share, cost_usd]
+            properties:
+              model: { type: string }
+              kind: { type: string, enum: [run, subagent, auxiliary, jev, speech] }
+              calls: { type: integer }
+              share: { type: number, minimum: 0, maximum: 1 }
+              cost_usd: { type: number }
+        errors:
+          type: object
+          required: [count, rate, retries]
+          properties:
+            count: { type: integer }
+            rate: { type: [number, 'null'] }
+            retries: { type: integer }
+        spend_by_environment:
+          type: object
+          required: [prod, sim, test]
+          properties:
+            prod: { type: number }
+            sim: { type: number }
+            test: { type: number }
+
+    ModelComparison:
+      type: object
+      x-roles: [operator]
+      description: Operator-only. Replays the JSONL dataset from spec 004 task 9.
+      required: [dataset, personas, models]
+      properties:
+        dataset: { type: string }
+        personas: { type: integer }
+        models:
+          type: array
+          items:
+            type: object
+            required: [model, runs, latency_ms, cost_per_screening_usd, validation_failures, escalations, outcome_accuracy]
+            properties:
+              model: { type: string }
+              runs: { type: integer }
+              latency_ms: { $ref: '#/components/schemas/Percentiles' }
+              cost_per_screening_usd: { type: number }
+              validation_failures: { type: integer }
+              escalations: { type: integer }
+              outcome_accuracy: { type: number, minimum: 0, maximum: 1 }
+
+  examples:
+    ApplicationDetailQualified:
+      summary: A Qualified Application, as an Operator sees it (with cost)
+      value:
+        id: app_01JA2B3C4D5E6F7G8H9J0K
+        candidate: { id: cand_01JA2B, full_name: Luis Hernández, phone: '+525512345678', country: MX, language: es-MX, opted_out: false }
+        channel: webchat
+        status: open
+        stage: qualified
+        outcome: null
+        knockout_criterion: null
+        rejection_reason: null
+        zone: { id: zone_mx_puebla_centro, name: Centro, city: Puebla, country: MX }
+        locations:
+          - { id: loc_mx_puebla_centro, name: Sazón Puebla Centro, country: MX, city: Puebla }
+        claim: null
+        control: agent
+        control_user_id: null
+        control_user_name: null
+        flags: []
+        created_at: '2026-10-09T10:00:00Z'
+        updated_at: '2026-10-09T10:04:00Z'
+        closed_at: null
+        time_in_stage_seconds: 60
+        total_seconds: 240
+        answers:
+          full_name: Luis Hernández
+          zone: { id: zone_mx_puebla_centro, name: Centro, city: Puebla, country: MX }
+          driver_license: true
+          availability: [full_time]
+          preferred_schedule: [morning, afternoon]
+          experience_years: 2
+          experience_platforms: [rappi, didi_food]
+          start_date: '2026-10-12'
+        answer_status:
+          - { field: full_name, status: valid, raw_input: null, attempts: 1, recorded_at: '2026-10-09T10:00:30Z', note: null }
+          - { field: driver_license, status: valid, raw_input: 'sí, tengo licencia', attempts: 1, recorded_at: '2026-10-09T10:01:10Z', note: null }
+        messages:
+          - { id: 1, direction: inbound, sender: candidate, sender_name: null, content_type: text, body: 'Hola, quiero trabajar de repartidor', interactive: null, created_at: '2026-10-09T10:00:00Z' }
+          - id: 2
+            direction: outbound
+            sender: agent
+            sender_name: null
+            content_type: text
+            body: '¡Hola! Soy el asistente virtual de Grupo Sazón 🛵 Te ayudo a postularte como repartidor en unos minutos. Tus datos se tratan según nuestra política: https://empleo.gruposazon.example/privacidad'
+            interactive: null
+            created_at: '2026-10-09T10:00:02Z'
+          - id: 9
+            direction: outbound
+            sender: agent
+            sender_name: null
+            content_type: interactive
+            body: '¿Qué disponibilidad tienes?'
+            interactive:
+              style: buttons
+              options:
+                - { id: full_time, label: Tiempo completo }
+                - { id: part_time, label: Medio tiempo }
+                - { id: weekends, label: Fines de semana }
+            created_at: '2026-10-09T10:01:40Z'
+        events:
+          - { id: 1, kind: application_started, actor: candidate, user_name: null, data: {}, created_at: '2026-10-09T10:00:00Z' }
+          - { id: 14, kind: screening_finished, actor: agent, user_name: null, data: { stage: qualified }, created_at: '2026-10-09T10:04:00Z' }
+        summary:
+          structured:
+            answers:
+              full_name: Luis Hernández
+              zone: { id: zone_mx_puebla_centro, name: Centro, city: Puebla, country: MX }
+              driver_license: true
+              availability: [full_time]
+              preferred_schedule: [morning, afternoon]
+              experience_years: 2
+              experience_platforms: [rappi, didi_food]
+              start_date: '2026-10-12'
+            stage: qualified
+            outcome: null
+            language: es-MX
+            durations_seconds: { total: 240, by_stage: { full_name: 30, zone: 45, driver_license: 20, availability: 40, preferred_schedule: 35, experience: 45, start_date: 25 } }
+            nudges: 0
+            escalations: 0
+            flags: []
+          prose: Luis lives in central Puebla and holds a valid licence. He can work full time, mornings and afternoons, and has two years of delivery experience on Rappi and DiDi Food. He can start on 12 October.
+          written_at: '2026-10-09T10:04:05Z'
+        files: []
+        other_applications:
+          - { id: app_01J9ZZ, status: closed, stage: driver_license, outcome: knockout, created_at: '2026-06-02T09:00:00Z' }
+        open_queue_items:
+          - { id: qi_approval_1, kind: approval, status: open, reason: null, note: null, created_at: '2026-10-09T10:04:00Z' }
+        interview: null
+        cost: { est_cost_usd: 0.0031, reconciled_cost_usd: null, runs: 12, input_tokens: 86000, output_tokens: 2100, cache_read_tokens: 61000, cache_write_tokens: 7200, p50_latency_ms: 1700, models: [anthropic/claude-haiku-5.5] }

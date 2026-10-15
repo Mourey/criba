@@ -1,0 +1,11 @@
+# Voice persona (voice-agent sim-personas SM4): qualified_es on a voice call, Spain. Says the
+# typed persona's words over the custom-LLM endpoint, reaches Qualified, then books after the
+# Approval by saying the first offered slot's day and hour.
+id: qualified_es
+description: >
+  Spain, the happy path by voice: name, Zone and licence in the opening, every field in order,
+  Qualified; after the Approval the Candidate says a slot ("El martes a las diez de la
+  mañana") and the Interview is booked.
+typed: qualified_es
+phone: "+34600001001"
+booking: {}

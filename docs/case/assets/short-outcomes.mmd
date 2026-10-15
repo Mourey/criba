@@ -1,0 +1,12 @@
+flowchart LR
+  S([Screening]) -- "no license or<br/>Zone outside" --> K[Knockout]:::ko
+  S -- "confirmed" --> Q([Qualified]):::ok
+  S -- "silent 7 days" --> A[Abandoned]:::ko
+  S -- "leaves" --> W[Withdrawn]:::ko
+  Q --> P{{Recruiter<br/>Approval}}
+  P -- approved --> I([Interview<br/>booked]):::ok
+  P -- "not approved" --> R[Rejection<br/>with a reason]:::ko
+  K -. "Review overturned or<br/>new valid answer, 30 days" .-> S
+  A -. "reply within 30 days" .-> S
+  classDef ko fill:#fff4ed,stroke:#8a3b12,color:#8a3b12
+  classDef ok fill:#97ff48,stroke:#20271a,color:#20271a
